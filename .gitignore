@@ -1,0 +1,20 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+apps/web/.env.local
+
+# Données sensibles / locales
+output_prospection*.csv
+output_prospection.csv.tmp
+apps/web/data/entitlements.json
+apps/web/data/pipeline.json
+data/blacklist.json
+
+# Next.js
+apps/web/.next/
+apps/web/out/
+
+.cache/
+*.log
+.DS_Store

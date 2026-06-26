@@ -1,0 +1,36 @@
+{
+  "name": "clim-ecole-prospection",
+  "version": "1.0.0",
+  "description": "Pipeline de prospection écoles primaires × RNB × artisans RGE × mairies",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "prospect": "node src/index.js",
+    "prospect:reset": "RESET_CHECKPOINT=1 node src/index.js",
+    "prospect:reexport": "node src/scripts/reexportEconomics.js",
+    "bdnb:download": "node src/scripts/downloadBdnbDepartments.js",
+    "bdnb:reextract": "node src/scripts/reextractBdnbDepartments.js",
+    "bdnb:build-index": "node src/scripts/buildBdnbLocalIndex.js",
+    "bdnb:setup": "node src/scripts/bdnbSetup.js",
+    "dev": "node src/server.js",
+    "dashboard": "node src/server.js",
+    "verify": "node src/scripts/verifyDashboard.js",
+    "audit:calculs": "node src/scripts/auditCalculations.js",
+    "sync:supabase": "node src/scripts/syncToSupabase.js",
+    "web:dev": "npm run dev --prefix apps/web",
+    "web:build": "npm run build --prefix apps/web"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.2",
+    "axios": "^1.9.0",
+    "csv-parse": "^5.6.0",
+    "csv-writer": "^1.6.0",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "pdfkit": "^0.18.0"
+  }
+}

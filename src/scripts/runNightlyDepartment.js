@@ -125,17 +125,22 @@ async function main() {
 
     if (!validation.missing && process.env.SKIP_SYNC !== '1') {
       console.log('[nightly] Sync Supabase…');
-      await run(process.execPath, [
-        'src/scripts/syncToSupabase.js',
-        '--file', csvRel,
-        '--region-label', dept.region_label,
-        '--department', dept.code,
-        '--skip-if-empty',
-      ], {
-        SUPABASE_URL: process.env.SUPABASE_URL,
-        SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-        GITHUB_SHA: process.env.GITHUB_SHA,
-      });
+      try {
+        await run(process.execPath, [
+          'src/scripts/syncToSupabase.js',
+          '--file', csvRel,
+          '--region-label', dept.region_label,
+          '--department', dept.code,
+          '--skip-if-empty',
+        ], {
+          SUPABASE_URL: process.env.SUPABASE_URL,
+          SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+          GITHUB_SHA: process.env.GITHUB_SHA,
+        });
+      } catch (syncErr) {
+        console.warn(`[nightly] Sync Supabase échoué (CSV conservé) : ${syncErr.message}`);
+        console.warn('[nightly] Vérifiez SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY dans les secrets GitHub');
+      }
     }
 
     console.log(`[nightly] Prochain index: ${nextIndex} (${catalog[nextIndex]?.code})`);

@@ -31,7 +31,10 @@ export const AURA_DEPT_CENTROIDS: Record<string, [number, number]> = {
 };
 
 export function parseDepartmentCode(department: string): string {
-  return department.split('·')[0]?.trim() ?? department.trim();
+  const trimmed = department.trim();
+  const deptPrefix = trimmed.match(/^Dept\.\s*(\d{2,3}|2[AB])/i);
+  if (deptPrefix) return deptPrefix[1].toUpperCase();
+  return trimmed.split('·')[0]?.trim() ?? trimmed;
 }
 
 export function deptCodeFromInsee(codeInsee: string): string {
@@ -62,5 +65,5 @@ export function dominantDepartment(codesInsee: string[]): string {
     }
   }
   const label = AURA_DEPT_LABELS[bestDept];
-  return label ? `${bestDept} · ${label}` : `Dept. ${bestDept}`;
+  return label ? `${bestDept} · ${label}` : bestDept;
 }

@@ -51,9 +51,11 @@ const PERSONA_TABS: { id: PersonaFilter; label: string; hint?: string; icon?: ty
 export function ExplorerSplitView({
   packs,
   qualifiedCount,
+  coverageBadge = 'France',
 }: {
   packs: MarketplacePack[];
   qualifiedCount: number;
+  coverageBadge?: string;
 }) {
   const [filter, setFilter] = useState<PersonaFilter>('all');
   const [compareIds, setCompareIds] = useState<string[]>([]);
@@ -132,7 +134,7 @@ export function ExplorerSplitView({
       {/* Badge région */}
       <div className="pointer-events-none absolute left-4 top-4 z-10 hidden md:block">
         <span className="rounded-md bg-white/90 px-2.5 py-1 text-xs font-medium text-radar-muted shadow-sm backdrop-blur-sm">
-          Auvergne-Rhône-Alpes · {filtered.length} {COPY.territoryPlural}
+          {coverageBadge} · {filtered.length} {COPY.territoryPlural}
         </span>
       </div>
 

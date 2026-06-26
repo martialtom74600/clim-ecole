@@ -1,8 +1,9 @@
 {
   "phase": "initial",
-  "nextDeptIndex": 1,
+  "nextDeptIndex": 2,
   "intervalHours": 36,
-  "lastRunAt": null,
-  "lastDepartment": null,
-  "lastStatus": null
+  "lastRunAt": "2026-06-26T22:23:48.878Z",
+  "lastDepartment": "002",
+  "lastStatus": "done",
+  "lastRowCount": 4
 }

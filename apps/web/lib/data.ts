@@ -116,11 +116,35 @@ const NUMERIC_KEYS = new Set<keyof ProspectRow>([
   'artisanEffectifMin', 'puissancePacKw', 'ouvriersRequis', 'dureeEstimeeSemaines',
 ]);
 
-function resolveCsvPath(): string {
-  if (process.env.CLIM_CSV_PATH) {
-    return path.resolve(process.env.CLIM_CSV_PATH);
+const EMPTY_DATASET: ProspectionDataset = {
+  meta: {
+    filePath: '(missing)',
+    rowCount: 0,
+    loadedAt: new Date(0).toISOString(),
+    fileMtimeMs: 0,
+  },
+  rows: [],
+};
+
+function csvCandidates(): string[] {
+  const fromEnv = process.env.CLIM_CSV_PATH?.trim();
+  return [
+    fromEnv ? path.resolve(fromEnv) : null,
+    path.resolve(process.cwd(), 'data/output_prospection.csv'),
+    path.resolve(process.cwd(), '../../output_prospection.csv'),
+  ].filter((p): p is string => Boolean(p));
+}
+
+async function resolveExistingCsvPath(): Promise<string | null> {
+  for (const candidate of csvCandidates()) {
+    try {
+      await fs.access(candidate);
+      return candidate;
+    } catch {
+      // try next candidate
+    }
   }
-  return path.resolve(process.cwd(), '../../output_prospection.csv');
+  return null;
 }
 
 function parseNum(raw: unknown): number {
@@ -293,7 +317,11 @@ function toEpciTriage(acc: EpciAccumulator): EpciTriageRow {
 }
 
 export const loadProspectionData = cache(async (): Promise<ProspectionDataset> => {
-  const filePath = resolveCsvPath();
+  const filePath = await resolveExistingCsvPath();
+  if (!filePath) {
+    return EMPTY_DATASET;
+  }
+
   const [content, stat] = await Promise.all([
     fs.readFile(filePath, 'utf-8'),
     fs.stat(filePath),

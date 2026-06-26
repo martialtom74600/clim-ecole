@@ -4,6 +4,13 @@ import { logger } from '../utils/logger.js';
 
 const PAGE_SIZE = 100;
 
+function educationDeptCode(code) {
+  const raw = String(code ?? '').trim().toUpperCase();
+  if (raw === '2A' || raw === '2B') return raw;
+  const n = Number(raw);
+  return Number.isNaN(n) ? raw : String(n).padStart(2, '0');
+}
+
 const SCHOOL_SELECT =
   'numero_uai,appellation_officielle,denomination_principale,libelle_commune,code_commune,code_postal_uai,adresse_uai,latitude,longitude,rnb';
 
@@ -52,8 +59,9 @@ export async function fetchPrimarySchools(inseeCodes) {
   const seenUai = new Set();
 
   for (const deptCode of config.departments) {
-    logger.info(`Écoles primaires — département ${deptCode}`);
-    const deptSchools = await fetchDepartmentSchools(deptCode, inseeCodes);
+    const apiDept = educationDeptCode(deptCode);
+    logger.info(`Écoles primaires — département ${apiDept}`);
+    const deptSchools = await fetchDepartmentSchools(apiDept, inseeCodes);
 
     for (const school of deptSchools) {
       if (seenUai.has(school.numero_uai)) {

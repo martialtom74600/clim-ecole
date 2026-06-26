@@ -3,7 +3,12 @@ import { api } from '../utils/apiClients.js';
 import { logger } from '../utils/logger.js';
 
 export async function loadEligibleCommunes() {
-  const deptNumbers = config.departments.map((d) => d.replace(/^0/, ''));
+  const deptNumbers = config.departments.map((d) => {
+    const raw = String(d).trim().toUpperCase();
+    if (raw === '2A' || raw === '2B') return raw;
+    const n = Number(raw);
+    return Number.isNaN(n) ? raw.replace(/^0+/, '') : String(n).padStart(2, '0');
+  });
   const communes = [];
 
   for (const dept of deptNumbers) {

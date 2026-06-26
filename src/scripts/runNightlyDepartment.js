@@ -81,9 +81,8 @@ async function main() {
   console.log(`[nightly] Département ${dept.code} (${dept.label}) — ${dept.region_label}`);
   console.log(`[nightly] Index ${index + 1}/${catalog.length} — phase ${rotation.phase}`);
 
-  const deptEnv = dept.code.replace(/^0+/, '') || dept.code;
   const pipelineEnv = {
-    DEPARTEMENTS: dept.code === '2A' || dept.code === '2B' ? dept.code : deptEnv,
+    DEPARTEMENTS: dept.code,
     REGION_LABEL: dept.region_label,
     OUTPUT_FILE: csvRel,
     RESET_CHECKPOINT: '1',

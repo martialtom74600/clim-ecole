@@ -1,4 +1,6 @@
 import fs from 'fs/promises';
+import path from 'path';
+import { createHash } from 'crypto';
 import { fileURLToPath } from 'url';
 import { parse } from 'csv-parse/sync';
 import { createClient } from '@supabase/supabase-js';

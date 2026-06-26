@@ -18,6 +18,11 @@
     "verify": "node src/scripts/verifyDashboard.js",
     "audit:calculs": "node src/scripts/auditCalculations.js",
     "sync:supabase": "node src/scripts/syncToSupabase.js",
+    "sync:supabase:all": "node src/scripts/syncAllDepartments.js",
+    "dept:catalog": "node src/scripts/buildDeptCatalog.js",
+    "dept:split": "node src/scripts/splitCsvByDepartment.js",
+    "nightly:department": "node src/scripts/runNightlyDepartment.js",
+    "db:pipeline-jobs": "node src/scripts/applyPipelineJobsSchema.js",
     "web:dev": "npm run dev --prefix apps/web",
     "web:build": "npm run build --prefix apps/web"
   },
@@ -32,5 +37,8 @@
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "pdfkit": "^0.18.0"
+  },
+  "devDependencies": {
+    "pg": "^8.22.0"
   }
 }

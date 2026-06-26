@@ -1,5 +1,6 @@
 import type { MarketplacePack } from './types';
-import { AURA_DEPT_CENTROIDS, AURA_DEPT_LABELS, parseDepartmentCode } from './geo';
+import { parseDepartmentCode } from './geo';
+import { getDeptCentroid, getDeptLabel } from './geo-france';
 import type { DepartmentMarker } from './map-utils';
 
 /** Agrège les packs par département — positions fixes, pas de GPS école (client-safe) */
@@ -34,9 +35,9 @@ export function buildDepartmentMarkers(packs: MarketplacePack[]): DepartmentMark
   const markers: DepartmentMarker[] = [];
 
   for (const [code, agg] of byDept) {
-    const centroid = AURA_DEPT_CENTROIDS[code];
+    const centroid = getDeptCentroid(code);
     if (!centroid) continue;
-    const label = AURA_DEPT_LABELS[code];
+    const label = getDeptLabel(code);
     markers.push({
       id: code,
       department: label ? `${code} · ${label}` : agg.department,

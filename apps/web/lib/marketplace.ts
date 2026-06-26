@@ -1,6 +1,7 @@
 import { cache } from 'react';
 import { getAllEpciSummary, getDashboardKpis, getEpciByCode } from './data';
 import { dominantDepartment } from './geo';
+import { getCoverageBadge } from './coverage';
 import { explainDealPersona, inferDealPersona } from './persona-engine';
 import { computeRadarScore } from './radar-score';
 import { checkPackEntitlement, getPackAvailability } from './entitlements';
@@ -29,17 +30,17 @@ export function decodePackId(packId: string): string | null {
   }
 }
 
-function obfuscatePackName(): string {
-  return 'Collectivité · AURA';
+function obfuscatePackName(regionLabel = 'France'): string {
+  return `Collectivité · ${regionLabel}`;
 }
 
 function obfuscateBuildingName(): string {
   return '*****';
 }
 
-function obfuscateCommune(sectorIndex: number): string {
+function obfuscateCommune(sectorIndex: number, regionLabel = 'France'): string {
   const sectors = ['Nord', 'Est', 'Sud', 'Ouest', 'Centre'];
-  return `Secteur ${sectors[sectorIndex % sectors.length]} · AURA`;
+  return `Secteur ${sectors[sectorIndex % sectors.length]} · ${regionLabel.split(' · ')[0]}`;
 }
 
 function bestRoiAnnees(buildings: { fondsRoiPessimisteAnnees: number }[]): number {
@@ -59,6 +60,7 @@ async function toMarketplacePack(
   detail: NonNullable<Awaited<ReturnType<typeof getEpciByCode>>>,
   sortIndex: number,
   unlocked = false,
+  coverageLabel = 'France',
 ): Promise<MarketplacePack> {
   const roiAnnees = bestRoiAnnees(detail.batiments);
   const personaResult = inferDealPersona({
@@ -83,11 +85,12 @@ async function toMarketplacePack(
 
   const packId = encodePackId(summary.codeEpci);
   const availability = await getPackAvailability(packId);
+  const regionShort = coverageLabel.includes('régions') ? 'France' : coverageLabel.split(' · ')[0];
 
   const base = {
     packId,
-    publicName: unlocked ? detail.displayName : obfuscatePackName(),
-    publicZone: 'Auvergne-Rhône-Alpes',
+    publicName: unlocked ? detail.displayName : obfuscatePackName(regionShort),
+    publicZone: regionShort,
     department: dominantDepartment(detail.batiments.map((b) => b.codeInsee)),
     batimentCount: summary.batimentCount,
     packCapexTotal: detail.packCapexTotal,
@@ -140,11 +143,12 @@ function toMarketplaceBuilding(
     closingTemperature: string;
   },
   unlocked: boolean,
+  regionShort = 'France',
 ): MarketplaceBuilding {
   return {
     buildingId: encodeBuildingId(packId, index),
     publicName: unlocked ? b.nomEcole : obfuscateBuildingName(),
-    publicCommune: unlocked ? b.commune : obfuscateCommune(index),
+    publicCommune: unlocked ? b.commune : obfuscateCommune(index, regionShort),
     surfaceM2: b.surfaceM2,
     classeDpe: b.classeDpe,
     capexTotal: b.capexTotal,
@@ -190,13 +194,14 @@ export const getMarketplaceGlobalStats = cache(async (): Promise<MarketplaceGlob
 });
 
 export const getMarketplacePacks = cache(async (): Promise<MarketplacePack[]> => {
+  const coverageLabel = await getCoverageBadge();
   const summaries = await getAllEpciSummary();
   const packs: MarketplacePack[] = [];
 
   for (const summary of summaries) {
     const detail = await getEpciByCode(summary.codeEpci);
     if (!detail) continue;
-    packs.push(await toMarketplacePack(summary, detail, 0));
+    packs.push(await toMarketplacePack(summary, detail, 0, false, coverageLabel));
   }
 
   const sorted = packs.sort(
@@ -225,11 +230,15 @@ export const getMarketplacePackById = cache(
     if (!detail) return null;
 
     const unlocked = await checkPackEntitlement(accountId, packId);
+    const coverageLabel = await getCoverageBadge();
+    const regionShort = coverageLabel.includes('régions') ? 'France' : coverageLabel.split(' · ')[0];
     const allPacks = await getMarketplacePacks();
     const sortIndex = allPacks.findIndex((p) => p.packId === packId);
-    const pack = await toMarketplacePack(summaries[index], detail, sortIndex >= 0 ? sortIndex : 0, unlocked);
+    const pack = await toMarketplacePack(
+      summaries[index], detail, sortIndex >= 0 ? sortIndex : 0, unlocked, coverageLabel,
+    );
     const buildings = detail.batiments.map((b, i) =>
-      toMarketplaceBuilding(pack.packId, i, b, unlocked),
+      toMarketplaceBuilding(pack.packId, i, b, unlocked, regionShort),
     );
 
     const personaInput = {

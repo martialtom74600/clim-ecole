@@ -1,0 +1,69 @@
+name: Nightly department pipeline
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Ignorer intervalle 36 h'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly-department
+  cancel-in-progress: false
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Restore BDNB cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .cache
+            data/bdnb
+          key: bdnb-${{ runner.os }}-${{ hashFiles('data/departments/catalog.json') }}
+          restore-keys: |
+            bdnb-${{ runner.os }}-
+
+      - name: Run nightly department job
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          BDNB_LOCAL_ONLY: '1'
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          EXTRA=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            EXTRA="--force"
+          fi
+          node src/scripts/runNightlyDepartment.js $EXTRA
+
+      - name: Commit department CSV + rotation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/departments/
+          if git diff --staged --quiet; then
+            echo "Aucun changement à committer"
+            exit 0
+          fi
+          git commit -m "data: nightly department export [skip ci]"
+          git push

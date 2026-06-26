@@ -3,14 +3,16 @@ import { ArrowRight, Lock, Search, Unlock } from 'lucide-react';
 import { BRAND, HOW_IT_WORKS } from '@/lib/brand';
 import { COPY } from '@/lib/copy';
 import { getMarketplaceGlobalStats, getMarketplacePacks } from '@/lib/marketplace';
+import { getCoverageBadge } from '@/lib/coverage';
 import { formatEur, formatInt } from '@/lib/format';
 import { ClientPersonasSection } from '@/components/brand/personas';
 import { RadarScoreBadge } from '@/components/marketplace/radar-score-badge';
 
 export async function LandingHero() {
-  const [stats, packs] = await Promise.all([
+  const [stats, packs, coverageBadge] = await Promise.all([
     getMarketplaceGlobalStats(),
     getMarketplacePacks(),
+    getCoverageBadge(),
   ]);
 
   const topDeals = packs.filter((p) => p.isQualified).slice(0, 3);
@@ -21,7 +23,7 @@ export async function LandingHero() {
       <section className="border-b border-radar-border">
         <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-20">
           <p className="inline-block rounded-md bg-radar-canvas px-2.5 py-1 text-xs font-medium text-radar-muted">
-            Écoles primaires · Rénovation thermique · {BRAND.region}
+            Écoles primaires · Rénovation thermique · {coverageBadge}
           </p>
 
           <h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight md:text-display-lg">

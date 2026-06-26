@@ -3,8 +3,8 @@
 export const COPY = {
   productName: 'Clim École',
   explorer: 'Explorateur',
-  region: 'Auvergne-Rhône-Alpes',
-  subscription: 'Abonnement AURA',
+  region: 'France',
+  subscription: 'Abonnement territorial',
 
   territory: 'territoire',
   territoryPlural: 'territoires',

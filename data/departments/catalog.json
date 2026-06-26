@@ -1,0 +1,578 @@
+[
+  {
+    "code": "001",
+    "label": "Ain",
+    "region_slug": "aura",
+    "region_label": "Auvergne-Rhône-Alpes"
+  },
+  {
+    "code": "002",
+    "label": "Aisne",
+    "region_slug": "hdf",
+    "region_label": "Hauts-de-France"
+  },
+  {
+    "code": "003",
+    "label": "Allier",
+    "region_slug": "aura",
+    "region_label": "Auvergne-Rhône-Alpes"
+  },
+  {
+    "code": "004",
+    "label": "Alpes-de-Haute-Provence",
+    "region_slug": "paca",
+    "region_label": "Provence-Alpes-Côte d'Azur"
+  },
+  {
+    "code": "005",
+    "label": "Hautes-Alpes",
+    "region_slug": "paca",
+    "region_label": "Provence-Alpes-Côte d'Azur"
+  },
+  {
+    "code": "006",
+    "label": "Alpes-Maritimes",
+    "region_slug": "paca",
+    "region_label": "Provence-Alpes-Côte d'Azur"
+  },
+  {
+    "code": "007",
+    "label": "Ardèche",
+    "region_slug": "aura",
+    "region_label": "Auvergne-Rhône-Alpes"
+  },
+  {
+    "code": "008",
+    "label": "Ardennes",
+    "region_slug": "ges",
+    "region_label": "Grand Est"
+  },
+  {
+    "code": "009",
+    "label": "Ariège",
+    "region_slug": "occ",
+    "region_label": "Occitanie"
+  },
+  {
+    "code": "010",
+    "label": "Aube",
+    "region_slug": "ges",
+    "region_label": "Grand Est"
+  },
+  {
+    "code": "011",
+    "label": "Aude",
+    "region_slug": "occ",
+    "region_label": "Occitanie"
+  },
+  {
+    "code": "012",
+    "label": "Aveyron",
+    "region_slug": "occ",
+    "region_label": "Occitanie"
+  },
+  {
+    "code": "013",
+    "label": "Bouches-du-Rhône",
+    "region_slug": "paca",
+    "region_label": "Provence-Alpes-Côte d'Azur"
+  },
+  {
+    "code": "014",
+    "label": "Calvados",
+    "region_slug": "nor",
+    "region_label": "Normandie"
+  },
+  {
+    "code": "015",
+    "label": "Cantal",
+    "region_slug": "aura",
+    "region_label": "Auvergne-Rhône-Alpes"
+  },
+  {
+    "code": "016",
+    "label": "Charente",
+    "region_slug": "naq",
+    "region_label": "Nouvelle-Aquitaine"
+  },
+  {
+    "code": "017",
+    "label": "Charente-Maritime",
+    "region_slug": "naq",
+    "region_label": "Nouvelle-Aquitaine"
+  },
+  {
+    "code": "018",
+    "label": "Cher",
+    "region_slug": "cvl",
+    "region_label": "Centre-Val de Loire"
+  },
+  {
+    "code": "019",
+    "label": "Corrèze",
+    "region_slug": "naq",
+    "region_label": "Nouvelle-Aquitaine"
+  },
+  {
+    "code": "021",
+    "label": "Côte-d'Or",
+    "region_slug": "bfc",
+    "region_label": "Bourgogne-Franche-Comté"
+  },
+  {
+    "code": "022",
+    "label": "Côtes-d'Armor",
+    "region_slug": "bre",
+    "region_label": "Bretagne"
+  },
+  {
+    "code": "023",
+    "label": "Creuse",
+    "region_slug": "naq",
+    "region_label": "Nouvelle-Aquitaine"
+  },
+  {
+    "code": "024",
+    "label": "Dordogne",
+    "region_slug": "naq",
+    "region_label": "Nouvelle-Aquitaine"
+  },
+  {
+    "code": "025",
+    "label": "Doubs",
+    "region_slug": "bfc",
+    "region_label": "Bourgogne-Franche-Comté"
+  },
+  {
+    "code": "026",
+    "label": "Drôme",
+    "region_slug": "aura",
+    "region_label": "Auvergne-Rhône-Alpes"
+  },
+  {
+    "code": "027",
+    "label": "Eure",
+    "region_slug": "nor",
+    "region_label": "Normandie"
+  },
+  {
+    "code": "028",
+    "label": "Eure-et-Loir",
+    "region_slug": "cvl",
+    "region_label": "Centre-Val de Loire"
+  },
+  {
+    "code": "029",
+    "label": "Finistère",
+    "region_slug": "bre",
+    "region_label": "Bretagne"
+  },
+  {
+    "code": "030",
+    "label": "Gard",
+    "region_slug": "occ",
+    "region_label": "Occitanie"
+  },
+  {
+    "code": "031",
+    "label": "Haute-Garonne",
+    "region_slug": "occ",
+    "region_label": "Occitanie"
+  },
+  {
+    "code": "032",
+    "label": "Gers",
+    "region_slug": "occ",
+    "region_label": "Occitanie"
+  },
+  {
+    "code": "033",
+    "label": "Gironde",
+    "region_slug": "naq",
+    "region_label": "Nouvelle-Aquitaine"
+  },
+  {
+    "code": "034",
+    "label": "Hérault",
+    "region_slug": "occ",
+    "region_label": "Occitanie"
+  },
+  {
+    "code": "035",
+    "label": "Ille-et-Vilaine",
+    "region_slug": "bre",
+    "region_label": "Bretagne"
+  },
+  {
+    "code": "036",
+    "label": "Indre",
+    "region_slug": "cvl",
+    "region_label": "Centre-Val de Loire"
+  },
+  {
+    "code": "037",
+    "label": "Indre-et-Loire",
+    "region_slug": "cvl",
+    "region_label": "Centre-Val de Loire"
+  },
+  {
+    "code": "038",
+    "label": "Isère",
+    "region_slug": "aura",
+    "region_label": "Auvergne-Rhône-Alpes"
+  },
+  {
+    "code": "039",
+    "label": "Jura",
+    "region_slug": "bfc",
+    "region_label": "Bourgogne-Franche-Comté"
+  },
+  {
+    "code": "040",
+    "label": "Landes",
+    "region_slug": "naq",
+    "region_label": "Nouvelle-Aquitaine"
+  },
+  {
+    "code": "041",
+    "label": "Loir-et-Cher",
+    "region_slug": "cvl",
+    "region_label": "Centre-Val de Loire"
+  },
+  {
+    "code": "042",
+    "label": "Loire",
+    "region_slug": "aura",
+    "region_label": "Auvergne-Rhône-Alpes"
+  },
+  {
+    "code": "043",
+    "label": "Haute-Loire",
+    "region_slug": "aura",
+    "region_label": "Auvergne-Rhône-Alpes"
+  },
+  {
+    "code": "044",
+    "label": "Loire-Atlantique",
+    "region_slug": "pdl",
+    "region_label": "Pays de la Loire"
+  },
+  {
+    "code": "045",
+    "label": "Loiret",
+    "region_slug": "cvl",
+    "region_label": "Centre-Val de Loire"
+  },
+  {
+    "code": "046",
+    "label": "Lot",
+    "region_slug": "occ",
+    "region_label": "Occitanie"
+  },
+  {
+    "code": "047",
+    "label": "Lot-et-Garonne",
+    "region_slug": "naq",
+    "region_label": "Nouvelle-Aquitaine"
+  },
+  {
+    "code": "048",
+    "label": "Lozère",
+    "region_slug": "occ",
+    "region_label": "Occitanie"
+  },
+  {
+    "code": "049",
+    "label": "Maine-et-Loire",
+    "region_slug": "pdl",
+    "region_label": "Pays de la Loire"
+  },
+  {
+    "code": "050",
+    "label": "Manche",
+    "region_slug": "nor",
+    "region_label": "Normandie"
+  },
+  {
+    "code": "051",
+    "label": "Marne",
+    "region_slug": "ges",
+    "region_label": "Grand Est"
+  },
+  {
+    "code": "052",
+    "label": "Haute-Marne",
+    "region_slug": "ges",
+    "region_label": "Grand Est"
+  },
+  {
+    "code": "053",
+    "label": "Mayenne",
+    "region_slug": "pdl",
+    "region_label": "Pays de la Loire"
+  },
+  {
+    "code": "054",
+    "label": "Meurthe-et-Moselle",
+    "region_slug": "ges",
+    "region_label": "Grand Est"
+  },
+  {
+    "code": "055",
+    "label": "Meuse",
+    "region_slug": "ges",
+    "region_label": "Grand Est"
+  },
+  {
+    "code": "056",
+    "label": "Morbihan",
+    "region_slug": "bre",
+    "region_label": "Bretagne"
+  },
+  {
+    "code": "057",
+    "label": "Moselle",
+    "region_slug": "ges",
+    "region_label": "Grand Est"
+  },
+  {
+    "code": "058",
+    "label": "Nièvre",
+    "region_slug": "bfc",
+    "region_label": "Bourgogne-Franche-Comté"
+  },
+  {
+    "code": "059",
+    "label": "Nord",
+    "region_slug": "hdf",
+    "region_label": "Hauts-de-France"
+  },
+  {
+    "code": "060",
+    "label": "Oise",
+    "region_slug": "hdf",
+    "region_label": "Hauts-de-France"
+  },
+  {
+    "code": "061",
+    "label": "Orne",
+    "region_slug": "nor",
+    "region_label": "Normandie"
+  },
+  {
+    "code": "062",
+    "label": "Pas-de-Calais",
+    "region_slug": "hdf",
+    "region_label": "Hauts-de-France"
+  },
+  {
+    "code": "063",
+    "label": "Puy-de-Dôme",
+    "region_slug": "aura",
+    "region_label": "Auvergne-Rhône-Alpes"
+  },
+  {
+    "code": "064",
+    "label": "Pyrénées-Atlantiques",
+    "region_slug": "naq",
+    "region_label": "Nouvelle-Aquitaine"
+  },
+  {
+    "code": "065",
+    "label": "Hautes-Pyrénées",
+    "region_slug": "occ",
+    "region_label": "Occitanie"
+  },
+  {
+    "code": "066",
+    "label": "Pyrénées-Orientales",
+    "region_slug": "occ",
+    "region_label": "Occitanie"
+  },
+  {
+    "code": "067",
+    "label": "Bas-Rhin",
+    "region_slug": "ges",
+    "region_label": "Grand Est"
+  },
+  {
+    "code": "068",
+    "label": "Haut-Rhin",
+    "region_slug": "ges",
+    "region_label": "Grand Est"
+  },
+  {
+    "code": "069",
+    "label": "Rhône",
+    "region_slug": "aura",
+    "region_label": "Auvergne-Rhône-Alpes"
+  },
+  {
+    "code": "070",
+    "label": "Haute-Saône",
+    "region_slug": "bfc",
+    "region_label": "Bourgogne-Franche-Comté"
+  },
+  {
+    "code": "071",
+    "label": "Saône-et-Loire",
+    "region_slug": "bfc",
+    "region_label": "Bourgogne-Franche-Comté"
+  },
+  {
+    "code": "072",
+    "label": "Sarthe",
+    "region_slug": "pdl",
+    "region_label": "Pays de la Loire"
+  },
+  {
+    "code": "073",
+    "label": "Savoie",
+    "region_slug": "aura",
+    "region_label": "Auvergne-Rhône-Alpes"
+  },
+  {
+    "code": "074",
+    "label": "Haute-Savoie",
+    "region_slug": "aura",
+    "region_label": "Auvergne-Rhône-Alpes"
+  },
+  {
+    "code": "075",
+    "label": "Paris",
+    "region_slug": "idf",
+    "region_label": "Île-de-France"
+  },
+  {
+    "code": "076",
+    "label": "Seine-Maritime",
+    "region_slug": "nor",
+    "region_label": "Normandie"
+  },
+  {
+    "code": "077",
+    "label": "Seine-et-Marne",
+    "region_slug": "idf",
+    "region_label": "Île-de-France"
+  },
+  {
+    "code": "078",
+    "label": "Yvelines",
+    "region_slug": "idf",
+    "region_label": "Île-de-France"
+  },
+  {
+    "code": "079",
+    "label": "Deux-Sèvres",
+    "region_slug": "naq",
+    "region_label": "Nouvelle-Aquitaine"
+  },
+  {
+    "code": "080",
+    "label": "Somme",
+    "region_slug": "hdf",
+    "region_label": "Hauts-de-France"
+  },
+  {
+    "code": "081",
+    "label": "Tarn",
+    "region_slug": "occ",
+    "region_label": "Occitanie"
+  },
+  {
+    "code": "082",
+    "label": "Tarn-et-Garonne",
+    "region_slug": "occ",
+    "region_label": "Occitanie"
+  },
+  {
+    "code": "083",
+    "label": "Var",
+    "region_slug": "paca",
+    "region_label": "Provence-Alpes-Côte d'Azur"
+  },
+  {
+    "code": "084",
+    "label": "Vaucluse",
+    "region_slug": "paca",
+    "region_label": "Provence-Alpes-Côte d'Azur"
+  },
+  {
+    "code": "085",
+    "label": "Vendée",
+    "region_slug": "pdl",
+    "region_label": "Pays de la Loire"
+  },
+  {
+    "code": "086",
+    "label": "Vienne",
+    "region_slug": "naq",
+    "region_label": "Nouvelle-Aquitaine"
+  },
+  {
+    "code": "087",
+    "label": "Haute-Vienne",
+    "region_slug": "naq",
+    "region_label": "Nouvelle-Aquitaine"
+  },
+  {
+    "code": "088",
+    "label": "Vosges",
+    "region_slug": "ges",
+    "region_label": "Grand Est"
+  },
+  {
+    "code": "089",
+    "label": "Yonne",
+    "region_slug": "bfc",
+    "region_label": "Bourgogne-Franche-Comté"
+  },
+  {
+    "code": "090",
+    "label": "Territoire de Belfort",
+    "region_slug": "bfc",
+    "region_label": "Bourgogne-Franche-Comté"
+  },
+  {
+    "code": "091",
+    "label": "Essonne",
+    "region_slug": "idf",
+    "region_label": "Île-de-France"
+  },
+  {
+    "code": "092",
+    "label": "Hauts-de-Seine",
+    "region_slug": "idf",
+    "region_label": "Île-de-France"
+  },
+  {
+    "code": "093",
+    "label": "Seine-Saint-Denis",
+    "region_slug": "idf",
+    "region_label": "Île-de-France"
+  },
+  {
+    "code": "094",
+    "label": "Val-de-Marne",
+    "region_slug": "idf",
+    "region_label": "Île-de-France"
+  },
+  {
+    "code": "095",
+    "label": "Val-d'Oise",
+    "region_slug": "idf",
+    "region_label": "Île-de-France"
+  },
+  {
+    "code": "2A",
+    "label": "Corse-du-Sud",
+    "region_slug": "cor",
+    "region_label": "Corse"
+  },
+  {
+    "code": "2B",
+    "label": "Haute-Corse",
+    "region_slug": "cor",
+    "region_label": "Corse"
+  }
+]

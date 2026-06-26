@@ -1,7 +1,7 @@
 export const BRAND = {
   name: 'Clim École',
-  descriptor: 'Rénovation scolaire · AURA',
-  region: 'Auvergne-Rhône-Alpes',
+  descriptor: 'Rénovation scolaire · France',
+  region: 'France',
   promise: 'Trouvez les prochains marchés publics de rénovation scolaire',
   tagline:
     'Nous recensons les écoles primaires passoires thermiques (DPE F/G), estimons le budget travaux et les subventions possibles — territoire par territoire, avant l\'appel d\'offres.',

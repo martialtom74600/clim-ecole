@@ -1,16 +1,38 @@
 import fs from 'fs/promises';
-import path from 'path';
-import { createHash } from 'crypto';
+import { fileURLToPath } from 'url';
 import { parse } from 'csv-parse/sync';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import { config } from '../config.js';
+import { getDepartmentEntry } from '../data/franceDepartments.js';
 
 dotenv.config();
 
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
+function parseCliArgs() {
+  const args = process.argv.slice(2);
+  const out = {
+    file: process.env.OUTPUT_FILE ?? 'output_prospection.csv',
+    regionLabel: process.env.REGION_LABEL?.trim() || 'Auvergne-Rhône-Alpes',
+    department: process.env.SYNC_DEPARTMENT?.trim() || null,
+    skipIfEmpty: false,
+    gitCommit: process.env.GITHUB_SHA?.trim() || null,
+  };
+  for (let i = 0; i < args.length; i += 1) {
+    if (args[i] === '--file') out.file = args[++i];
+    else if (args[i] === '--region-label') out.regionLabel = args[++i];
+    else if (args[i] === '--department') out.department = args[++i];
+    else if (args[i] === '--skip-if-empty') out.skipIfEmpty = true;
+    else if (args[i] === '--git-commit') out.gitCommit = args[++i];
+  }
+  if (!path.isAbsolute(out.file)) {
+    out.file = path.resolve(root, out.file);
+  }
+  return out;
+}
+
 const BATCH_SIZE = Number(process.env.SUPABASE_SYNC_BATCH_SIZE ?? 100);
-const CSV_PATH = process.env.OUTPUT_FILE ?? 'output_prospection.csv';
-const REGION = process.env.REGION_LABEL?.trim() || 'Auvergne-Rhône-Alpes';
 
 const FINANCE_PREFIXES = [
   'CAPEX_',
@@ -211,7 +233,7 @@ async function upsertBatches(supabase, table, rows, { onConflict, label }) {
   return done;
 }
 
-function buildEpciRows(rows) {
+function buildEpciRows(rows, regionLabel) {
   const map = new Map();
   for (const row of rows) {
     const code = cleanStr(row.Code_EPCI);
@@ -220,7 +242,7 @@ function buildEpciRows(rows) {
       id: deterministicUuid('epci', code),
       code_epci: code,
       nom: cleanStr(row.Nom_EPCI) ?? code,
-      region: REGION,
+      region: regionLabel,
       updated_at: new Date().toISOString(),
     });
   }
@@ -342,18 +364,57 @@ function getSupabase() {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
-async function main() {
+async function updatePipelineJob(supabase, job) {
+  const { error } = await supabase.from('pipeline_jobs').upsert(job, { onConflict: 'department_code' });
+  if (error && !error.message.includes('schema cache')) {
+    console.warn(`[sync] pipeline_jobs: ${error.message}`);
+  }
+}
+
+export async function syncCsvToSupabase(options) {
   const started = Date.now();
-  console.log(`[sync] Lecture ${CSV_PATH}…`);
-  const rows = await readCsv(CSV_PATH);
-  console.log(`[sync] ${rows.length} lignes CSV`);
+  const csvPath = options.file;
+  const regionLabel = options.regionLabel;
+  const deptEntry = options.department ? getDepartmentEntry(options.department) : null;
+
+  let rows;
+  try {
+    rows = await readCsv(csvPath);
+  } catch (err) {
+    if (err.code === 'ENOENT' && options.skipIfEmpty) {
+      console.log(`[sync] Fichier absent ${csvPath} — skip`);
+      return { rowCount: 0, skipped: true };
+    }
+    throw err;
+  }
+
+  if (!rows.length && options.skipIfEmpty) {
+    console.log(`[sync] CSV vide — skip Supabase`);
+    if (options.department && deptEntry) {
+      const supabase = getSupabase();
+      await updatePipelineJob(supabase, {
+        department_code: deptEntry.code,
+        department_label: deptEntry.label,
+        region_slug: deptEntry.region_slug,
+        region_label: deptEntry.region_label,
+        status: 'empty',
+        row_count: 0,
+        last_sync_at: new Date().toISOString(),
+        git_commit: options.gitCommit,
+      });
+    }
+    return { rowCount: 0, skipped: true };
+  }
+
+  console.log(`[sync] Lecture ${csvPath}…`);
+  console.log(`[sync] ${rows.length} lignes CSV — ${regionLabel}`);
 
   const populationMap = await loadPopulationMap();
   const blacklistIds = await loadBlacklistIds();
   const blacklistSet = new Set(blacklistIds);
   const supabase = getSupabase();
 
-  const epciRows = buildEpciRows(rows);
+  const epciRows = buildEpciRows(rows, regionLabel);
   console.log(`[sync] Upsert epci (${epciRows.length})…`);
   await upsertBatches(supabase, 'epci', epciRows, { onConflict: 'code_epci', label: 'epci' });
 
@@ -392,9 +453,41 @@ async function main() {
     + `${artisanRows.length} artisans · ${batimentRows.length} bâtiments · `
     + `${linkRows.length} liaisons · ${blacklistedCount} blacklistés`,
   );
+
+  if (options.department && deptEntry) {
+    const hash = createHash('sha256').update(JSON.stringify({ path: csvPath, rows: rows.length })).digest('hex');
+    await updatePipelineJob(supabase, {
+      department_code: deptEntry.code,
+      department_label: deptEntry.label,
+      region_slug: deptEntry.region_slug,
+      region_label: deptEntry.region_label,
+      status: 'done',
+      row_count: batimentRows.length,
+      csv_sha: hash.slice(0, 16),
+      last_sync_at: new Date().toISOString(),
+      git_commit: options.gitCommit,
+    });
+  }
+
+  return { rowCount: batimentRows.length, skipped: false };
 }
 
-main().catch((err) => {
-  console.error('[sync] Échec:', err.message);
-  process.exit(1);
-});
+async function main() {
+  const cli = parseCliArgs();
+  await syncCsvToSupabase({
+    file: cli.file,
+    regionLabel: cli.regionLabel,
+    department: cli.department,
+    skipIfEmpty: cli.skipIfEmpty,
+    gitCommit: cli.gitCommit,
+  });
+}
+
+const isDirectRun = process.argv[1]
+  && path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);
+if (isDirectRun) {
+  main().catch((err) => {
+    console.error('[sync] Échec:', err.message);
+    process.exit(1);
+  });
+}

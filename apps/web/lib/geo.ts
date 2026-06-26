@@ -47,7 +47,7 @@ export function formatDepartment(codeInsee: string): string {
 }
 
 export function dominantDepartment(codesInsee: string[]): string {
-  if (!codesInsee.length) return 'AURA';
+  if (!codesInsee.length) return 'France';
   const counts = new Map<string, number>();
   for (const c of codesInsee) {
     const d = deptCodeFromInsee(c);

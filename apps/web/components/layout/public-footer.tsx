@@ -1,16 +1,18 @@
 import Link from 'next/link';
 import { BRAND } from '@/lib/brand';
 import { COPY } from '@/lib/copy';
+import { getCoverageBadge } from '@/lib/coverage';
 import { BrandLogo } from '@/components/brand/logo';
 
-export function PublicFooter() {
+export async function PublicFooter() {
+  const coverageBadge = await getCoverageBadge();
   return (
     <footer className="mt-auto border-t border-radar-border py-10">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-5 md:flex-row md:justify-between md:px-8">
         <div>
           <BrandLogo size="sm" />
           <p className="mt-3 max-w-xs text-sm text-radar-muted">
-            Prospection de marchés publics scolaires en {BRAND.region}.
+            Prospection de marchés publics scolaires · {coverageBadge}.
           </p>
           <p className="mt-2 text-xs text-radar-subtle">{COPY.estimatesNote}</p>
         </div>

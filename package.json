@@ -36,7 +36,8 @@
     "csv-writer": "^1.6.0",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
-    "pdfkit": "^0.18.0"
+    "pdfkit": "^0.18.0",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "pg": "^8.22.0"

@@ -4,6 +4,7 @@ import { createHash } from 'crypto';
 import { fileURLToPath } from 'url';
 import { parse } from 'csv-parse/sync';
 import { createClient } from '@supabase/supabase-js';
+import ws from 'ws';
 import dotenv from 'dotenv';
 import { config } from '../config.js';
 import { getDepartmentEntry } from '../data/franceDepartments.js';
@@ -363,7 +364,11 @@ function getSupabase() {
   if (!url || !key) {
     throw new Error('SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY requis dans .env');
   }
-  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+  const options = { auth: { persistSession: false, autoRefreshToken: false } };
+  if (typeof globalThis.WebSocket === 'undefined') {
+    options.realtime = { transport: ws };
+  }
+  return createClient(url, key, options);
 }
 
 async function updatePipelineJob(supabase, job) {

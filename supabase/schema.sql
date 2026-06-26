@@ -166,3 +166,23 @@ create policy "batiment_artisans_auth_all" on public.batiment_artisans for all t
 
 drop policy if exists "blacklist_auth_all" on public.blacklist;
 create policy "blacklist_auth_all" on public.blacklist for all to authenticated using (true) with check (true);
+
+-- ── Data API (requis si "Automatically expose new tables" est désactivé) ──
+
+grant usage on schema public to postgres, anon, authenticated, service_role;
+
+grant all on all tables in schema public to service_role;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+grant select on all tables in schema public to anon;
+
+grant all on all sequences in schema public to service_role;
+grant usage, select on all sequences in schema public to authenticated;
+
+alter default privileges in schema public
+  grant all on tables to service_role;
+alter default privileges in schema public
+  grant select, insert, update, delete on tables to authenticated;
+alter default privileges in schema public
+  grant select on tables to anon;
+
+notify pgrst, 'reload schema';

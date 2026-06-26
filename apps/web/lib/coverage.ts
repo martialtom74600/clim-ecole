@@ -27,7 +27,7 @@ function loadCatalog(): CatalogEntry[] {
 
 export const getCoverageStats = cache(async () => {
   const catalog = loadCatalog();
-  let regionLabels: string[] = ['Auvergne-Rhône-Alpes'];
+  let regionLabels: string[] = [];
   let departmentCount = 12;
   let territoryCount = 0;
   let lastSyncAt: string | null = null;
@@ -82,5 +82,20 @@ export async function getCoverageBadge(): Promise<string> {
   if (stats.regionCount > 1) {
     return `${stats.regionCount} régions · France`;
   }
-  return stats.regionLabel;
+  if (stats.regionCount === 1) {
+    return `${stats.regionLabels[0]} · extension France`;
+  }
+  return 'France · couverture progressive';
+}
+
+/** Phrase pour pages légales / marketing */
+export async function getCoverageScopePhrase(): Promise<string> {
+  const stats = await getCoverageStats();
+  if (stats.regionCount > 1) {
+    return 'en France (couverture progressive, département par département)';
+  }
+  if (stats.regionCount === 1) {
+    return `en ${stats.regionLabels[0]} (extension nationale en cours)`;
+  }
+  return 'en France métropolitaine';
 }

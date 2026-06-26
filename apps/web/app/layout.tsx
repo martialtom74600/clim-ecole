@@ -19,7 +19,7 @@ const mono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: 'Clim École — Prospection rénovation scolaire',
-  description: 'Passoires thermiques et subventions sur les territoires AURA.',
+  description: 'Passoires thermiques et subventions sur les territoires scolaires en France.',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

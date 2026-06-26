@@ -78,7 +78,7 @@ export function MarketplaceExplorerGrid({
   return (
     <div className="space-y-8">
       <header className="animate-fade-in-up">
-        <p className="label-caps">Le Radar · AURA</p>
+        <p className="label-caps">Explorateur · France</p>
         <h1 className="mt-3 text-display-md font-semibold text-slate-900 md:text-display-lg">
           Signaux de prospection
         </h1>

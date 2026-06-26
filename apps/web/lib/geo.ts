@@ -46,24 +46,5 @@ export function deptCodeFromInsee(codeInsee: string): string {
 export function formatDepartment(codeInsee: string): string {
   const dept = deptCodeFromInsee(codeInsee);
   const label = AURA_DEPT_LABELS[dept];
-  return label ? `${dept} · ${label}` : `Dept. ${dept}`;
-}
-
-export function dominantDepartment(codesInsee: string[]): string {
-  if (!codesInsee.length) return 'France';
-  const counts = new Map<string, number>();
-  for (const c of codesInsee) {
-    const d = deptCodeFromInsee(c);
-    counts.set(d, (counts.get(d) ?? 0) + 1);
-  }
-  let bestDept = '';
-  let bestCount = 0;
-  for (const [dept, count] of counts) {
-    if (count > bestCount) {
-      bestCount = count;
-      bestDept = dept;
-    }
-  }
-  const label = AURA_DEPT_LABELS[bestDept];
-  return label ? `${bestDept} · ${label}` : bestDept;
+  return label ? `${dept} · ${label}` : dept;
 }

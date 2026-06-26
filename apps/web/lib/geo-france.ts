@@ -1,7 +1,7 @@
 /**
  * Centroïdes départements France — AURA précis, autres approximatifs stables.
  */
-import { AURA_DEPT_CENTROIDS, AURA_DEPT_LABELS } from './geo';
+import { AURA_DEPT_CENTROIDS, AURA_DEPT_LABELS, deptCodeFromInsee } from './geo';
 
 /** Centroïdes additionnels (approx. préfecture) */
 const EXTRA_CENTROIDS: Record<string, [number, number]> = {
@@ -141,3 +141,23 @@ export function getDeptLabel(code: string): string | null {
 }
 
 export const FRANCE_CENTER: [number, number] = [46.6, 2.4];
+
+/** Département dominant d'un territoire (libellé France entière). */
+export function dominantDepartment(codesInsee: string[]): string {
+  if (!codesInsee.length) return 'France';
+  const counts = new Map<string, number>();
+  for (const c of codesInsee) {
+    const d = deptCodeFromInsee(c);
+    counts.set(d, (counts.get(d) ?? 0) + 1);
+  }
+  let bestDept = '';
+  let bestCount = 0;
+  for (const [dept, count] of counts) {
+    if (count > bestCount) {
+      bestCount = count;
+      bestDept = dept;
+    }
+  }
+  const label = getDeptLabel(bestDept) ?? AURA_DEPT_LABELS[bestDept];
+  return label ? `${bestDept} · ${label}` : bestDept;
+}

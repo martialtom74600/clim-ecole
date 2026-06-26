@@ -1,6 +1,6 @@
 import { cache } from 'react';
 import { getAllEpciSummary, getDashboardKpis, getEpciByCode } from './data';
-import { dominantDepartment } from './geo';
+import { dominantDepartment } from './geo-france';
 import { getCoverageBadge } from './coverage';
 import { explainDealPersona, inferDealPersona } from './persona-engine';
 import { computeRadarScore } from './radar-score';

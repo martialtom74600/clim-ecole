@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { PageHeader } from '@/components/layout/page-header';
 import { getMapMarkers } from '@/lib/data';
+import { getCoverageScopePhrase } from '@/lib/coverage';
 import { MapClient } from '@/components/cockpit/map-client';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -15,12 +16,13 @@ export default async function AdminCartePage({
   searchParams: Promise<{ epci?: string }>;
 }) {
   const { epci } = await searchParams;
+  const scope = await getCoverageScopePhrase();
 
   return (
     <main className="page-content">
       <PageHeader
         title="Carte des écoles"
-        description="Région Auvergne-Rhône-Alpes · cliquez un point pour la fiche"
+        description={`Couverture ${scope} · cliquez un point pour la fiche`}
       />
       <Suspense fallback={<Skeleton className="map-shell w-full rounded-2xl" />}>
         <MapSection initialEpci={epci} />

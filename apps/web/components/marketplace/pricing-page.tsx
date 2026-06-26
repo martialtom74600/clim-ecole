@@ -1,16 +1,8 @@
-import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { COPY } from '@/lib/copy';
 import { CheckoutButton } from '@/components/marketplace/checkout-button';
 import { GlossaryTerm } from '@/components/ui/glossary-term';
-
-const FREE_FEATURES = [
-  'Carte et liste de tous les territoires AURA',
-  'Budget travaux et subventions estimés',
-  'Nombre d\'écoles et score de priorité',
-  'Filtres par métier (BTP, BE, AMO)',
-];
 
 const PLANS = [
   {
@@ -43,7 +35,20 @@ const PLANS = [
   },
 ];
 
-export function PricingPage({ highlightPlan }: { highlightPlan?: string }) {
+export function PricingPage({
+  highlightPlan,
+  coverageBadge = 'France',
+}: {
+  highlightPlan?: string;
+  coverageBadge?: string;
+}) {
+  const freeFeatures = [
+    `Carte et liste des territoires recensés (${coverageBadge})`,
+    'Budget travaux et subventions estimés',
+    'Nombre d\'écoles et score de priorité',
+    'Filtres par métier (BTP, BE, AMO)',
+  ];
+
   return (
     <div className="page-content">
       <div className="mx-auto max-w-3xl">
@@ -52,11 +57,10 @@ export function PricingPage({ highlightPlan }: { highlightPlan?: string }) {
           Consultez gratuitement. Payez uniquement quand vous voulez les noms et contacts.
         </p>
 
-        {/* Gratuit */}
         <div className="card mt-10 p-6">
           <h2 className="font-semibold">Gratuit — sans carte bancaire</h2>
           <ul className="mt-4 space-y-2 text-sm text-radar-muted">
-            {FREE_FEATURES.map((f) => (
+            {freeFeatures.map((f) => (
               <li key={f} className="flex gap-2">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-radar-text" />{f}
               </li>

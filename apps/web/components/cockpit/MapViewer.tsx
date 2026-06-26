@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { MapFocusPanel } from '@/components/cockpit/map-focus-panel';
 import { EmptyState } from '@/components/ui/empty-state';
 
-const AURA_CENTER: [number, number] = [45.75, 4.85];
+import { FRANCE_CENTER } from '@/lib/map-utils';
 const DEFAULT_ZOOM = 8;
 
 const DPE_COLORS: Record<string, string> = {
@@ -62,7 +62,7 @@ export default function MapViewer({ markers, initialEpci }: MapViewerProps) {
 
       if (!mapRef.current) {
         const map = L.map(containerRef.current, {
-          center: AURA_CENTER,
+          center: FRANCE_CENTER,
           zoom: DEFAULT_ZOOM,
           zoomControl: true,
         });

@@ -84,7 +84,7 @@ export async function sendAlertWelcomeEmail(to: string): Promise<boolean> {
       <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#0f172a">
         <h1 style="font-size:20px;font-weight:600">Veille activée</h1>
         <p style="color:#475569;line-height:1.6">
-          Vous recevrez un email lorsque de nouveaux territoires correspondant à vos critères seront publiés sur le Radar AURA.
+          Vous recevrez un email lorsque de nouveaux territoires correspondant à vos critères seront publiés sur Clim École (couverture France progressive).
         </p>
         <p style="margin-top:24px">
           <a href="${appUrl()}/explorer" style="color:#059669;font-weight:600">Parcourir le Radar →</a>

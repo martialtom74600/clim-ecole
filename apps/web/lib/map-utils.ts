@@ -47,5 +47,7 @@ export interface DepartmentMarker {
   qualifiedCount: number;
 }
 
-export const AURA_CENTER: [number, number] = [45.75, 4.85];
-export const DEFAULT_ZOOM = 8;
+export const FRANCE_CENTER: [number, number] = [46.6, 2.4];
+/** @deprecated Utiliser FRANCE_CENTER */
+export const AURA_CENTER = FRANCE_CENTER;
+export const DEFAULT_ZOOM = 6;

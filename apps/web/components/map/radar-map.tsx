@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
   AURA_CENTER,
+  FRANCE_CENTER,
   DEFAULT_ZOOM,
   capexToRadius,
   dpeColor,
@@ -188,7 +189,7 @@ export function RadarMap({
 
       leafletRef.current = L;
       const map = L.map(containerRef.current, {
-        center: AURA_CENTER,
+        center: FRANCE_CENTER,
         zoom,
         zoomControl: false,
         attributionControl: false,

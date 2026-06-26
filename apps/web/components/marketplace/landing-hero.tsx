@@ -99,7 +99,7 @@ export async function LandingHero() {
               </ul>
               <p className="mt-4 flex items-start gap-2 text-xs text-radar-muted">
                 <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                Les noms sont masqués (« Collectivité · AURA ») tant que le dossier n&apos;est pas acheté — pour protéger les données avant engagement.
+                Les noms sont masqués (« Collectivité · France ») tant que le dossier n&apos;est pas acheté — pour protéger les données avant engagement.
               </p>
             </div>
           </div>
@@ -155,7 +155,7 @@ export async function LandingHero() {
                     Territoire masqué
                   </p>
                   <p className="font-medium">{deal.publicName}</p>
-                  <p className="text-sm text-radar-muted">Territoire masqué · AURA</p>
+                  <p className="text-sm text-radar-muted">{deal.publicZone} · {deal.department}</p>
                   <dl className="mt-4 space-y-2 text-sm">
                     <div className="flex justify-between gap-2">
                       <dt className="text-radar-muted">Budget travaux</dt>

@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { COPY } from '@/lib/copy';
+import { getCoverageScopePhrase } from '@/lib/coverage';
 
-export default function CguPage() {
+export default async function CguPage() {
+  const scope = await getCoverageScopePhrase();
+
   return (
     <LegalLayout title="Conditions Générales d'Utilisation">
       <p>
@@ -12,7 +15,7 @@ export default function CguPage() {
       <h2>Objet du service</h2>
       <p>
         Clim École recense les opportunités de rénovation thermique des écoles primaires
-        publiques en Auvergne-Rhône-Alpes. Les montants affichés (budget travaux, subventions,
+        publiques {scope}. Les montants affichés (budget travaux, subventions,
         reste à charge) sont des estimations algorithmiques — pas un audit réglementaire
         ni un devis travaux.
       </p>

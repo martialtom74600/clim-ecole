@@ -1,5 +1,7 @@
 import { createHmac, randomUUID, timingSafeEqual } from 'crypto';
 
+const DEV_FALLBACK_SECRET = 'clim-ecole-dev-secret-change-me';
+
 export function signPayload(payload: object, secret: string): string {
   const data = Buffer.from(JSON.stringify(payload)).toString('base64url');
   const sig = createHmac('sha256', secret).update(data).digest('base64url');
@@ -31,11 +33,16 @@ export function newAccountId(): string {
 }
 
 function authSecret(): string {
-  return (
-    process.env.AUTH_SECRET ||
-    process.env.ADMIN_PASSWORD ||
-    'clim-ecole-dev-secret-change-me'
-  );
+  const secret = process.env.AUTH_SECRET?.trim();
+  if (secret) return secret;
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'AUTH_SECRET est obligatoire en production. Définissez une chaîne aléatoire de 32+ caractères.',
+    );
+  }
+
+  return DEV_FALLBACK_SECRET;
 }
 
 export function signAuthToken(payload: object): string {
@@ -47,4 +54,12 @@ export function verifyAuthToken<T extends object>(token: string): (T & { exp?: n
   if (!data) return null;
   if (data.exp && Date.now() > data.exp) return null;
   return data;
+}
+
+/** Exposé pour tests — ne pas utiliser ailleurs. */
+export function __devAuthSecretOnly(): string {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('forbidden');
+  }
+  return authSecret();
 }

@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { timingSafeEqual } from 'crypto';
 import { signAuthToken, verifyAuthToken } from './crypto';
 
 export const ADMIN_COOKIE = 'clim_admin';
@@ -39,10 +40,31 @@ export function createCustomerToken(accountId: string): string {
   return signAuthToken({ role: 'customer', accountId });
 }
 
+function safeEqualString(a: string, b: string): boolean {
+  const ba = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ba.length !== bb.length) return false;
+  return timingSafeEqual(ba, bb);
+}
+
 export function verifyAdminPassword(password: string): boolean {
-  const expected = process.env.ADMIN_PASSWORD;
+  const expected = process.env.ADMIN_PASSWORD?.trim();
   if (!expected) {
-    return process.env.NODE_ENV === 'development' && password === 'admin';
+    if (process.env.NODE_ENV === 'development' && password === 'admin') {
+      return true;
+    }
+    return false;
   }
-  return password === expected;
+  return safeEqualString(password, expected);
+}
+
+/** Autorise uniquement les chemins relatifs internes admin/explorer. */
+export function sanitizeInternalRedirect(next: string | null | undefined, fallback: string): string {
+  if (!next || !next.startsWith('/') || next.startsWith('//')) {
+    return fallback;
+  }
+  if (next.includes('://') || next.includes('\\')) {
+    return fallback;
+  }
+  return next;
 }

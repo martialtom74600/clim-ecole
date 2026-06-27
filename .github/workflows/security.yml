@@ -1,0 +1,33 @@
+name: Security checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Block tracked premium CSV files
+        run: |
+          TRACKED=$(git ls-files 'data/departments/*.csv' 'apps/web/data/output_prospection.csv' 2>/dev/null || true)
+          if [ -n "$TRACKED" ]; then
+            echo "::error::Des CSV premium sont versionnés dans Git:"
+            echo "$TRACKED"
+            exit 1
+          fi
+
+      - name: Block NEXT_PUBLIC service role leak
+        run: |
+          if rg -l 'NEXT_PUBLIC.*SERVICE_ROLE|NEXT_PUBLIC.*SECRET' apps/web --glob '!node_modules' 2>/dev/null; then
+            echo "::error::Clé secrète exposée en NEXT_PUBLIC"
+            exit 1
+          fi
+          echo "OK"
+
+      - name: Dev unlock must be disabled in production route
+        run: |
+          rg 'NODE_ENV === .production' apps/web/app/api/dev/unlock/route.ts

@@ -1,6 +1,5 @@
-'use client';
-
 import { Download, FileText } from 'lucide-react';
+import Link from 'next/link';
 
 export function PackExportActions({ packId }: { packId: string }) {
   return (
@@ -14,15 +13,14 @@ export function PackExportActions({ packId }: { packId: string }) {
         <Download className="h-4 w-4" />
         Export CSV (CRM)
       </a>
-      <a
-        href={`/api/marketplace/dossier/${packId}`}
-        className="btn-secondary flex-1 py-3"
-        download
-        title="Document PDF de montage financier pour présenter le projet à la collectivité"
+      <Link
+        href={`/explorer/${packId}/note`}
+        className="btn-primary flex-1 py-3"
+        title="Note d'opportunité A4 — marque blanche, prête à imprimer en PDF"
       >
         <FileText className="h-4 w-4" />
-        Export PDF montage
-      </a>
+        Note d&apos;opportunité (PDF)
+      </Link>
     </div>
   );
 }

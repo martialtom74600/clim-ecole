@@ -1,108 +1,87 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { newAccountId } from './crypto';
 import { getMaxUnlocksPerPack } from './pack-config';
 import type { ClientPersona } from './brand';
+import { isSupabaseConfigured } from './supabase-server';
+import {
+  isJsonStoreAllowed,
+  jsonDeleteAlertSubscription,
+  jsonGetAccount,
+  jsonGetAccountByStripeCustomerId,
+  jsonGetOrCreateAccount,
+  jsonGetPackUnlockCount,
+  jsonGrantPackAccess,
+  jsonGrantProSubscription,
+  jsonListAlertSubscriptions,
+  jsonRevokeProSubscription,
+  jsonUpdateAccount,
+  jsonUpsertAlertSubscription,
+  type AlertSubscription,
+  type CustomerAccount,
+} from './entitlements-store';
+import {
+  dbDeleteAlertSubscription,
+  dbGetAccount,
+  dbGetAccountByStripeCustomerId,
+  dbGetOrCreateAccount,
+  dbGetPackUnlockCount,
+  dbGrantPackAccess,
+  dbGrantProSubscription,
+  dbIsStripeEventProcessed,
+  dbListAlertSubscriptions,
+  dbMarkStripeEventProcessed,
+  dbRevokeProSubscription,
+  dbUpdateAccount,
+  dbUpsertAlertSubscription,
+} from './entitlements-db';
 
-export interface CustomerAccount {
-  id: string;
-  email: string;
-  proUntil: string | null;
-  packIds: string[];
-  stripeCustomerId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { AlertSubscription, CustomerAccount };
 
-export interface AlertSubscription {
-  id: string;
-  email: string;
-  accountId?: string;
-  minCapex: number;
-  personas: ClientPersona[];
-  createdAt: string;
-}
-
-interface EntitlementsStore {
-  accounts: Record<string, CustomerAccount>;
-  alerts: AlertSubscription[];
-}
-
-const STORE_PATH = path.join(process.cwd(), 'data', 'entitlements.json');
-
-async function readStore(): Promise<EntitlementsStore> {
-  try {
-    const raw = await fs.readFile(STORE_PATH, 'utf-8');
-    const parsed = JSON.parse(raw) as Partial<EntitlementsStore>;
-    return {
-      accounts: parsed.accounts ?? {},
-      alerts: parsed.alerts ?? [],
-    };
-  } catch {
-    return { accounts: {}, alerts: [] };
+function useDb(): boolean {
+  if (!isSupabaseConfigured()) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY requis en production pour les entitlements',
+      );
+    }
+    if (!isJsonStoreAllowed()) {
+      throw new Error('Store entitlements indisponible');
+    }
+    return false;
   }
-}
-
-async function writeStore(store: EntitlementsStore): Promise<void> {
-  await fs.mkdir(path.dirname(STORE_PATH), { recursive: true });
-  await fs.writeFile(STORE_PATH, JSON.stringify(store, null, 2), 'utf-8');
+  return true;
 }
 
 export async function getAccount(accountId: string): Promise<CustomerAccount | null> {
-  const store = await readStore();
-  return store.accounts[accountId] ?? null;
+  return useDb() ? dbGetAccount(accountId) : jsonGetAccount(accountId);
 }
 
 export async function getAccountByStripeCustomerId(
   stripeCustomerId: string,
 ): Promise<CustomerAccount | null> {
-  const store = await readStore();
-  return (
-    Object.values(store.accounts).find((a) => a.stripeCustomerId === stripeCustomerId) ?? null
-  );
+  return useDb()
+    ? dbGetAccountByStripeCustomerId(stripeCustomerId)
+    : jsonGetAccountByStripeCustomerId(stripeCustomerId);
 }
 
-export async function getOrCreateAccount(accountId?: string, email?: string): Promise<CustomerAccount> {
-  const store = await readStore();
-  const id = accountId ?? newAccountId();
-  const existing = store.accounts[id];
-  if (existing) return existing;
-
-  const now = new Date().toISOString();
-  const account: CustomerAccount = {
-    id,
-    email: email ?? '',
-    proUntil: null,
-    packIds: [],
-    createdAt: now,
-    updatedAt: now,
-  };
-  store.accounts[id] = account;
-  await writeStore(store);
-  return account;
+export async function getOrCreateAccount(
+  accountId?: string,
+  email?: string,
+): Promise<CustomerAccount> {
+  return useDb() ? dbGetOrCreateAccount(accountId, email) : jsonGetOrCreateAccount(accountId, email);
 }
 
 export async function updateAccount(
   accountId: string,
   patch: Partial<Pick<CustomerAccount, 'email' | 'proUntil' | 'packIds' | 'stripeCustomerId'>>,
 ): Promise<CustomerAccount | null> {
-  const store = await readStore();
-  const account = store.accounts[accountId];
-  if (!account) return null;
-
-  Object.assign(account, patch, { updatedAt: new Date().toISOString() });
-  store.accounts[accountId] = account;
-  await writeStore(store);
-  return account;
+  if (useDb()) {
+    const { packIds: _omit, ...dbPatch } = patch;
+    return dbUpdateAccount(accountId, dbPatch);
+  }
+  return jsonUpdateAccount(accountId, patch);
 }
 
 export async function getPackUnlockCount(packId: string): Promise<number> {
-  const store = await readStore();
-  let count = 0;
-  for (const account of Object.values(store.accounts)) {
-    if (account.packIds.includes(packId)) count++;
-  }
-  return count;
+  return useDb() ? dbGetPackUnlockCount(packId) : jsonGetPackUnlockCount(packId);
 }
 
 export interface PackAvailability {
@@ -137,18 +116,20 @@ export async function canPurchasePack(
   return { ok: !availability.soldOut, availability };
 }
 
-export async function grantPackAccess(accountId: string, packId: string): Promise<boolean> {
-  const account = await getAccount(accountId);
-  if (!account) return false;
-
-  if (account.packIds.includes(packId)) return true;
-
-  const { ok } = await canPurchasePack(packId, accountId);
-  if (!ok) return false;
-
-  const packIds = [...account.packIds, packId];
-  await updateAccount(accountId, { packIds });
-  return true;
+export async function grantPackAccess(
+  accountId: string,
+  packId: string,
+  opts?: { codeEpci?: string; stripeSessionId?: string },
+): Promise<boolean> {
+  if (useDb()) {
+    return dbGrantPackAccess(
+      accountId,
+      packId,
+      opts?.codeEpci,
+      opts?.stripeSessionId,
+    );
+  }
+  return jsonGrantPackAccess(accountId, packId);
 }
 
 export async function grantProSubscription(
@@ -156,20 +137,19 @@ export async function grantProSubscription(
   months = 1,
   stripeCustomerId?: string,
 ): Promise<void> {
-  const account = await getAccount(accountId);
-  if (!account) return;
-  const base = account.proUntil && new Date(account.proUntil) > new Date()
-    ? new Date(account.proUntil)
-    : new Date();
-  base.setMonth(base.getMonth() + months);
-  await updateAccount(accountId, {
-    proUntil: base.toISOString(),
-    stripeCustomerId: stripeCustomerId ?? account.stripeCustomerId,
-  });
+  if (useDb()) {
+    await dbGrantProSubscription(accountId, months, stripeCustomerId);
+    return;
+  }
+  await jsonGrantProSubscription(accountId, months, stripeCustomerId);
 }
 
 export async function revokeProSubscription(accountId: string): Promise<void> {
-  await updateAccount(accountId, { proUntil: new Date().toISOString() });
+  if (useDb()) {
+    await dbRevokeProSubscription(accountId);
+    return;
+  }
+  await jsonRevokeProSubscription(accountId);
 }
 
 export function isProActive(account: CustomerAccount | null): boolean {
@@ -192,11 +172,21 @@ export async function checkPackEntitlement(
   return hasPackAccess(account, packId);
 }
 
+export async function isStripeEventProcessed(eventId: string): Promise<boolean> {
+  if (!useDb()) return false;
+  return dbIsStripeEventProcessed(eventId);
+}
+
+export async function markStripeEventProcessed(
+  eventId: string,
+  eventType: string,
+): Promise<void> {
+  if (!useDb()) return;
+  await dbMarkStripeEventProcessed(eventId, eventType);
+}
+
 export async function listAlertSubscriptions(email?: string): Promise<AlertSubscription[]> {
-  const store = await readStore();
-  if (!email) return store.alerts;
-  const norm = email.trim().toLowerCase();
-  return store.alerts.filter((a) => a.email.toLowerCase() === norm);
+  return useDb() ? dbListAlertSubscriptions(email) : jsonListAlertSubscriptions(email);
 }
 
 export async function upsertAlertSubscription(input: {
@@ -205,37 +195,39 @@ export async function upsertAlertSubscription(input: {
   personas: ClientPersona[];
   accountId?: string;
 }): Promise<AlertSubscription> {
-  const store = await readStore();
-  const norm = input.email.trim().toLowerCase();
-  const existing = store.alerts.find((a) => a.email.toLowerCase() === norm);
-
-  if (existing) {
-    existing.minCapex = input.minCapex;
-    existing.personas = input.personas;
-    existing.accountId = input.accountId ?? existing.accountId;
-    await writeStore(store);
-    return existing;
-  }
-
-  const sub: AlertSubscription = {
-    id: newAccountId(),
-    email: input.email.trim(),
-    accountId: input.accountId,
-    minCapex: input.minCapex,
-    personas: input.personas,
-    createdAt: new Date().toISOString(),
-  };
-  store.alerts.push(sub);
-  await writeStore(store);
-  return sub;
+  return useDb() ? dbUpsertAlertSubscription(input) : jsonUpsertAlertSubscription(input);
 }
 
 export async function deleteAlertSubscription(email: string): Promise<boolean> {
-  const store = await readStore();
-  const norm = email.trim().toLowerCase();
-  const before = store.alerts.length;
-  store.alerts = store.alerts.filter((a) => a.email.toLowerCase() !== norm);
-  if (store.alerts.length === before) return false;
-  await writeStore(store);
-  return true;
+  return useDb() ? dbDeleteAlertSubscription(email) : jsonDeleteAlertSubscription(email);
+}
+
+/** Attend que le webhook ait activé l'entitlement (success page). */
+export async function waitForPackEntitlement(
+  accountId: string,
+  packId: string,
+  maxMs = 25_000,
+): Promise<boolean> {
+  const start = Date.now();
+  while (Date.now() - start < maxMs) {
+    if (await checkPackEntitlement(accountId, packId)) return true;
+    const account = await getAccount(accountId);
+    if (account && isProActive(account)) return true;
+    await new Promise((r) => setTimeout(r, 800));
+  }
+  return checkPackEntitlement(accountId, packId);
+}
+
+export async function waitForProEntitlement(
+  accountId: string,
+  maxMs = 25_000,
+): Promise<boolean> {
+  const start = Date.now();
+  while (Date.now() - start < maxMs) {
+    const account = await getAccount(accountId);
+    if (account && isProActive(account)) return true;
+    await new Promise((r) => setTimeout(r, 800));
+  }
+  const account = await getAccount(accountId);
+  return Boolean(account && isProActive(account));
 }

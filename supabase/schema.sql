@@ -173,7 +173,7 @@ grant usage on schema public to postgres, anon, authenticated, service_role;
 
 grant all on all tables in schema public to service_role;
 grant select, insert, update, delete on all tables in schema public to authenticated;
-grant select on all tables in schema public to anon;
+-- anon : pas de SELECT sur données premium (voir supabase/migrations/20260627000000_entitlements_security.sql)
 
 grant all on all sequences in schema public to service_role;
 grant usage, select on all sequences in schema public to authenticated;
@@ -182,8 +182,7 @@ alter default privileges in schema public
   grant all on tables to service_role;
 alter default privileges in schema public
   grant select, insert, update, delete on tables to authenticated;
-alter default privileges in schema public
-  grant select on tables to anon;
+-- Pas de grant select anon par défaut sur nouvelles tables premium
 
 notify pgrst, 'reload schema';
 
@@ -213,4 +212,4 @@ create policy "pipeline_jobs_auth_all" on public.pipeline_jobs
   for all to authenticated using (true) with check (true);
 
 grant all on public.pipeline_jobs to service_role;
-grant select on public.pipeline_jobs to authenticated, anon;
+grant select on public.pipeline_jobs to authenticated;

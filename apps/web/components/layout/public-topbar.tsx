@@ -18,7 +18,7 @@ export function PublicTopbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-[100] border-b border-radar-border bg-white/90 backdrop-blur-sm">
+    <header className="sticky top-0 z-[100] border-b border-radar-border bg-white/90 backdrop-blur-sm print:hidden">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5 md:px-8">
         <Link href="/"><BrandLogo size="md" /></Link>
 

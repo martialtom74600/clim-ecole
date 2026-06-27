@@ -7,7 +7,7 @@ apps/web/.env.local
 # Données sensibles / locales
 output_prospection*.csv
 output_prospection.csv.tmp
-!apps/web/data/output_prospection.csv
+apps/web/data/output_prospection.csv
 # Données sensibles / locales — CSV dept sur disque runner / Supabase, pas dans Git
 data/departments/*.csv
 data/departments/.gitkeep

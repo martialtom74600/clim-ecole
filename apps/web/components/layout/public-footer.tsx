@@ -7,7 +7,7 @@ import { BrandLogo } from '@/components/brand/logo';
 export async function PublicFooter() {
   const coverageBadge = await getCoverageBadge();
   return (
-    <footer className="mt-auto border-t border-radar-border py-10">
+    <footer className="mt-auto border-t border-radar-border py-10 print:hidden">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-5 md:flex-row md:justify-between md:px-8">
         <div>
           <BrandLogo size="sm" />

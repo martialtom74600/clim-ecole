@@ -267,3 +267,22 @@
 .marker-cluster-large {
   background: transparent !important;
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+
+  body {
+    background: white !important;
+    color: #0f172a !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .page-content {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+}

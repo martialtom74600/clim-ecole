@@ -1,6 +1,5 @@
 /**
- * Déblocage dev uniquement — POST { packId?, pro?: boolean }
- * Header: x-dev-key = DEV_UNLOCK_KEY
+ * Déblocage dev — désactivé en production.
  */
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
@@ -8,7 +7,7 @@ import { CUSTOMER_COOKIE, createCustomerToken } from '@/lib/auth';
 import { getOrCreateAccount, grantPackAccess, grantProSubscription } from '@/lib/entitlements';
 
 export async function POST(request: Request) {
-  if (process.env.NODE_ENV === 'production' && !process.env.DEV_UNLOCK_KEY) {
+  if (process.env.NODE_ENV === 'production') {
     return NextResponse.json({ error: 'Indisponible' }, { status: 404 });
   }
 
@@ -28,9 +27,10 @@ export async function POST(request: Request) {
   jar.set(CUSTOMER_COOKIE, createCustomerToken(account.id), {
     httpOnly: true,
     sameSite: 'lax',
+    secure: false,
     path: '/',
     maxAge: 60 * 60 * 24 * 365,
   });
 
-  return NextResponse.json({ ok: true, accountId: account.id });
+  return NextResponse.json({ ok: true });
 }

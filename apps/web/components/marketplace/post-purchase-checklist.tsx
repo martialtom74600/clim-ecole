@@ -17,7 +17,7 @@ export function PostPurchaseChecklist({ packId }: { packId: string }) {
         </li>
         <li className="flex items-start gap-2">
           <span className="font-semibold text-radar-signal">2.</span>
-          Exportez le CSV (CRM) ou le PDF montage financier
+          Exportez le CSV (CRM) ou la note d&apos;opportunité (PDF)
         </li>
         <li className="flex items-start gap-2">
           <span className="font-semibold text-radar-signal">3.</span>

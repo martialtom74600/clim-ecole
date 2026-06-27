@@ -70,11 +70,25 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const session = await getCustomerSession();
   const { searchParams } = new URL(request.url);
   const email = searchParams.get('email');
+
   if (!email) {
     return NextResponse.json({ error: 'Email requis' }, { status: 400 });
   }
+
+  const norm = email.trim().toLowerCase();
+
+  if (!session) {
+    return NextResponse.json({ error: 'Connexion requise' }, { status: 401 });
+  }
+
+  const account = await import('@/lib/entitlements').then((m) => m.getAccount(session.accountId));
+  if (!account?.email || account.email.trim().toLowerCase() !== norm) {
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
+  }
+
   await deleteAlertSubscription(email);
   return NextResponse.json({ ok: true });
 }

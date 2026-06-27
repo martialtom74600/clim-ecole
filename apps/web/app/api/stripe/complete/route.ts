@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { CUSTOMER_COOKIE, createCustomerToken } from '@/lib/auth';
+import { getCustomerSession } from '@/lib/auth';
 import {
-  grantPackAccess,
-  grantProSubscription,
-  updateAccount,
+  checkPackEntitlement,
+  isProActive,
+  waitForPackEntitlement,
+  waitForProEntitlement,
+  getAccount,
 } from '@/lib/entitlements';
-import { sendPurchaseConfirmationEmail } from '@/lib/email';
-import { appUrl, getStripe, isStripeConfigured } from '@/lib/stripe';
+import { getStripe, isStripeConfigured } from '@/lib/stripe';
 
+/**
+ * Confirmation post-checkout — ne grant JAMAIS les droits (webhook Stripe uniquement).
+ * Vérifie que le navigateur correspond à l'acheteur et attend l'activation webhook.
+ */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const sessionId = searchParams.get('session_id');
@@ -30,47 +34,59 @@ export async function GET(request: Request) {
 
   const accountId = session.metadata?.accountId;
   const plan = session.metadata?.plan as 'dossier' | 'pro' | undefined;
-  const packId = session.metadata?.packId;
+  const packId = session.metadata?.packId || null;
 
   if (!accountId || !plan) {
     return NextResponse.json({ error: 'Métadonnées session invalides' }, { status: 400 });
   }
 
-  const email = session.customer_email ?? session.customer_details?.email ?? undefined;
-  if (email) {
-    await updateAccount(accountId, { email });
+  const customerSession = await getCustomerSession();
+  if (!customerSession || customerSession.accountId !== accountId) {
+    return NextResponse.json(
+      {
+        error:
+          'Session navigateur invalide. Rouvrez le lien de confirmation sur le même appareil que le paiement.',
+        code: 'session_mismatch',
+      },
+      { status: 403 },
+    );
   }
 
+  let ready = false;
   if (plan === 'pro') {
-    await grantProSubscription(accountId, 1, session.customer as string | undefined);
+    ready = await waitForProEntitlement(accountId);
   } else if (packId) {
-    const granted = await grantPackAccess(accountId, packId);
-    if (!granted) {
-      return NextResponse.json(
-        { error: 'Quota d\'accès atteint pour ce territoire. Contactez support@strate.studio.' },
-        { status: 409 },
-      );
-    }
+    ready = await waitForPackEntitlement(accountId, packId);
   }
 
-  if (email) {
-    const packUrl = packId ? `${appUrl()}/explorer/${packId}` : undefined;
-    await sendPurchaseConfirmationEmail(email, { plan, packUrl });
+  if (!ready) {
+    return NextResponse.json(
+      {
+        error: 'Activation en cours. Actualisez dans quelques secondes ou consultez Mon compte.',
+        code: 'activation_pending',
+        plan,
+        packId,
+      },
+      { status: 202 },
+    );
   }
 
-  const jar = await cookies();
-  jar.set(CUSTOMER_COOKIE, createCustomerToken(accountId), {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 365,
-  });
+  const account = await getAccount(accountId);
+  const entitled =
+    plan === 'pro'
+      ? isProActive(account)
+      : packId
+        ? await checkPackEntitlement(accountId, packId)
+        : false;
+
+  if (!entitled) {
+    return NextResponse.json({ error: 'Accès non activé' }, { status: 409 });
+  }
 
   return NextResponse.json({
     ok: true,
     plan,
-    packId: packId || null,
+    packId,
     redirect: packId ? `/explorer/${packId}` : '/compte',
   });
 }

@@ -28,11 +28,10 @@ export async function GET() {
 
   return NextResponse.json({
     authenticated: true,
-    accountId: account.id,
     email: account.email,
     pro: isProActive(account),
     proUntil: account.proUntil,
-    packIds: account.packIds,
+    packCount: account.packIds.length,
     packs: packSummaries,
   });
 }

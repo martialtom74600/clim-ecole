@@ -5,7 +5,7 @@ import { getCoverageBadge } from './coverage';
 import { explainDealPersona, inferDealPersona } from './persona-engine';
 import { computeRadarScore } from './radar-score';
 import { checkPackEntitlement, getPackAvailability } from './entitlements';
-import { buildTerritoryFreePreview, formatBudgetRange, formatSubventionLevel } from './freemium';
+import { buildTerritoryFreePreview, formatBudgetRange, formatSubventionLevel, getBudgetBand } from './freemium';
 import { isQualifiedDeal } from './curated-deals';
 import type {
   ClosingLevel,
@@ -126,7 +126,7 @@ async function toMarketplacePack(
   };
 }
 
-/** Retire les € exacts du payload client (gratuit). */
+/** Retire les € exacts et signaux fins du payload client (gratuit). */
 function redactPackFinancials(pack: MarketplacePack): MarketplacePack {
   if (!pack.financialsHidden) return pack;
   return {
@@ -139,7 +139,26 @@ function redactPackFinancials(pack: MarketplacePack): MarketplacePack {
     roiAnnees: 0,
     subventionRatio: 0,
     radarScore: 0,
+    isHot: false,
+    temperatureLevel: 'froid',
+    statutProjetEpci: 'SOUS_SEUIL_A_CREUSER',
+    personas: pack.primaryPersona ? [pack.primaryPersona] : [],
   };
+}
+
+const GRADE_SORT: Record<string, number> = { A: 4, B: 3, C: 2, D: 1 };
+const BAND_SORT: Record<string, number> = { xl: 5, l: 4, m: 3, s: 2, xs: 1 };
+
+function sortPacksForPublicList(packs: MarketplacePack[]): MarketplacePack[] {
+  return [...packs].sort((a, b) => {
+    const g =
+      (GRADE_SORT[b.radarGrade] ?? 0) - (GRADE_SORT[a.radarGrade] ?? 0);
+    if (g !== 0) return g;
+    return (
+      (BAND_SORT[getBudgetBand(b.packCapexTotal)] ?? 0) -
+      (BAND_SORT[getBudgetBand(a.packCapexTotal)] ?? 0)
+    );
+  });
 }
 
 function encodeBuildingId(packId: string, index: number): string {
@@ -176,7 +195,7 @@ function toMarketplaceBuilding(
       resteACharge: 0,
       gainNetMairie: 0,
       roiAnnees: 0,
-      closingTemperature: b.closingTemperature,
+      closingTemperature: '',
       detailsHidden: true,
     };
   }
@@ -238,9 +257,7 @@ export const getMarketplacePacks = cache(async (): Promise<MarketplacePack[]> =>
     packs.push(await toMarketplacePack(summary, detail, 0, false, coverageLabel));
   }
 
-  const sorted = packs.sort(
-    (a, b) => b.radarScore - a.radarScore || b.packCapexTotal - a.packCapexTotal,
-  );
+  const sorted = sortPacksForPublicList(packs);
 
   return sorted.map((pack, i) =>
     redactPackFinancials({

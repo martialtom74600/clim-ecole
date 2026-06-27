@@ -81,7 +81,23 @@ node src/scripts/runNightlyDepartment.js --force --batch 3
 ## Supabase
 
 1. [`supabase/schema.sql`](../supabase/schema.sql)
-2. `npm run sync:supabase:all` pour seed AURA
+2. [`supabase/migrations/20260627000000_entitlements_security.sql`](../supabase/migrations/20260627000000_entitlements_security.sql) — entitlements Stripe + révocation anon
+3. `npm run sync:supabase:all` pour seed AURA
+
+### Entitlements (prod Vercel)
+
+- `AUTH_SECRET` obligatoire (32+ chars)
+- `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` obligatoires (plus de `entitlements.json` en prod)
+- Migration one-shot : `node scripts/migrate-entitlements-to-supabase.js`
+
+## Sécurité
+
+| Contrôle | Détail |
+|----------|--------|
+| Paiement | Grant **webhook Stripe uniquement** |
+| Quota packs | RPC `grant_pack_unlock` atomique (Supabase) |
+| Admin API | Cookie + `middleware.ts` |
+| CSV premium | Hors Git — CI `security.yml` |
 
 ## Repo privé
 

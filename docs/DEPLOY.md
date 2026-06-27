@@ -20,6 +20,7 @@ Pipeline (GitHub Actions / local)
 | **Refresh delta** | `light` sync · `medium` recalc · `full` re-scrape · `skip_empty` 90 j |
 | **Priorité refresh** | `pipeline_jobs.last_sync_at` ASC — les plus vieux d'abord |
 | **Estimation adaptive** | Durée rolling / dept dans `deptDurations` |
+| **Cache dept** | `.cache/dept-snapshots/` — geo 90 j, écoles 60 j (persiste entre runs GHA) |
 | **Maintenance ∞** | Phase refresh ne s'arrête jamais (budget GHA skip désactivé) |
 
 Rotation : [`data/departments/rotation.json`](../data/departments/rotation.json)

@@ -2,9 +2,7 @@ import fs from 'fs/promises';
 import fsSync from 'fs';
 import path from 'path';
 import { parse } from 'csv-parse/sync';
-import { config } from '../config.js';
-import { api } from '../utils/apiClients.js';
-import { logger } from '../utils/logger.js';
+import { fetchGeoCommunesForDepartment } from './geoCommunesService.js';
 
 const CACHE_FILE = 'insee-epci.json';
 
@@ -72,21 +70,15 @@ async function loadFromMappingFile() {
   return null;
 }
 
-/** Je construis la table depuis geo.api.gouv.fr (codes EPCI officiels). */
+/** Je construis la table depuis le cache geo ou geo.api.gouv.fr. */
 async function bootstrapFromGeoApi(deptCodes = null) {
-  const deptNumbers =
-    deptCodes ?? [...new Set(config.departments.map((d) => geoDepartementCode(d)))];
   const map = new Map();
+  const toFetch = deptCodes
+    ? config.departments.filter((d) => deptCodes.includes(geoDepartementCode(d)))
+    : config.departments;
 
-  for (const dept of deptNumbers) {
-    const data = await api.geo.getJson(`${config.apis.geo}/communes`, {
-      params: {
-        codeDepartement: dept,
-        fields: 'code,nom,codeEpci,nomEpci',
-        format: 'json',
-      },
-      label: 'geo.api.gouv.fr EPCI',
-    });
+  for (const deptPipeline of toFetch) {
+    const data = await fetchGeoCommunesForDepartment(deptPipeline);
 
     for (const commune of data) {
       const insee = normalizeInsee(commune.code);
@@ -99,7 +91,7 @@ async function bootstrapFromGeoApi(deptCodes = null) {
     }
   }
 
-  logger.info(`Correspondance EPCI : ${map.size} communes via geo.api.gouv.fr`);
+  logger.info(`Correspondance EPCI : ${map.size} communes (cache geo)`);
   return map;
 }
 

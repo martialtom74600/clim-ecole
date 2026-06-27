@@ -14,6 +14,7 @@ import {
   syncCheckpointStats,
 } from './utils/checkpoint.js';
 import { clearPersistentCache } from './utils/persistentCache.js';
+import { deptSnapshotDir } from './services/deptSnapshotCache.js';
 import { resetAllApiPressure } from './utils/apiClients.js';
 import { sleep } from './utils/sleep.js';
 import { runPool, createLock } from './utils/concurrency.js';
@@ -440,7 +441,7 @@ async function runPipeline({ embedded = false, resetCheckpoint = config.resetChe
     await initPrixKwhMoyenTertiaire();
 
     if (resetCheckpoint) {
-      await clearPersistentCache({ preserveDirs: [config.bdnb.localDir] });
+      await clearPersistentCache({ preserveDirs: [config.bdnb.localDir, deptSnapshotDir()] });
       logger.info(`Cache persistant vidé (${config.cacheDir}/, BDNB local conservé)`);
       await clearCheckpoint();
       const outputPath = path.isAbsolute(config.outputFile)

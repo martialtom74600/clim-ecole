@@ -121,6 +121,11 @@ export const config = {
   outputFile: process.env.OUTPUT_FILE ?? 'output_prospection.csv',
   blacklistFile: process.env.BLACKLIST_FILE ?? 'data/blacklist.json',
   cacheDir,
+  deptCache: {
+    enabled: process.env.DEPT_CACHE !== '0',
+    geoTtlDays: Number(process.env.DEPT_CACHE_GEO_TTL_DAYS ?? 90),
+    schoolsTtlDays: Number(process.env.DEPT_CACHE_SCHOOLS_TTL_DAYS ?? 60),
+  },
   resetCheckpoint: process.env.RESET_CHECKPOINT === '1',
   maxApiRetryPasses: Number(process.env.MAX_API_RETRY_PASSES ?? 4),
   apiRetryCooldownsSec: parseRetryPasses(process.env.API_RETRY_COOLDOWNS_SEC),

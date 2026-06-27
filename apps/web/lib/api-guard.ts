@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminSession, getCustomerSession } from '@/lib/auth';
 import { checkPackEntitlement } from '@/lib/entitlements';
+import { isTestMode } from '@/lib/test-mode';
 
 export async function requireAdminApi(): Promise<NextResponse | null> {
   if (!(await getAdminSession())) {
@@ -22,6 +23,10 @@ export async function requireCustomerApi(): Promise<
 export async function requirePackAccessApi(
   packId: string,
 ): Promise<{ accountId: string } | NextResponse> {
+  if (isTestMode()) {
+    return { accountId: 'test-mode' };
+  }
+
   const result = await requireCustomerApi();
   if (result instanceof NextResponse) return result;
 

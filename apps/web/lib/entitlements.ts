@@ -1,6 +1,7 @@
 import { getMaxUnlocksPerPack } from './pack-config';
 import type { ClientPersona } from './brand';
 import { isSupabaseConfigured } from './supabase-server';
+import { isTestMode } from './test-mode';
 import {
   isJsonStoreAllowed,
   jsonDeleteAlertSubscription,
@@ -158,6 +159,7 @@ export function isProActive(account: CustomerAccount | null): boolean {
 }
 
 export function hasPackAccess(account: CustomerAccount | null, packId: string): boolean {
+  if (isTestMode()) return true;
   if (!account) return false;
   if (isProActive(account)) return true;
   return account.packIds.includes(packId);
@@ -167,6 +169,7 @@ export async function checkPackEntitlement(
   accountId: string | null | undefined,
   packId: string,
 ): Promise<boolean> {
+  if (isTestMode()) return true;
   if (!accountId) return false;
   const account = await getAccount(accountId);
   return hasPackAccess(account, packId);

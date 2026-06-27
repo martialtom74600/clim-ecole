@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import type {
   DashboardKpis,
   EpciDetail,
@@ -146,11 +147,42 @@ function toEpciTriage(acc: EpciAccumulator): EpciTriageRow {
   };
 }
 
+function accToEpciDetail(acc: EpciAccumulator): EpciDetail {
+  const communes = [...acc.communes];
+  return {
+    codeEpci: acc.codeEpci,
+    nomEpci: acc.nomEpci,
+    displayName: formatEpciDisplayName(acc.nomEpci, acc.codeEpci),
+    communesLabel: formatCommunesLabel(communes),
+    packCapexTotal: acc.packCapexTotal,
+    subventionsTotal: acc.subventionsTotal,
+    resteAChargeTotal: acc.resteAChargeTotal,
+    gainNetMairieTotal: acc.gainNetMairieTotal,
+    temperatureGlobale: TEMP_LABEL[acc.temperatureLevel],
+    temperatureLevel: acc.temperatureLevel,
+    statutProjetEpci: acc.statutProjetEpci,
+    batimentCount: acc.batimentCount,
+    batiments: [...acc.batiments].sort((a, b) => b.capexTotal - a.capexTotal),
+  };
+}
+
+const loadProspectionFromSupabaseCached = unstable_cache(
+  loadProspectionFromSupabase,
+  ['prospection-supabase-v1'],
+  { revalidate: 120, tags: ['prospection'] },
+);
+
 export const loadProspectionData = cache(async (): Promise<ProspectionDataset> => {
   if (isSupabaseConfigured()) {
-    return loadProspectionFromSupabase();
+    return loadProspectionFromSupabaseCached();
   }
   return loadProspectionFromCsv();
+});
+
+/** Index EPCI — construit une seule fois par requête (évite O(n²) sur /explorer). */
+export const getEpciAccumulatorMap = cache(async (): Promise<Map<string, EpciAccumulator>> => {
+  const { rows } = await loadProspectionData();
+  return buildEpciAccumulators(rows);
 });
 
 export const getDashboardKpis = cache(async (): Promise<DashboardKpis> => {
@@ -192,33 +224,15 @@ export const getTopEpciTriage = cache(async (limit = 5): Promise<EpciTriageRow[]
 });
 
 export const getAllEpciSummary = cache(async (): Promise<EpciSummaryRow[]> => {
-  const { rows } = await loadProspectionData();
-  return [...buildEpciAccumulators(rows).values()]
+  return [...(await getEpciAccumulatorMap()).values()]
     .map(toEpciSummary)
     .sort((a, b) => b.packCapexTotal - a.packCapexTotal);
 });
 
 export const getEpciByCode = cache(async (code: string): Promise<EpciDetail | null> => {
-  const { rows } = await loadProspectionData();
-  const acc = buildEpciAccumulators(rows).get(code);
+  const acc = (await getEpciAccumulatorMap()).get(code);
   if (!acc) return null;
-
-  const communes = [...acc.communes];
-  return {
-    codeEpci: acc.codeEpci,
-    nomEpci: acc.nomEpci,
-    displayName: formatEpciDisplayName(acc.nomEpci, acc.codeEpci),
-    communesLabel: formatCommunesLabel(communes),
-    packCapexTotal: acc.packCapexTotal,
-    subventionsTotal: acc.subventionsTotal,
-    resteAChargeTotal: acc.resteAChargeTotal,
-    gainNetMairieTotal: acc.gainNetMairieTotal,
-    temperatureGlobale: TEMP_LABEL[acc.temperatureLevel],
-    temperatureLevel: acc.temperatureLevel,
-    statutProjetEpci: acc.statutProjetEpci,
-    batimentCount: acc.batimentCount,
-    batiments: [...acc.batiments].sort((a, b) => b.capexTotal - a.capexTotal),
-  };
+  return accToEpciDetail(acc);
 });
 
 export const getPortfolioData = cache(async (): Promise<PortfolioData> => {

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { IBM_Plex_Mono, Inter } from 'next/font/google';
 import { ToastProvider } from '@/components/ui/toast';
 import { AnalyticsScripts } from '@/components/analytics/analytics-scripts';
+import { TestModeBanner } from '@/components/dev/test-mode-banner';
 import './globals.css';
 
 const inter = Inter({
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="fr" className={`${inter.variable} ${mono.variable}`}>
       <body className="font-sans antialiased">
         <AnalyticsScripts />
+        <TestModeBanner />
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

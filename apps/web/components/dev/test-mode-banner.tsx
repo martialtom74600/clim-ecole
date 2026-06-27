@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { isTestMode } from '@/lib/test-mode';
 
 export function TestModeBanner() {
@@ -5,11 +6,17 @@ export function TestModeBanner() {
 
   return (
     <div
-      className="border-b border-amber-500/40 bg-amber-500/10 px-4 py-2 text-center text-sm text-amber-950"
+      className="border-b border-emerald-600/30 bg-emerald-500/10 px-4 py-2.5 text-center text-sm text-emerald-950"
       role="status"
     >
-      <strong>Mode test</strong> — tous les territoires sont débloqués sans Stripe. Désactive avec{' '}
-      <code className="rounded bg-amber-500/20 px-1">CLIM_TEST_MODE=0</code> avant la prod.
+      <strong>Accès complet sans paiement</strong> — même vue qu&apos;un client qui a acheté.{' '}
+      <Link href="/explorer" className="font-semibold underline underline-offset-2">
+        Ouvrir l&apos;explorateur
+      </Link>
+      {' · '}
+      <span className="text-emerald-900/80">
+        (pas l&apos;admin — c&apos;est <code className="rounded bg-emerald-500/15 px-1">/explorer</code>)
+      </span>
     </div>
   );
 }

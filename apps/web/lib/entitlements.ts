@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { getMaxUnlocksPerPack } from './pack-config';
 import type { ClientPersona } from './brand';
 import { isSupabaseConfigured } from './supabase-server';
@@ -9,6 +10,7 @@ import {
   jsonGetAccountByStripeCustomerId,
   jsonGetOrCreateAccount,
   jsonGetPackUnlockCount,
+  jsonGetAllPackUnlockCounts,
   jsonGrantPackAccess,
   jsonGrantProSubscription,
   jsonListAlertSubscriptions,
@@ -24,6 +26,7 @@ import {
   dbGetAccountByStripeCustomerId,
   dbGetOrCreateAccount,
   dbGetPackUnlockCount,
+  dbGetAllPackUnlockCounts,
   dbGrantPackAccess,
   dbGrantProSubscription,
   dbIsStripeEventProcessed,
@@ -82,8 +85,13 @@ export async function updateAccount(
 }
 
 export async function getPackUnlockCount(packId: string): Promise<number> {
-  return useDb() ? dbGetPackUnlockCount(packId) : jsonGetPackUnlockCount(packId);
+  const counts = await getPackUnlockCountsMap();
+  return counts.get(packId) ?? 0;
 }
+
+export const getPackUnlockCountsMap = cache(async (): Promise<Map<string, number>> => {
+  return useDb() ? dbGetAllPackUnlockCounts() : jsonGetAllPackUnlockCounts();
+});
 
 export interface PackAvailability {
   max: number;

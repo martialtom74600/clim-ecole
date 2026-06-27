@@ -1,12 +1,14 @@
 import { cache } from 'react';
-import { getAllEpciSummary, getDashboardKpis, getEpciByCode } from './data';
+import { getAllEpciSummary, getDashboardKpis, getEpciByCode, getEpciAccumulatorMap } from './data';
 import { dominantDepartment } from './geo-france';
 import { getCoverageBadge } from './coverage';
 import { explainDealPersona, inferDealPersona } from './persona-engine';
 import { computeRadarScore } from './radar-score';
-import { checkPackEntitlement, getPackAvailability } from './entitlements';
+import { checkPackEntitlement, getPackUnlockCountsMap, type PackAvailability } from './entitlements';
 import { buildTerritoryFreePreview, formatBudgetRange, formatSubventionLevel, getBudgetBand } from './freemium';
+import { isTestMode } from './test-mode';
 import { isQualifiedDeal } from './curated-deals';
+import { getMaxUnlocksPerPack } from './pack-config';
 import type {
   ClosingLevel,
   MarketplaceBuilding,
@@ -56,13 +58,24 @@ function sumFondsVert(buildings: { partFondsPessimisteEuros: number }[]): number
   return buildings.reduce((s, b) => s + (b.partFondsPessimisteEuros || 0), 0);
 }
 
-async function toMarketplacePack(
+function packAvailabilityFromMap(
+  packId: string,
+  counts: Map<string, number>,
+): PackAvailability {
+  const max = getMaxUnlocksPerPack();
+  const used = counts.get(packId) ?? 0;
+  const remaining = Math.max(0, max - used);
+  return { max, used, remaining, soldOut: remaining <= 0 };
+}
+
+function toMarketplacePack(
   summary: Awaited<ReturnType<typeof getAllEpciSummary>>[number],
   detail: NonNullable<Awaited<ReturnType<typeof getEpciByCode>>>,
   sortIndex: number,
-  unlocked = false,
-  coverageLabel = 'France',
-): Promise<MarketplacePack> {
+  unlocked: boolean,
+  coverageLabel: string,
+  availability: PackAvailability,
+): MarketplacePack {
   const roiAnnees = bestRoiAnnees(detail.batiments);
   const personaResult = inferDealPersona({
     packCapexTotal: detail.packCapexTotal,
@@ -85,7 +98,6 @@ async function toMarketplacePack(
   });
 
   const packId = encodePackId(summary.codeEpci);
-  const availability = await getPackAvailability(packId);
   const regionShort = coverageLabel.includes('régions') ? 'France' : coverageLabel.split(' · ')[0];
 
   const base = {
@@ -247,24 +259,56 @@ export const getMarketplaceGlobalStats = cache(async (): Promise<MarketplaceGlob
 });
 
 export const getMarketplacePacks = cache(async (): Promise<MarketplacePack[]> => {
-  const coverageLabel = await getCoverageBadge();
-  const summaries = await getAllEpciSummary();
+  const [coverageLabel, summaries, unlockCounts, accMap] = await Promise.all([
+    getCoverageBadge(),
+    getAllEpciSummary(),
+    getPackUnlockCountsMap(),
+    getEpciAccumulatorMap(),
+  ]);
+  const previewAll = isTestMode();
   const packs: MarketplacePack[] = [];
 
   for (const summary of summaries) {
-    const detail = await getEpciByCode(summary.codeEpci);
-    if (!detail) continue;
-    packs.push(await toMarketplacePack(summary, detail, 0, false, coverageLabel));
+    const acc = accMap.get(summary.codeEpci);
+    if (!acc) continue;
+    const detail = {
+      codeEpci: acc.codeEpci,
+      nomEpci: acc.nomEpci,
+      displayName: summary.displayName,
+      communesLabel: summary.communesLabel,
+      packCapexTotal: acc.packCapexTotal,
+      subventionsTotal: acc.subventionsTotal,
+      resteAChargeTotal: acc.resteAChargeTotal,
+      gainNetMairieTotal: acc.gainNetMairieTotal,
+      temperatureGlobale: summary.temperatureGlobale,
+      temperatureLevel: summary.temperatureLevel,
+      statutProjetEpci: acc.statutProjetEpci,
+      batimentCount: acc.batimentCount,
+      batiments: [...acc.batiments].sort((a, b) => b.capexTotal - a.capexTotal),
+    };
+    const packId = encodePackId(summary.codeEpci);
+    packs.push(
+      toMarketplacePack(
+        summary,
+        detail,
+        0,
+        previewAll,
+        coverageLabel,
+        packAvailabilityFromMap(packId, unlockCounts),
+      ),
+    );
   }
 
   const sorted = sortPacksForPublicList(packs);
 
   return sorted.map((pack, i) =>
-    redactPackFinancials({
-      ...pack,
-      isNew: i < 8,
-      financialsHidden: true,
-    }),
+    previewAll
+      ? { ...pack, isNew: i < 8, financialsHidden: false }
+      : redactPackFinancials({
+          ...pack,
+          isNew: i < 8,
+          financialsHidden: true,
+        }),
   );
 });
 
@@ -276,20 +320,25 @@ export const getMarketplacePackById = cache(
     const codeEpci = decodePackId(packId);
     if (!codeEpci) return null;
 
-    const summaries = await getAllEpciSummary();
+    const [summaries, detail, unlocked, coverageLabel, unlockCounts] = await Promise.all([
+      getAllEpciSummary(),
+      getEpciByCode(codeEpci),
+      checkPackEntitlement(accountId, packId),
+      getCoverageBadge(),
+      getPackUnlockCountsMap(),
+    ]);
+
     const index = summaries.findIndex((s) => s.codeEpci === codeEpci);
-    if (index < 0) return null;
+    if (index < 0 || !detail) return null;
 
-    const detail = await getEpciByCode(codeEpci);
-    if (!detail) return null;
-
-    const unlocked = await checkPackEntitlement(accountId, packId);
-    const coverageLabel = await getCoverageBadge();
     const regionShort = coverageLabel.includes('régions') ? 'France' : coverageLabel.split(' · ')[0];
-    const allPacks = await getMarketplacePacks();
-    const sortIndex = allPacks.findIndex((p) => p.packId === packId);
-    const pack = await toMarketplacePack(
-      summaries[index], detail, sortIndex >= 0 ? sortIndex : 0, unlocked, coverageLabel,
+    const pack = toMarketplacePack(
+      summaries[index],
+      detail,
+      index,
+      unlocked,
+      coverageLabel,
+      packAvailabilityFromMap(packId, unlockCounts),
     );
     const buildings = detail.batiments.map((b, i) =>
       toMarketplaceBuilding(pack.packId, i, b, unlocked, regionShort),

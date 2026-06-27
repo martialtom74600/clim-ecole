@@ -108,12 +108,19 @@ export async function jsonUpdateAccount(
 }
 
 export async function jsonGetPackUnlockCount(packId: string): Promise<number> {
+  const counts = await jsonGetAllPackUnlockCounts();
+  return counts.get(packId) ?? 0;
+}
+
+export async function jsonGetAllPackUnlockCounts(): Promise<Map<string, number>> {
   const store = await readStore();
-  let count = 0;
+  const counts = new Map<string, number>();
   for (const account of Object.values(store.accounts)) {
-    if (account.packIds.includes(packId)) count++;
+    for (const packId of account.packIds) {
+      counts.set(packId, (counts.get(packId) ?? 0) + 1);
+    }
   }
-  return count;
+  return counts;
 }
 
 export async function jsonGrantPackAccess(accountId: string, packId: string): Promise<boolean> {

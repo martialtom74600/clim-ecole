@@ -118,12 +118,19 @@ export async function dbUpdateAccount(
 }
 
 export async function dbGetPackUnlockCount(packId: string): Promise<number> {
+  const counts = await dbGetAllPackUnlockCounts();
+  return counts.get(packId) ?? 0;
+}
+
+export async function dbGetAllPackUnlockCounts(): Promise<Map<string, number>> {
   const sb = getSupabaseServer();
-  const { count } = await sb
-    .from('pack_unlocks')
-    .select('*', { count: 'exact', head: true })
-    .eq('pack_id', packId);
-  return count ?? 0;
+  const { data } = await sb.from('pack_unlocks').select('pack_id');
+  const counts = new Map<string, number>();
+  for (const row of data ?? []) {
+    const id = row.pack_id as string;
+    counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+  return counts;
 }
 
 export async function dbGrantPackAccess(

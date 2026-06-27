@@ -1,13 +1,13 @@
 {
   "phase": "initial",
-  "nextDeptIndex": 2,
+  "nextDeptIndex": 43,
   "initialStartIndex": 2,
-  "initialDeptsProcessed": 0,
+  "initialDeptsProcessed": 8,
   "refreshCycle": 0,
   "completedInitialAt": null,
+  "intervalHours": 12,
   "initialIntervalHours": 12,
   "refreshIntervalHours": 24,
-  "intervalHours": 12,
   "initialBatchSize": 8,
   "refreshBatchSize": 6,
   "maxBatchSize": 8,
@@ -17,16 +17,109 @@
   "refreshLightDays": 30,
   "refreshFullDays": 60,
   "emptyDeptSkipDays": 90,
-  "deptDurations": {},
+  "deptDurations": {
+    "069": [
+      0
+    ],
+    "059": [
+      14.3
+    ],
+    "075": [
+      0
+    ],
+    "013": [
+      0.2
+    ],
+    "062": [
+      0.4
+    ],
+    "033": [
+      0.5
+    ],
+    "031": [
+      0.5
+    ],
+    "044": [
+      0.3
+    ]
+  },
   "monthlyBudget": {
     "month": "2026-06",
-    "estimatedMinutes": 0,
+    "estimatedMinutes": 16.3,
     "limitMinutes": 800,
     "skipWhenOverBudget": true,
     "skipOnlyDuringInitial": true
   },
-  "lastRunAt": "2026-06-26T22:23:48.878Z",
-  "lastDepartment": "002",
+  "lastRunAt": "2026-06-27T07:45:10.770Z",
+  "lastDepartment": "044",
   "lastStatus": "done",
-  "lastRowCount": 4
+  "lastRowCount": 0,
+  "lastBatchSize": 8,
+  "lastBatchResults": [
+    {
+      "code": "069",
+      "index": 67,
+      "status": "skipped",
+      "rowCount": 55,
+      "durationMinutes": 0,
+      "mode": "skip_csv"
+    },
+    {
+      "code": "059",
+      "index": 57,
+      "status": "done",
+      "rowCount": 61,
+      "durationMinutes": 14.278966666666667,
+      "mode": "full"
+    },
+    {
+      "code": "075",
+      "index": 73,
+      "status": "empty",
+      "rowCount": 0,
+      "durationMinutes": 0.0343,
+      "mode": "full"
+    },
+    {
+      "code": "013",
+      "index": 12,
+      "status": "empty",
+      "rowCount": 0,
+      "durationMinutes": 0.20415,
+      "mode": "full"
+    },
+    {
+      "code": "062",
+      "index": 60,
+      "status": "empty",
+      "rowCount": 0,
+      "durationMinutes": 0.4344,
+      "mode": "full"
+    },
+    {
+      "code": "033",
+      "index": 31,
+      "status": "empty",
+      "rowCount": 0,
+      "durationMinutes": 0.5141833333333333,
+      "mode": "full"
+    },
+    {
+      "code": "031",
+      "index": 29,
+      "status": "empty",
+      "rowCount": 0,
+      "durationMinutes": 0.47808333333333336,
+      "mode": "full"
+    },
+    {
+      "code": "044",
+      "index": 42,
+      "status": "empty",
+      "rowCount": 0,
+      "durationMinutes": 0.33925,
+      "mode": "full"
+    }
+  ],
+  "lastRunDurationMinutes": 16.3
 }

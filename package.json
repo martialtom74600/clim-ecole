@@ -23,6 +23,7 @@
     "dept:split": "node src/scripts/splitCsvByDepartment.js",
     "nightly:department": "node src/scripts/runNightlyDepartment.js",
     "db:pipeline-jobs": "node src/scripts/applyPipelineJobsSchema.js",
+    "db:entitlements": "node src/scripts/applyEntitlementsSecurity.js",
     "web:dev": "npm run dev --prefix apps/web",
     "web:build": "npm run build --prefix apps/web"
   },

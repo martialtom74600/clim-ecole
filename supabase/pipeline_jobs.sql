@@ -25,6 +25,7 @@ create policy "pipeline_jobs_auth_all" on public.pipeline_jobs
   for all to authenticated using (true) with check (true);
 
 grant all on public.pipeline_jobs to service_role;
-grant select on public.pipeline_jobs to authenticated, anon;
+grant select on public.pipeline_jobs to authenticated;
+revoke select on public.pipeline_jobs from anon;
 
 notify pgrst, 'reload schema';

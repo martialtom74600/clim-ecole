@@ -213,3 +213,4 @@ create policy "pipeline_jobs_auth_all" on public.pipeline_jobs
 
 grant all on public.pipeline_jobs to service_role;
 grant select on public.pipeline_jobs to authenticated;
+-- anon : pas de SELECT (voir migrations entitlements_security)

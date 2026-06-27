@@ -29,15 +29,19 @@ npm run web:dev
 
 ## Configuration
 
-Copier `apps/web/.env.example` → `apps/web/.env.local`
+Un seul fichier à la racine : copier `.env.example` → `.env` (pipeline **et** site Next.js).
 
 ## Monétisation (Stripe)
 
 1. Créer produits/prix Stripe (290 € dossier, 990 €/mois abo)
-2. Renseigner `STRIPE_*` dans `.env.local`
+2. Renseigner `STRIPE_*` dans `.env`
 3. Webhook : `POST /api/stripe/webhook`
 
 ## Déblocage dev (sans Stripe)
+
+**Recommandé :** `CLIM_TEST_MODE=1` dans `.env` (racine) — tous les territoires débloqués.
+
+Alternative API :
 
 ```bash
 curl -X POST http://localhost:3001/api/dev/unlock \

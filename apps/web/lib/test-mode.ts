@@ -1,6 +1,6 @@
 /**
  * Mode test : accès premium sans Stripe (local + preview Vercel uniquement).
- * CLIM_TEST_MODE=1 dans .env.local — jamais actif sur Vercel Production.
+ * CLIM_TEST_MODE=1 dans `.env` (racine) — jamais actif sur Vercel Production.
  */
 export function isTestMode(): boolean {
   const raw = process.env.CLIM_TEST_MODE?.trim().toLowerCase();

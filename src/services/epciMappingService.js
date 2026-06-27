@@ -13,13 +13,22 @@ function normalizeInsee(code) {
   return String(code ?? '').trim().padStart(5, '0');
 }
 
-/** Je convertis un code département pipeline (001, 073) en code geo.api.gouv.fr (01, 73). */
+/** Code geo.api.gouv.fr — 2 chiffres (01, 44, 69). */
 export function geoDepartementCode(dept) {
   const raw = String(dept ?? '').trim().toUpperCase();
   if (raw === '2A' || raw === '2B') return raw;
   const n = Number(raw.replace(/^0+/, ''));
   if (Number.isNaN(n)) return raw;
   return String(n).padStart(2, '0');
+}
+
+/** Code data.education.gouv.fr — 3 chiffres (001, 044, 059, 075). */
+export function educationDepartementCode(dept) {
+  const raw = String(dept ?? '').trim().toUpperCase();
+  if (raw === '2A' || raw === '2B') return raw;
+  const n = Number(raw.replace(/^0+/, ''));
+  if (Number.isNaN(n)) return raw.padStart(3, '0');
+  return String(n).padStart(3, '0');
 }
 
 function cachePath() {

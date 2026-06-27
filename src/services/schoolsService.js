@@ -1,7 +1,7 @@
 import { config } from '../config.js';
 import { api } from '../utils/apiClients.js';
 import { logger } from '../utils/logger.js';
-import { geoDepartementCode } from './epciMappingService.js';
+import { educationDepartementCode } from './epciMappingService.js';
 import {
   logCacheHit,
   readDeptSnapshot,
@@ -53,7 +53,7 @@ async function fetchDepartmentSchoolsFromApi(deptCode) {
 }
 
 async function getDepartmentSchools(deptPipelineCode) {
-  const apiDept = geoDepartementCode(deptPipelineCode);
+  const apiDept = educationDepartementCode(deptPipelineCode);
 
   const cached = await readDeptSnapshot(CACHE_TYPE, apiDept);
   if (cached?.length) {
@@ -63,13 +63,21 @@ async function getDepartmentSchools(deptPipelineCode) {
 
   logger.info(`Écoles primaires — département ${apiDept} (téléchargement)`);
   const schools = await fetchDepartmentSchoolsFromApi(apiDept);
-  await writeDeptSnapshot(
-    CACHE_TYPE,
-    apiDept,
-    schools,
-    config.deptCache?.schoolsTtlDays ?? 60,
-  );
-  logger.info(`[cache] ${CACHE_TYPE} ${apiDept} — ${schools.length} école(s) enregistrée(s)`);
+
+  if (schools.length > 0) {
+    await writeDeptSnapshot(
+      CACHE_TYPE,
+      apiDept,
+      schools,
+      config.deptCache?.schoolsTtlDays ?? 60,
+    );
+    logger.info(`[cache] ${CACHE_TYPE} ${apiDept} — ${schools.length} école(s) enregistrée(s)`);
+  } else {
+    logger.warn(
+      `[cache] ${CACHE_TYPE} ${apiDept} — 0 école (pas de cache — vérifiez code dept / API)`,
+    );
+  }
+
   return schools;
 }
 
@@ -101,3 +109,5 @@ export async function fetchPrimarySchools(inseeCodes) {
   );
   return schools;
 }
+
+export { educationDepartementCode };

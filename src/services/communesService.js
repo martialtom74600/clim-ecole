@@ -1,7 +1,6 @@
 import { config } from '../config.js';
 import { logger } from '../utils/logger.js';
 import { fetchGeoCommunesForDepartments } from './geoCommunesService.js';
-import { geoDepartementCode } from './epciMappingService.js';
 
 export async function loadEligibleCommunes() {
   const communes = await fetchGeoCommunesForDepartments(config.departments);

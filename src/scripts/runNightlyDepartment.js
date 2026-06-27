@@ -199,15 +199,16 @@ function estimateForMode(mode, deptCode, rotation) {
   return getDeptEstimateMinutes(deptCode, rotation);
 }
 
-async function runBdnbSetupOnce(bdnbReady, dept) {
-  if (bdnbReady.value || process.env.BDNB_SETUP === '0') return;
-  console.log('[nightly] Setup BDNB…');
+async function runBdnbSetupForDept(bdnbReadyDepts, dept) {
+  if (process.env.BDNB_SETUP === '0') return;
+  if (bdnbReadyDepts.has(dept.code)) return;
+  console.log(`[nightly] Setup BDNB — ${dept.code} (${dept.label})…`);
   await runNodeScript('src/scripts/bdnbSetup.js', {
     DEPARTEMENTS: dept.code,
     REGION_LABEL: dept.region_label,
     BDNB_SETUP_SKIP_DOWNLOAD: process.env.SKIP_BDNB_DOWNLOAD === '1' ? '1' : (process.env.BDNB_SETUP_SKIP_DOWNLOAD ?? ''),
   });
-  bdnbReady.value = true;
+  bdnbReadyDepts.add(dept.code);
 }
 
 async function runMediumRefresh(dept, csvRel) {
@@ -240,7 +241,7 @@ async function syncDepartment(dept, csvAbs) {
 
 async function processDepartmentEntry(entry, ctx) {
   const { dept, reason } = entry;
-  const { rotation, jobsByCode, bdnbReady, timeBudget, isRefresh } = ctx;
+  const { rotation, jobsByCode, bdnbReadyDepts, timeBudget, isRefresh } = ctx;
   const csvRel = departmentCsvPath(dept.code);
   const csvAbs = path.join(root, csvRel);
   const job = jobsByCode.get(dept.code);
@@ -330,7 +331,7 @@ async function processDepartmentEntry(entry, ctx) {
     }
   }
 
-  await runBdnbSetupOnce(bdnbReady, dept);
+  await runBdnbSetupForDept(bdnbReadyDepts, dept);
   console.log('[nightly] Pipeline complet…');
   await runFullPipeline(dept, csvRel);
 
@@ -409,7 +410,7 @@ async function main() {
     ? buildRefreshQueue(catalog, pipelineJobs)
     : buildInitialQueue(catalog, rotation);
 
-  const bdnbReady = { value: false };
+  const bdnbReadyDepts = new Set();
   const results = [];
   const durationUpdates = {};
   let processed = 0;
@@ -484,7 +485,7 @@ async function main() {
       const outcome = await processDepartmentEntry(entry, {
         rotation,
         jobsByCode,
-        bdnbReady,
+        bdnbReadyDepts,
         timeBudget,
         isRefresh,
       });

@@ -4,80 +4,84 @@
 
 ```
 Pipeline (GitHub Actions / local)
-  → data/departments/{code}.csv  (Git)
-  → Supabase (upsert)
+  → data/departments/{code}.csv  (disque runner — hors Git)
+  → Supabase (source de vérité)
   → Site Next.js (Vercel)
+  → Git : rotation.json uniquement
 ```
 
-- **1 département toutes les 48 h** (`intervalHours: 36`)
-- **96 départements** métropole + Corse
-- Rotation : [`data/departments/rotation.json`](../data/departments/rotation.json)
+### Pipeline optimisé
 
-## Vercel (site)
+| Fonctionnalité | Détail |
+|----------------|--------|
+| **Batch temps-réel** | Traite autant de dept que le budget (165 min initial / 105 min refresh) |
+| **2 crons initial** | 2h + 14h UTC → intervalle 12 h en phase découverte |
+| **Priorité initiale** | Rhône, Nord, Paris… puis ordre catalogique |
+| **Refresh delta** | `light` sync · `medium` recalc · `full` re-scrape · `skip_empty` 90 j |
+| **Priorité refresh** | `pipeline_jobs.last_sync_at` ASC — les plus vieux d'abord |
+| **Estimation adaptive** | Durée rolling / dept dans `deptDurations` |
+| **Maintenance ∞** | Phase refresh ne s'arrête jamais (budget GHA skip désactivé) |
 
-| Variable | Description |
-|----------|-------------|
-| `SUPABASE_URL` | URL projet Supabase |
-| `SUPABASE_SERVICE_ROLE_KEY` | Clé service (serveur uniquement) |
-| `AUTH_SECRET` | Sessions |
-| `ADMIN_PASSWORD` | Cockpit admin |
-| Stripe vars | Paiements |
+Rotation : [`data/departments/rotation.json`](../data/departments/rotation.json)
 
-**Root Directory** : `apps/web`
+### Cycle de vie
 
-## GitHub Actions (pipeline nightly)
+```
+initial (12h, batch temps)  →  96 dept  →  refresh (∞, delta, 24h)
+```
+
+## GitHub Actions
 
 Workflow : [`.github/workflows/nightly-department.yml`](../.github/workflows/nightly-department.yml)
 
-### Secrets à configurer
-
-Repository → Settings → Secrets → Actions :
+### Secrets
 
 | Secret | Description |
 |--------|-------------|
 | `SUPABASE_URL` | Même que Vercel |
 | `SUPABASE_SERVICE_ROLE_KEY` | Même que Vercel |
 
-Optionnel : reprendre les variables API du [`.env.example`](../.env.example) si le pipeline en a besoin (SIRENE, etc.).
+### Crons
+
+- **2h UTC** et **14h UTC** — en initial : skip si run < 12 h
+- En refresh : skip si run < 24 h
+
+### Refresh delta
+
+| Mode | Condition | Action |
+|------|-----------|--------|
+| `skip_empty` | dept vide + sync < 90 j | skip |
+| `light` | sync < 30 j | sync Supabase (~3 min) |
+| `medium` | 30–60 j + checkpoint | reexportEconomics (~8 min) |
+| `full` | > 60 j ou jamais sync | pipeline complet |
+
+### Limitations GHA
+
+| Limitation | Réaction |
+|------------|----------|
+| Timeout 180 min | Arrêt à 165 min (initial) ou 105 min (refresh) |
+| Batch | Cap 8 ; ÷2 si partial/timeout |
+| Minutes/mois | Skip > 800 min **initial only** |
+| Disque < 2 Go | `skipped_disk` |
+| Push git | 3× retry rebase |
 
 ### Lancement manuel
 
-Actions → **Nightly department pipeline** → **Run workflow** → cocher `force` pour ignorer l'intervalle 36 h.
-
-### Budget minutes
-
-- Cron : tous les jours à 2h UTC, **skip** si dernière run < 36 h
-- Timeout job : **120 min**
-- Estimation : ~350–450 min/mois (avec strate-radar-lab ~850 min total → OK Free)
-
-## Supabase
-
-1. Exécuter [`supabase/schema.sql`](../supabase/schema.sql) (inclut `pipeline_jobs`)
-2. Seed AURA déjà exporté :
-
-```bash
-npm run sync:supabase:all
-```
+`force=true` · `batch_size=8` (cap)
 
 ## Commandes locales
 
 ```bash
-# Catalog départements
-npm run dept:catalog
-
-# Split CSV AURA existant
-npm run dept:split
-
-# Sync tous les CSV dept → Supabase
-npm run sync:supabase:all
-
-# Simuler une nuit (force)
 npm run nightly:department -- --force
-
-# Sync un dept
-node src/scripts/syncToSupabase.js --file data/departments/074.csv --region-label "Auvergne-Rhône-Alpes" --department 074
+npm run sync:supabase:all
+node src/scripts/runNightlyDepartment.js --force --batch 3
 ```
 
-## Repo privé recommandé
+## Supabase
 
-Les CSV contiennent noms d'écoles et contacts mairies.
+1. [`supabase/schema.sql`](../supabase/schema.sql)
+2. `npm run sync:supabase:all` pour seed AURA
+
+## Repo privé
+
+Les CSV contiennent noms d'écoles et contacts — **hors Git**, stockés sur runner + Supabase.

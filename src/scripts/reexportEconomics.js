@@ -1,7 +1,5 @@
 /**
- * Recalcule économies + finance + MGPE depuis le checkpoint sans re-scraper les APIs.
- * Purge les lignes hors Sweet Spot EET (filtre sémantique + surface).
- * Usage : node src/scripts/reexportEconomics.js
+ * Recalcule économies + finance depuis le checkpoint → CSV (sans re-scrape API).
  */
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -15,8 +13,7 @@ import { recalculateRowEnergyEconomics } from '../finance/energyEconomics.js';
 import { attachIndustrialProfile } from '../industrial/index.js';
 import { resolveSchoolCoordinates } from '../dashboard/schoolCoordsService.js';
 import { loadPopulationMaps } from '../dashboard/populationCache.js';
-import { filterEetExportRows, formatEetFilterLog, validateEetConfig } from '../services/patrimoineFilter.js';
-
+import { filterEetExportRows, validateEetConfig } from '../services/patrimoineFilter.js';
 import { initPrixKwhMoyenTertiaire } from '../services/energyPriceService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -36,33 +33,17 @@ function reconcileCheckpointSchoolsAfterEetPurge(checkpoint) {
   syncCheckpointStats(checkpoint);
 }
 
-async function main() {
+export async function reexportEconomicsToFile(outputPath) {
   await initPrixKwhMoyenTertiaire();
   validateEetConfig();
-  console.log(`Prix kWh tertiaire : ${config.getPrixKwhTertiaire()} € (${config.cpe.prixKwhSource})`);
-  console.log(
-    `Filtre EET — surface min ${config.eet.eligibleSurfaceMin} m², `
-    + `${config.eet.eligiblePublicKeywords.length} mots-clés éligibles, `
-    + `${config.eet.bannedPublicKeywords.length} mots-clés exclus`,
-  );
 
   const checkpoint = await loadCheckpoint(config.departments);
   if (!checkpoint.results?.length) {
-    console.error('Aucun résultat dans le checkpoint — lancez d\'abord le pipeline.');
-    process.exit(1);
+    throw new Error('Checkpoint vide — pipeline complet requis avant reexport');
   }
 
-  const beforeCount = checkpoint.results.length;
-
-  const { kept, removed, rejections } = filterEetExportRows(checkpoint.results, {
-    onReject: (row, evaluation) => {
-      console.log(`  ${formatEetFilterLog(evaluation)} — ${row.Nom_Ecole?.slice(0, 60)} (${row.Commune})`);
-    },
-  });
+  const { kept, removed } = filterEetExportRows(checkpoint.results);
   checkpoint.results = kept;
-
-  console.log(`Filtre EET appliqué : ${removed} ligne(s) retirée(s), ${checkpoint.results.length}/${beforeCount} conservée(s)`);
-
   reconcileCheckpointSchoolsAfterEetPurge(checkpoint);
 
   const populationMaps = await loadPopulationMaps();
@@ -71,33 +52,34 @@ async function main() {
   const recalculated = checkpoint.results.map((row) =>
     recalculateRowEnergyEconomics(attachIndustrialProfile(row)),
   );
-
   const enriched = recalculated.map((row) => enrichRowWithFinance(row, populationByInsee));
   const withCoords = await resolveSchoolCoordinates(enriched);
   const epciMapping = await ensureEpciMapping();
   checkpoint.results = generateFinancialPackages(withCoords, { epciMapping });
 
+  const absOutput = path.isAbsolute(outputPath)
+    ? outputPath
+    : path.resolve(process.cwd(), outputPath);
+
+  await exportProspectionCsv(checkpoint.results, absOutput);
+  await saveCheckpoint(checkpoint);
+
+  return { rowCount: checkpoint.results.length, removed };
+}
+
+async function main() {
   const outputPath = path.isAbsolute(config.outputFile)
     ? config.outputFile
     : path.resolve(process.cwd(), config.outputFile);
-
-  await exportProspectionCsv(checkpoint.results, outputPath);
-  await saveCheckpoint(checkpoint);
-
-  const roche = checkpoint.results.filter((r) => String(r.Code_INSEE) === '74224');
-  const totalEco = roche.reduce((s, r) => s + (r.Economie_Annuelle_Euros ?? 0), 0);
-  const totalCapex = roche.reduce((s, r) => s + (r.CAPEX_Total ?? 0), 0);
-
-  console.log(`✓ ${checkpoint.results.length} lignes exportées → ${outputPath}`);
-  console.log(`  La Roche-sur-Foron : ${roche.length} écoles, CAPEX ${totalCapex} €, économies ${totalEco} €/an`);
-  for (const r of roche) {
-    console.log(
-      `    · ${r.Nom_Ecole?.slice(0, 40)} : ${r.Conso_Specifique_kWh_M2} kWh/m², facture ${r.Facture_Annuelle_Euros} €, éco ${r.Economie_Annuelle_Euros} €, Lt ${r.MGPE_Loyer_Lt_Euros} €`,
-    );
-  }
+  const { rowCount, removed } = await reexportEconomicsToFile(outputPath);
+  console.log(`✓ ${rowCount} lignes exportées (${removed} retirées EET) → ${outputPath}`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+const isDirectRun = process.argv[1]
+  && path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);
+if (isDirectRun) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

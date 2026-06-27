@@ -32,7 +32,7 @@ function runNodeScript(scriptName) {
   });
 }
 
-async function main() {
+async function runBdnbSetup() {
   const skipDownload = process.env.BDNB_SETUP_SKIP_DOWNLOAD === '1';
 
   logger.info('═══ Setup BDNB local (0 €, sans quota API) ═══');
@@ -50,8 +50,6 @@ async function main() {
   resetBdnbQuotaBlock();
 
   logger.success(`Setup terminé — ${total} RNB indexés, ${local.loadedDepts.length} département(s)`);
-  logger.info('Activez dans .env : BDNB_LOCAL_ONLY=1');
-  logger.info('Puis relancez : npm run prospect');
 
   if (process.env.BDNB_PRUNE_CSV_AFTER_INDEX === '1') {
     for (const dept of config.departments) {
@@ -60,6 +58,16 @@ async function main() {
     }
     logger.info('CSV BDNB supprimés — zip conservés (ré-extraction patrimoine à la volée)');
   }
+
+  return { total, depts: local.loadedDepts.length };
+}
+
+export { runBdnbSetup };
+
+async function main() {
+  await runBdnbSetup();
+  logger.info('Activez dans .env : BDNB_LOCAL_ONLY=1');
+  logger.info('Puis relancez : npm run prospect');
 }
 
 main().catch((error) => {

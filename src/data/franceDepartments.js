@@ -130,6 +130,12 @@ export const AURA_DEPARTMENT_CODES = [
   '001', '003', '007', '015', '026', '038', '042', '043', '063', '069', '073', '074',
 ];
 
+/** Départements à traiter en priorité en phase initiale (volume scolaire / valeur commerciale). */
+export const INITIAL_PRIORITY_CODES = [
+  '069', '059', '075', '013', '062', '033', '031', '044', '060', '076',
+  '074', '063', '038', '042', '026', '006', '034', '030', '067', '057',
+];
+
 export function orderedDepartmentCodes() {
   const codes = [];
   for (let i = 1; i <= 95; i += 1) {

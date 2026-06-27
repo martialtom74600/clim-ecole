@@ -3,12 +3,17 @@ name: Nightly department pipeline
 on:
   schedule:
     - cron: '0 2 * * *'
+    - cron: '0 14 * * *'
   workflow_dispatch:
     inputs:
       force:
-        description: 'Ignorer intervalle 36 h'
+        description: 'Ignorer intervalle et budget minutes (phase initial)'
         required: false
         default: 'false'
+      batch_size:
+        description: 'Cap batch (vide = temps-réel, max 8)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -20,7 +25,7 @@ concurrency:
 jobs:
   pipeline:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
 
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +38,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check runner disk space
+        run: |
+          df -h .
+          FREE_MB=$(df -Pm . | tail -1 | awk '{print $4}')
+          echo "FREE_MB=$FREE_MB" >> "$GITHUB_ENV"
+          if [ "$FREE_MB" -lt 2048 ]; then
+            echo "::warning::Espace disque faible (${FREE_MB} Mo)"
+          fi
+
       - name: Restore BDNB cache
+        id: bdnb-cache
         uses: actions/cache@v4
         with:
           path: |
@@ -43,27 +58,56 @@ jobs:
           restore-keys: |
             bdnb-${{ runner.os }}-
 
+      - name: Note cache miss
+        if: steps.bdnb-cache.outputs.cache-hit != 'true'
+        run: echo "::notice::Cache BDNB absent — 1er dept plus long"
+
       - name: Run nightly department job
+        id: nightly
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           BDNB_LOCAL_ONLY: '1'
           GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUNNER_TIMEOUT_MINUTES: '180'
+          NIGHTLY_INITIAL_MAX_RUNTIME_MINUTES: '165'
+          NIGHTLY_MAX_RUNTIME_MINUTES: '105'
+          NIGHTLY_MAX_BATCH_SIZE: '8'
+          NIGHTLY_DEPT_ESTIMATE_MINUTES: '22'
+          NIGHTLY_SYNC_ESTIMATE_MINUTES: '3'
+          NIGHTLY_MEDIUM_ESTIMATE_MINUTES: '8'
+          NIGHTLY_MIN_DISK_MB: '2048'
         run: |
           EXTRA=""
           if [ "${{ github.event.inputs.force }}" = "true" ]; then
             EXTRA="--force"
           fi
-          node src/scripts/runNightlyDepartment.js $EXTRA
+          BATCH=""
+          if [ -n "${{ github.event.inputs.batch_size }}" ]; then
+            BATCH="--batch ${{ github.event.inputs.batch_size }}"
+          fi
+          set +e
+          node src/scripts/runNightlyDepartment.js $EXTRA $BATCH
+          EXIT=$?
+          echo "exit_code=$EXIT" >> "$GITHUB_OUTPUT"
+          if [ $EXIT -eq 0 ]; then exit 0; fi
+          exit $EXIT
 
-      - name: Commit department CSV + rotation
+      - name: Commit rotation state
+        if: always() && steps.nightly.outputs.exit_code != '1'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/departments/
+          git add data/departments/rotation.json data/departments/catalog.json 2>/dev/null || true
+          git add data/departments/rotation.json
           if git diff --staged --quiet; then
-            echo "Aucun changement à committer"
+            echo "Aucun changement rotation"
             exit 0
           fi
-          git commit -m "data: nightly department export [skip ci]"
-          git push
+          git commit -m "data: nightly rotation [skip ci]"
+          for attempt in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push && break
+            echo "Push échoué (tentative $attempt/3)"
+            sleep 10
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+          done

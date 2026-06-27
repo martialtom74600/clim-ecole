@@ -43,7 +43,11 @@ export const COPY = {
   qualifiedCriteria: 'Score B ou mieux et budget travaux supérieur à 400 000 €',
 
   paywallTitle: 'Débloquer ce territoire',
-  paywallDesc: 'Noms des communes et écoles, contacts mairies, carte précise, export PDF.',
+  paywallDesc: 'Montants exacts, liste école par école, contacts mairies, simulateur RAC et export PDF.',
+
+  freePreviewTitle: 'Aperçu gratuit',
+  freePreviewHint: 'Tranches et profil énergétique — pas les montants exacts ni les contacts.',
+  budgetRangeHint: 'Tranche indicative — montant exact après déblocage',
 
   accountNoAccess: 'Aucun achat actif sur cet navigateur',
   accountAccessHint: 'Après paiement, votre accès est mémorisé sur cet appareil (pas de mot de passe).',

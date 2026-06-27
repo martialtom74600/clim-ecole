@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getMarketplacePacks } from '@/lib/marketplace';
-import { formatEur, formatInt } from '@/lib/format';
+import { formatInt } from '@/lib/format';
 import { COPY } from '@/lib/copy';
 import { PersonaBadgeGroup } from '@/components/brand/personas';
 import { RadarScoreBadge } from '@/components/marketplace/radar-score-badge';
@@ -25,7 +25,7 @@ export default async function ComparePage({
       <h1 className="text-2xl font-semibold">Comparer des territoires</h1>
       <p className="mt-2 max-w-2xl text-radar-muted">
         Mettez jusqu&apos;à 3 territoires côte à côte pour choisir où prospecter en premier.
-        Les noms restent masqués tant que le dossier n&apos;est pas acheté.
+        Comparaison sur tranches et priorité — montants exacts après achat du dossier.
       </p>
 
       {packs.length === 0 ? (
@@ -42,26 +42,26 @@ export default async function ComparePage({
         <div className="mt-8 grid gap-4 lg:grid-cols-3">
           {packs.map((pack) => pack && (
             <div key={pack.packId} className="card p-6">
-              <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} />
+              <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} previewOnly />
               <PersonaBadgeGroup personas={pack.personas} className="mt-3" />
               <p className="font-semibold">{pack.publicName}</p>
-              <p className="text-xs text-radar-muted">Identité masquée</p>
+              <p className="text-xs text-radar-muted">{pack.department} · identité masquée</p>
               <dl className="mt-6 space-y-3 text-sm">
                 <div className="flex justify-between gap-2">
-                  <dt className="text-radar-muted">{COPY.budgetTravaux}</dt>
-                  <dd className="font-bold tabular-nums">{formatEur(pack.packCapexTotal, true)}</dd>
+                  <dt className="text-radar-muted">Tranche budget</dt>
+                  <dd className="font-bold tabular-nums">{pack.budgetRange}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-radar-muted">{COPY.fondsVert}</dt>
-                  <dd className="font-semibold tabular-nums">{formatEur(pack.fondsVertPotential, true)}</dd>
+                  <dt className="text-radar-muted">{COPY.subventions}</dt>
+                  <dd className="font-semibold">{pack.subventionLevelLabel}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
                   <dt className="text-radar-muted">{COPY.ecoles}</dt>
                   <dd>{formatInt(pack.batimentCount)}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-radar-muted">{COPY.resteACharge}</dt>
-                  <dd className="tabular-nums">{formatEur(pack.resteAChargeTotal, true)}</dd>
+                  <dt className="text-radar-muted">Priorité</dt>
+                  <dd>{pack.radarGrade}</dd>
                 </div>
               </dl>
               <Link href={`/explorer/${pack.packId}`} className="btn-primary mt-6 w-full text-center text-sm">

@@ -5,6 +5,7 @@ import { getCoverageBadge } from './coverage';
 import { explainDealPersona, inferDealPersona } from './persona-engine';
 import { computeRadarScore } from './radar-score';
 import { checkPackEntitlement, getPackAvailability } from './entitlements';
+import { buildTerritoryFreePreview, formatBudgetRange, formatSubventionLevel } from './freemium';
 import { isQualifiedDeal } from './curated-deals';
 import type {
   ClosingLevel,
@@ -102,6 +103,7 @@ async function toMarketplacePack(
     subventionRatio: personaResult.subventionRatio,
     temperatureLevel: summary.temperatureLevel,
     statutProjetEpci: summary.statutProjetEpci,
+    financialsHidden: !unlocked,
     isHot:
       summary.temperatureLevel === 'chaud' ||
       detail.packCapexTotal >= 1_000_000 ||
@@ -118,7 +120,25 @@ async function toMarketplacePack(
 
   return {
     ...base,
+    budgetRange: formatBudgetRange(detail.packCapexTotal),
+    subventionLevelLabel: formatSubventionLevel(personaResult.subventionRatio),
     isQualified: isQualifiedDeal(base),
+  };
+}
+
+/** Retire les € exacts du payload client (gratuit). */
+function redactPackFinancials(pack: MarketplacePack): MarketplacePack {
+  if (!pack.financialsHidden) return pack;
+  return {
+    ...pack,
+    packCapexTotal: 0,
+    resteAChargeTotal: 0,
+    subventionsTotal: 0,
+    fondsVertPotential: 0,
+    gainNetMairieTotal: 0,
+    roiAnnees: 0,
+    subventionRatio: 0,
+    radarScore: 0,
   };
 }
 
@@ -145,10 +165,26 @@ function toMarketplaceBuilding(
   unlocked: boolean,
   regionShort = 'France',
 ): MarketplaceBuilding {
+  if (!unlocked) {
+    return {
+      buildingId: encodeBuildingId(packId, index),
+      publicName: obfuscateBuildingName(),
+      publicCommune: obfuscateCommune(index, regionShort),
+      surfaceM2: 0,
+      classeDpe: '?',
+      capexTotal: 0,
+      resteACharge: 0,
+      gainNetMairie: 0,
+      roiAnnees: 0,
+      closingTemperature: b.closingTemperature,
+      detailsHidden: true,
+    };
+  }
+
   return {
     buildingId: encodeBuildingId(packId, index),
-    publicName: unlocked ? b.nomEcole : obfuscateBuildingName(),
-    publicCommune: unlocked ? b.commune : obfuscateCommune(index, regionShort),
+    publicName: b.nomEcole,
+    publicCommune: b.commune,
     surfaceM2: b.surfaceM2,
     classeDpe: b.classeDpe,
     capexTotal: b.capexTotal,
@@ -156,12 +192,10 @@ function toMarketplaceBuilding(
     gainNetMairie: b.gainNetAnnuelMairieEuros,
     roiAnnees: b.fondsRoiPessimisteAnnees,
     closingTemperature: b.closingTemperature,
-    ...(unlocked && {
-      realName: b.nomEcole,
-      realCommune: b.commune,
-      emailMairie: b.emailMairie || undefined,
-      alerteSurdimensionnement: b.alerteSurdimensionnement,
-    }),
+    realName: b.nomEcole,
+    realCommune: b.commune,
+    emailMairie: b.emailMairie || undefined,
+    alerteSurdimensionnement: b.alerteSurdimensionnement,
   };
 }
 
@@ -208,10 +242,13 @@ export const getMarketplacePacks = cache(async (): Promise<MarketplacePack[]> =>
     (a, b) => b.radarScore - a.radarScore || b.packCapexTotal - a.packCapexTotal,
   );
 
-  return sorted.map((pack, i) => ({
-    ...pack,
-    isNew: i < 8,
-  }));
+  return sorted.map((pack, i) =>
+    redactPackFinancials({
+      ...pack,
+      isNew: i < 8,
+      financialsHidden: true,
+    }),
+  );
 });
 
 export const getMarketplacePackById = cache(
@@ -262,11 +299,18 @@ export const getMarketplacePackById = cache(
     });
 
     return {
-      pack,
+      pack: redactPackFinancials(unlocked ? pack : { ...pack, financialsHidden: true }),
       buildings,
       unlocked,
-      personaExplanations: explainDealPersona(personaInput),
-      radarFactors: radar.factors,
+      freePreview: unlocked
+        ? undefined
+        : buildTerritoryFreePreview({
+            packCapexTotal: detail.packCapexTotal,
+            subventionRatio: pack.subventionRatio,
+            dpeClasses: detail.batiments.map((b) => b.classeDpe),
+          }),
+      personaExplanations: unlocked ? explainDealPersona(personaInput) : undefined,
+      radarFactors: unlocked ? radar.factors : undefined,
     };
   },
 );

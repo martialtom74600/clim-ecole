@@ -20,7 +20,8 @@ import { SegmentedTabs } from '@/components/ui/segmented-tabs';
 import { RadarScoreBadge } from '@/components/marketplace/radar-score-badge';
 import { WatchlistButton } from '@/components/marketplace/watchlist-button';
 import { PackSlotsBadge } from '@/components/marketplace/pack-slots-badge';
-import { formatEur, formatInt } from '@/lib/format';
+import { formatInt } from '@/lib/format';
+import { PackBudgetLabel } from '@/components/marketplace/pack-budget-label';
 import {
   getCompareList,
   getWatchlist,
@@ -113,8 +114,8 @@ export function MarketplaceExplorerGrid({
               <th className="px-5 py-3.5">Profils</th>
               <th className="px-5 py-3.5">Collectivité</th>
               <th className="px-5 py-3.5">Département</th>
-              <th className="px-5 py-3.5 text-right">CAPEX</th>
-              <th className="px-5 py-3.5 text-right">Fonds Vert</th>
+              <th className="px-5 py-3.5 text-right">Tranche budget</th>
+              <th className="px-5 py-3.5 text-right">Financement</th>
               <th className="px-5 py-3.5 text-right">Écoles</th>
               <th className="px-5 py-3.5" />
             </tr>
@@ -123,7 +124,7 @@ export function MarketplaceExplorerGrid({
             {filtered.map((pack) => (
               <tr key={pack.packId} className="group hover:bg-slate-50/80">
                 <td className="px-5 py-4">
-                  <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} size="sm" />
+                  <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} size="sm" previewOnly />
                 </td>
                 <td className="px-5 py-4">
                   <div className="flex flex-wrap items-center gap-1.5">
@@ -143,11 +144,11 @@ export function MarketplaceExplorerGrid({
                 </td>
                 <td className="px-5 py-4 font-medium text-slate-900">{pack.publicName}</td>
                 <td className="px-5 py-4 text-slate-600">{pack.department}</td>
-                <td className="px-5 py-4 text-right font-bold tabular-nums text-emerald-600">
-                  {formatEur(pack.packCapexTotal, true)}
+                <td className="px-5 py-4 text-right font-bold">
+                  <PackBudgetLabel rangeLabel={pack.budgetRange} capex={pack.packCapexTotal} className="font-bold text-emerald-600" />
                 </td>
-                <td className="px-5 py-4 text-right font-semibold tabular-nums">
-                  {formatEur(pack.fondsVertPotential, true)}
+                <td className="px-5 py-4 text-right text-sm text-radar-muted">
+                  Après achat
                 </td>
                 <td className="px-5 py-4 text-right tabular-nums text-slate-600">
                   {formatInt(pack.batimentCount)}
@@ -197,7 +198,9 @@ export function MarketplaceExplorerGrid({
             </div>
             <p className="mt-3 font-semibold text-slate-900">{pack.publicName}</p>
             <p className="text-xs text-slate-500">{pack.department}</p>
-            <p className="mt-3 font-bold text-emerald-600">{formatEur(pack.packCapexTotal, true)}</p>
+            <p className="mt-3 font-bold text-emerald-600">
+              <PackBudgetLabel rangeLabel={pack.budgetRange} capex={pack.packCapexTotal} className="font-bold text-emerald-600" />
+            </p>
           </Link>
         ))}
       </div>

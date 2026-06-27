@@ -12,10 +12,11 @@ const PLANS = [
     period: '€ HT',
     desc: 'Débloquez un intercommunalité : noms, contacts, exports. Accès 30 jours.',
     features: [
+      'Montants exacts (CAPEX, RAC, subventions, Fonds Vert)',
       'Noms des communes et écoles',
       'Emails des mairies',
       'Détail DPE et surfaces par bâtiment',
-      'Export PDF montage financier (MGPE-PD)',
+      'Simulateur RAC et export PDF montage financier (MGPE-PD)',
     ],
     highlight: false,
   },
@@ -44,9 +45,9 @@ export function PricingPage({
 }) {
   const freeFeatures = [
     `Carte et liste des territoires recensés (${coverageBadge})`,
-    'Budget travaux et subventions estimés',
-    'Nombre d\'écoles et score de priorité',
-    'Filtres par métier (BTP, BE, AMO)',
+    'Tranche de budget et niveau de subventions (sans montant exact)',
+    'Profil énergétique agrégé et score de priorité (A à D)',
+    'Nombre d\'écoles et filtres par métier (BTP, BE, AMO)',
   ];
 
   return (
@@ -54,7 +55,7 @@ export function PricingPage({
       <div className="mx-auto max-w-3xl">
         <h1 className="text-3xl font-semibold tracking-tight">Tarifs</h1>
         <p className="mt-2 text-radar-muted">
-          Consultez gratuitement. Payez uniquement quand vous voulez les noms et contacts.
+          Priorisez gratuitement. Payez pour chiffrer, contacter et exporter.
         </p>
 
         <div className="card mt-10 p-6">

@@ -4,7 +4,7 @@ import { BRAND, HOW_IT_WORKS } from '@/lib/brand';
 import { COPY } from '@/lib/copy';
 import { getMarketplaceGlobalStats, getMarketplacePacks } from '@/lib/marketplace';
 import { getCoverageBadge } from '@/lib/coverage';
-import { formatEur, formatInt } from '@/lib/format';
+import { formatInt } from '@/lib/format';
 import { ClientPersonasSection } from '@/components/brand/personas';
 import { RadarScoreBadge } from '@/components/marketplace/radar-score-badge';
 
@@ -78,10 +78,10 @@ export async function LandingHero() {
                 <span className="font-semibold text-radar-text">Accès gratuit</span>
               </div>
               <ul className="mt-4 space-y-2 text-sm text-radar-muted">
-                <li>· Carte par département (pas de GPS exact)</li>
-                <li>· Budget travaux et subventions estimés</li>
-                <li>· Nombre d&apos;écoles passoires par territoire</li>
-                <li>· Score de priorité et filtres par métier</li>
+                <li>· Carte par département et liste des territoires</li>
+                <li>· Tranche de budget et niveau de subventions (sans € exact)</li>
+                <li>· Profil énergétique agrégé et note de priorité A–D</li>
+                <li>· Filtres par métier (BTP, BE, AMO)</li>
               </ul>
             </div>
             <div className="card border-radar-text/20 p-6">
@@ -91,15 +91,14 @@ export async function LandingHero() {
                 <span className="text-xs text-radar-muted">· dès 290 € HT</span>
               </div>
               <ul className="mt-4 space-y-2 text-sm text-radar-muted">
-                <li>· Noms des communes et des écoles</li>
-                <li>· Carte avec localisation précise du territoire</li>
-                <li>· Contacts mairies (emails)</li>
-                <li>· Détail bâtiment par bâtiment (DPE, surfaces)</li>
-                <li>· Export PDF montage financier</li>
+                <li>· Montants exacts : CAPEX, RAC, subventions, Fonds Vert</li>
+                <li>· Noms des communes, écoles et contacts mairies</li>
+                <li>· Détail bâtiment par bâtiment (DPE, surfaces, €)</li>
+                <li>· Simulateur RAC et export PDF montage financier</li>
               </ul>
               <p className="mt-4 flex items-start gap-2 text-xs text-radar-muted">
                 <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                Les noms sont masqués (« Collectivité · France ») tant que le dossier n&apos;est pas acheté — pour protéger les données avant engagement.
+                Le gratuit suffit pour prioriser — le payant sert à chiffrer un devis et lancer la prospection.
               </p>
             </div>
           </div>
@@ -111,11 +110,6 @@ export async function LandingHero() {
         <div className="mx-auto max-w-6xl px-5 md:px-8">
           <h2 className="text-sm font-medium text-radar-muted">Périmètre actuel · données consolidées</h2>
           <dl className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <StatBlock
-              label="Budget travaux total"
-              hint="Somme des budgets estimés sur tous les territoires"
-              value={formatEur(stats.totalPackCapex, true)}
-            />
             <StatBlock
               label="Écoles recensées"
               hint="Primaires très énergivores (DPE F ou G)"
@@ -131,6 +125,11 @@ export async function LandingHero() {
               hint={COPY.qualifiedCriteria}
               value={formatInt(stats.qualifiedCount)}
             />
+            <StatBlock
+              label="Départements couverts"
+              hint="Couverture en expansion continue"
+              value={coverageBadge}
+            />
           </dl>
         </div>
       </section>
@@ -141,14 +140,14 @@ export async function LandingHero() {
           <div className="mx-auto max-w-6xl px-5 md:px-8">
             <h2 className="text-xl font-semibold">Exemples de {COPY.qualified.toLowerCase()}s</h2>
             <p className="mt-2 max-w-2xl text-sm text-radar-muted">
-              Aperçu anonymisé — cliquez pour voir le détail financier. Les noms réels s&apos;affichent après achat du dossier.
+              Aperçu anonymisé — tranches et priorité visibles. Montants exacts et contacts après achat.
             </p>
 
             <div className="mt-8 grid gap-4 md:grid-cols-3">
               {topDeals.map((deal) => (
                 <Link key={deal.packId} href={`/explorer/${deal.packId}`} className="card panel-hover p-5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <RadarScoreBadge score={deal.radarScore} grade={deal.radarGrade} size="sm" />
+                    <RadarScoreBadge score={deal.radarScore} grade={deal.radarGrade} size="sm" previewOnly />
                     {deal.isHot && <span className="badge-hot">{COPY.hot}</span>}
                   </div>
                   <p className="mt-3 text-xs font-medium uppercase tracking-wide text-radar-subtle">
@@ -158,12 +157,12 @@ export async function LandingHero() {
                   <p className="text-sm text-radar-muted">{deal.publicZone} · {deal.department}</p>
                   <dl className="mt-4 space-y-2 text-sm">
                     <div className="flex justify-between gap-2">
-                      <dt className="text-radar-muted">Budget travaux</dt>
-                      <dd className="font-mono font-medium tabular-nums">{formatEur(deal.packCapexTotal, true)}</dd>
+                      <dt className="text-radar-muted">Tranche budget</dt>
+                      <dd className="font-mono font-medium tabular-nums">{deal.budgetRange}</dd>
                     </div>
                     <div className="flex justify-between gap-2">
-                      <dt className="text-radar-muted">{COPY.fondsVert}</dt>
-                      <dd className="font-mono font-medium tabular-nums">{formatEur(deal.fondsVertPotential, true)}</dd>
+                      <dt className="text-radar-muted">{COPY.subventions}</dt>
+                      <dd className="font-medium">{deal.subventionLevelLabel}</dd>
                     </div>
                     <div className="flex justify-between gap-2">
                       <dt className="text-radar-muted">Écoles concernées</dt>

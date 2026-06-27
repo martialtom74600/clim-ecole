@@ -272,6 +272,12 @@ export interface MarketplacePack {
   slotsRemaining: number;
   slotsMax: number;
   soldOut: boolean;
+  /** Tranche affichée en gratuit */
+  budgetRange: string;
+  /** Niveau de subventions affiché en gratuit */
+  subventionLevelLabel: string;
+  /** Montants exacts réservés au dossier débloqué */
+  financialsHidden?: boolean;
   /** Tags algorithmiques — un deal peut en cumuler plusieurs */
   personas: ClientPersona[];
   primaryPersona: ClientPersona;
@@ -283,6 +289,7 @@ export interface MarketplaceBuilding {
   buildingId: string;
   publicName: string;
   publicCommune: string;
+  /** Masqué en gratuit — champs à 0 / « ? » côté serveur */
   surfaceM2: number;
   classeDpe: string;
   capexTotal: number;
@@ -290,6 +297,8 @@ export interface MarketplaceBuilding {
   gainNetMairie: number;
   roiAnnees: number;
   closingTemperature: string;
+  /** Détail financier réservé au dossier débloqué */
+  detailsHidden?: boolean;
   /** Présent uniquement si dossier débloqué */
   realName?: string;
   realCommune?: string;
@@ -301,6 +310,8 @@ export interface MarketplacePackDetail {
   pack: MarketplacePack;
   buildings: MarketplaceBuilding[];
   unlocked: boolean;
+  /** Synthèse visible sans paiement (tranches, profil DPE agrégé) */
+  freePreview?: import('./freemium').TerritoryFreePreview;
   personaExplanations?: import('./persona-engine').PersonaExplanation[];
   radarFactors?: string[];
 }

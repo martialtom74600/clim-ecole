@@ -13,13 +13,18 @@ export function RadarScoreBadge({
   grade,
   size = 'md',
   className,
+  previewOnly = false,
 }: {
   score: number;
   grade: 'A' | 'B' | 'C' | 'D';
   size?: 'sm' | 'md';
   className?: string;
+  /** Gratuit : note seule, sans score /100 */
+  previewOnly?: boolean;
 }) {
-  const tooltip = `${SCORE_GRADES[grade]} (${score}/100)`;
+  const tooltip = previewOnly
+    ? SCORE_GRADES[grade]
+    : `${SCORE_GRADES[grade]} (${score}/100)`;
 
   return (
     <span
@@ -31,7 +36,7 @@ export function RadarScoreBadge({
         className,
       )}
     >
-      {grade} · {score}
+      {previewOnly ? grade : `${grade} · ${score}`}
     </span>
   );
 }

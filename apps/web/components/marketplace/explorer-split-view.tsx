@@ -26,7 +26,8 @@ import { RadarScoreBadge } from '@/components/marketplace/radar-score-badge';
 import { WatchlistButton } from '@/components/marketplace/watchlist-button';
 import { PackSlotsBadge } from '@/components/marketplace/pack-slots-badge';
 import { RadarMapClient } from '@/components/map/radar-map-client';
-import { formatEur, formatInt } from '@/lib/format';
+import { formatInt } from '@/lib/format';
+import { PackBudgetLabel } from '@/components/marketplace/pack-budget-label';
 import {
   getCompareList,
   getWatchlist,
@@ -158,7 +159,7 @@ export function ExplorerSplitView({
         <div className="rounded-xl border border-radar-border bg-white/95 p-4 shadow-sm backdrop-blur-sm">
           <h1 className="text-lg font-semibold md:text-xl">{COPY.explorer}</h1>
           <p className="mt-1 text-sm text-radar-muted">
-            Carte par département — chiffres visibles, noms et GPS exacts après achat.
+            Carte par département — tranches et priorité visibles, chiffres exacts et contacts après achat.
           </p>
           <p className="mt-2 text-xs text-radar-subtle">
             {filtered.length} dossier{filtered.length > 1 ? 's' : ''} · {qualifiedCount} prioritaires
@@ -228,7 +229,7 @@ export function ExplorerSplitView({
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <RadarScoreBadge score={selectedPack.radarScore} grade={selectedPack.radarGrade} size="sm" />
+                  <RadarScoreBadge score={selectedPack.radarScore} grade={selectedPack.radarGrade} size="sm" previewOnly />
                   {selectedPack.isHot && <span className="badge-hot">{COPY.hot}</span>}
                 </div>
                 <p className="mt-2 font-medium">{selectedPack.publicName}</p>
@@ -247,8 +248,10 @@ export function ExplorerSplitView({
             </div>
             <div className="mt-3 flex items-end justify-between gap-2">
               <div>
-                <p className="text-xl font-bold tabular-nums">{formatEur(selectedPack.packCapexTotal, true)}</p>
-                <p className="text-xs text-radar-muted">{COPY.fondsVert} {formatEur(selectedPack.fondsVertPotential, true)}</p>
+                <p className="text-xl font-bold">
+                  <PackBudgetLabel rangeLabel={selectedPack.budgetRange} capex={selectedPack.packCapexTotal} className="text-xl font-bold" />
+                </p>
+                <p className="text-xs text-radar-muted">Tranche budget · détail € après achat</p>
               </div>
               <Link href={`/explorer/${selectedPack.packId}`} className="btn-primary !px-3 !py-2 !text-xs">
                 {COPY.viewDossier}
@@ -276,7 +279,7 @@ export function ExplorerSplitView({
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-1">
-                      <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} size="sm" />
+                      <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} size="sm" previewOnly />
                       {pack.isHot && <Flame className="h-3 w-3 text-radar-heat" />}
                       {pack.isNew && <span className="badge-new">{COPY.new}</span>}
                     </div>
@@ -285,7 +288,7 @@ export function ExplorerSplitView({
                     <div className="mt-1"><PersonaBadgeGroup personas={pack.personas} /></div>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-sm font-bold tabular-nums">{formatEur(pack.packCapexTotal, true)}</p>
+                    <PackBudgetLabel rangeLabel={pack.budgetRange} capex={pack.packCapexTotal} className="text-sm font-bold" />
                     <PackSlotsBadge remaining={pack.slotsRemaining} max={pack.slotsMax} soldOut={pack.soldOut} />
                   </div>
                 </div>

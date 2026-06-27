@@ -15,9 +15,10 @@ import { WatchlistButton } from '@/components/marketplace/watchlist-button';
 import { CheckoutButton } from '@/components/marketplace/checkout-button';
 import { PackSlotsBadge } from '@/components/marketplace/pack-slots-badge';
 import { PostPurchaseChecklist } from '@/components/marketplace/post-purchase-checklist';
+import { TerritoryFreePreviewPanel } from '@/components/marketplace/territory-free-preview';
 
 export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetail }) {
-  const { pack, buildings, unlocked, personaExplanations, radarFactors } = data;
+  const { pack, buildings, unlocked, freePreview, personaExplanations, radarFactors } = data;
   const subPct = Math.min(100, pack.subventionRatio * 100);
   const racPct = Math.min(100 - subPct, (pack.resteAChargeTotal / (pack.packCapexTotal || 1)) * 100);
   const dossierSoldOut = pack.soldOut && !unlocked;
@@ -35,7 +36,7 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
         </h2>
         {!unlocked && (
           <p className="mt-1 text-sm text-radar-muted">
-            Noms masqués — débloquez le dossier pour voir communes, écoles et contacts.
+            Liste masquée — débloquez pour voir chaque école (DPE, surfaces, montants, contacts).
           </p>
         )}
       </div>
@@ -70,16 +71,22 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
                 </p>
               )}
             </div>
-            <DpeBadge classe={b.classeDpe} />
-            <span className="hidden text-sm tabular-nums text-radar-muted sm:block">
-              {formatInt(b.surfaceM2)} m²
-            </span>
-            <span className="text-sm font-semibold tabular-nums text-radar-text">
-              {formatEur(b.capexTotal, true)}
-            </span>
-            <span className="hidden text-sm font-semibold tabular-nums text-radar-signal sm:block">
-              {formatEur(b.resteACharge, true)}
-            </span>
+            {b.detailsHidden ? (
+              <span className="text-xs text-radar-subtle sm:col-span-4">Détail après achat</span>
+            ) : (
+              <>
+                <DpeBadge classe={b.classeDpe} />
+                <span className="hidden text-sm tabular-nums text-radar-muted sm:block">
+                  {formatInt(b.surfaceM2)} m²
+                </span>
+                <span className="text-sm font-semibold tabular-nums text-radar-text">
+                  {formatEur(b.capexTotal, true)}
+                </span>
+                <span className="hidden text-sm font-semibold tabular-nums text-radar-signal sm:block">
+                  {formatEur(b.resteACharge, true)}
+                </span>
+              </>
+            )}
           </div>
         ))}
       </div>
@@ -95,7 +102,11 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
 
       <header className="mb-10 animate-fade-in-up">
         <div className="flex flex-wrap items-center gap-2">
-          <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} />
+          <RadarScoreBadge
+            score={pack.radarScore}
+            grade={pack.radarGrade}
+            previewOnly={!unlocked}
+          />
           <PersonaBadgeGroup personas={pack.personas} size="md" />
           {pack.isQualified && (
             <span className="badge-qualified">{COPY.qualified}</span>
@@ -124,9 +135,9 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
         <p className="mt-2 text-sm text-radar-muted">
           {unlocked
             ? `${pack.department} · ${pack.batimentCount} écoles · intercommunalité`
-            : `${pack.batimentCount} écoles · localisation précise après déblocage`}
+            : `${pack.department} · ${pack.batimentCount} écoles · montants exacts et contacts après déblocage`}
         </p>
-        {radarFactors && radarFactors.length > 0 && (
+        {unlocked && radarFactors && radarFactors.length > 0 && (
           <ul className="mt-4 flex flex-wrap gap-2">
             {radarFactors.slice(0, 3).map((f) => (
               <li key={f} className="rounded-md bg-radar-elevated px-2.5 py-1 text-xs text-radar-muted">
@@ -143,45 +154,60 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
         </div>
       )}
 
-      <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <FinanceCard label={COPY.budgetTravaux} hint={COPY.budgetTravauxHint} value={formatEur(pack.packCapexTotal, true)} highlight />
-        <FinanceCard label={COPY.resteACharge} hint={COPY.resteAChargeHint} value={formatEur(pack.resteAChargeTotal, true)} accent />
-        <FinanceCard label={COPY.subventions} hint={COPY.subventionsHint} value={formatEur(pack.subventionsTotal, true)} />
-        <FinanceCard label={COPY.fondsVert} hint={COPY.fondsVertHint} value={formatEur(pack.fondsVertPotential, true)} />
-      </div>
-
-      <div className="card mb-8 p-6 md:p-8">
-        <p className="text-sm font-medium">Répartition du financement</p>
-        <p className="mt-1 text-xs text-radar-muted">Part subventions vs part collectivité (estimation)</p>
-        <div className="mt-4 flex h-2 overflow-hidden rounded-full bg-radar-elevated">
-          <div className="bg-radar-signal transition-all" style={{ width: `${subPct}%` }} title="Subventions" />
-          <div className="bg-radar-heat transition-all" style={{ width: `${racPct}%` }} title="Reste à charge" />
-        </div>
-        <div className="mt-4 flex flex-wrap gap-6 text-xs text-radar-muted">
-          <span><GlossaryTerm term="Subventions">{COPY.subventions}</GlossaryTerm> {formatEur(pack.subventionsTotal, true)} ({formatPct(pack.subventionRatio)})</span>
-          <span><GlossaryTerm term="Reste à charge (RAC)">{COPY.resteACharge}</GlossaryTerm> {formatEur(pack.resteAChargeTotal, true)}</span>
-          {pack.roiAnnees > 0 && (
-            <span className="font-semibold text-radar-signal" title="Années pour que les économies d'énergie remboursent l'investissement">
-              Retour sur investissement · {pack.roiAnnees.toFixed(1)} ans
-            </span>
-          )}
-        </div>
-      </div>
-
-      {personaExplanations && (
+      {!unlocked && freePreview && (
         <div className="mb-8">
-          <PersonaExplainPanel explanations={personaExplanations} />
+          <TerritoryFreePreviewPanel
+            preview={freePreview}
+            batimentCount={pack.batimentCount}
+            department={pack.department}
+            radarGrade={pack.radarGrade}
+          />
         </div>
       )}
 
-      <div className="mb-8">
-        <RacSimulator capex={pack.packCapexTotal} baseSubventionRatio={pack.subventionRatio} />
-      </div>
+      {unlocked && (
+        <>
+          <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <FinanceCard label={COPY.budgetTravaux} hint={COPY.budgetTravauxHint} value={formatEur(pack.packCapexTotal, true)} highlight />
+            <FinanceCard label={COPY.resteACharge} hint={COPY.resteAChargeHint} value={formatEur(pack.resteAChargeTotal, true)} accent />
+            <FinanceCard label={COPY.subventions} hint={COPY.subventionsHint} value={formatEur(pack.subventionsTotal, true)} />
+            <FinanceCard label={COPY.fondsVert} hint={COPY.fondsVertHint} value={formatEur(pack.fondsVertPotential, true)} />
+          </div>
+
+          <div className="card mb-8 p-6 md:p-8">
+            <p className="text-sm font-medium">Répartition du financement</p>
+            <p className="mt-1 text-xs text-radar-muted">Part subventions vs part collectivité (estimation)</p>
+            <div className="mt-4 flex h-2 overflow-hidden rounded-full bg-radar-elevated">
+              <div className="bg-radar-signal transition-all" style={{ width: `${subPct}%` }} title="Subventions" />
+              <div className="bg-radar-heat transition-all" style={{ width: `${racPct}%` }} title="Reste à charge" />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-6 text-xs text-radar-muted">
+              <span><GlossaryTerm term="Subventions">{COPY.subventions}</GlossaryTerm> {formatEur(pack.subventionsTotal, true)} ({formatPct(pack.subventionRatio)})</span>
+              <span><GlossaryTerm term="Reste à charge (RAC)">{COPY.resteACharge}</GlossaryTerm> {formatEur(pack.resteAChargeTotal, true)}</span>
+              {pack.roiAnnees > 0 && (
+                <span className="font-semibold text-radar-signal" title="Années pour que les économies d'énergie remboursent l'investissement">
+                  Retour sur investissement · {pack.roiAnnees.toFixed(1)} ans
+                </span>
+              )}
+            </div>
+          </div>
+
+          {personaExplanations && (
+            <div className="mb-8">
+              <PersonaExplainPanel explanations={personaExplanations} />
+            </div>
+          )}
+
+          <div className="mb-8">
+            <RacSimulator capex={pack.packCapexTotal} baseSubventionRatio={pack.subventionRatio} />
+          </div>
+        </>
+      )}
 
       {!unlocked ? (
         <PaywallOverlay
           buildingCount={buildings.length}
-          capex={formatEur(pack.packCapexTotal, true)}
+          capex={freePreview?.budgetRange}
           packId={pack.packId}
           soldOut={dossierSoldOut}
           slotsRemaining={pack.slotsRemaining}

@@ -32,7 +32,7 @@ export function PaywallOverlay({
   const desc =
     subtitle ??
     (buildingCount
-      ? `${buildingCount} écoles · noms et communes · contacts mairies · export PDF`
+      ? `${buildingCount} écoles · montants exacts · contacts · export PDF`
       : COPY.paywallDesc);
 
   return (

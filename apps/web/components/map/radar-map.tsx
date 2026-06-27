@@ -13,7 +13,7 @@ import {
   type TerritoryMarker,
 } from '@/lib/map-utils';
 import type { MapMarker } from '@/lib/types';
-import { formatEur } from '@/lib/format';
+import { formatBudgetRange } from '@/lib/freemium';
 
 export type RadarMapMode = 'territories' | 'departments' | 'schools';
 
@@ -284,7 +284,7 @@ export function RadarMap({
           existing.marker.setIcon(buildDepartmentIcon(L, d, selected));
           if (existing.marker.getTooltip()) {
             existing.marker.setTooltipContent(
-              `<div class="radar-tooltip-inner"><strong>${d.department}</strong><span>${d.territoryCount} territoires · ${formatEur(d.totalCapex, true)}</span><span style="opacity:0.7;font-size:10px">Vue département — localisation précise après achat</span></div>`,
+              `<div class="radar-tooltip-inner"><strong>${d.department}</strong><span>${d.territoryCount} territoires · ${d.schoolCount} écoles</span><span style="opacity:0.7;font-size:10px">Tranches budget visibles dans la liste — détail € après achat</span></div>`,
             );
           }
           continue;
@@ -302,7 +302,7 @@ export function RadarMap({
         if (interactive) {
           marker.on('click', () => onSelectRef.current?.(d.id));
           marker.bindTooltip(
-            `<div class="radar-tooltip-inner"><strong>${d.department}</strong><span>${d.territoryCount} territoires · ${formatEur(d.totalCapex, true)}</span><span style="opacity:0.7;font-size:10px">Vue département — localisation précise après achat</span></div>`,
+            `<div class="radar-tooltip-inner"><strong>${d.department}</strong><span>${d.territoryCount} territoires · ${d.schoolCount} écoles</span><span style="opacity:0.7;font-size:10px">Tranches budget visibles dans la liste — détail € après achat</span></div>`,
             { direction: 'top', offset: [0, -6], opacity: 1, className: 'radar-tooltip' },
           );
         }
@@ -319,7 +319,7 @@ export function RadarMap({
           existing.isHot = t.isHot;
           if (existing.marker.getTooltip()) {
             existing.marker.setTooltipContent(
-              `<div class="radar-tooltip-inner"><strong>${t.department}</strong><span>${formatEur(t.capex, true)} · ${t.schoolCount} écoles</span><span style="opacity:0.7;font-size:10px">Identité masquée</span></div>`,
+              `<div class="radar-tooltip-inner"><strong>${t.department}</strong><span>${formatBudgetRange(t.capex)} · ${t.schoolCount} écoles</span><span style="opacity:0.7;font-size:10px">Identité masquée</span></div>`,
             );
           }
           continue;
@@ -342,7 +342,7 @@ export function RadarMap({
         if (interactive) {
           marker.on('click', () => onSelectRef.current?.(t.packId));
           marker.bindTooltip(
-            `<div class="radar-tooltip-inner"><strong>${t.department}</strong><span>${formatEur(t.capex, true)} · ${t.schoolCount} écoles</span><span style="opacity:0.7;font-size:10px">Identité masquée</span></div>`,
+            `<div class="radar-tooltip-inner"><strong>${t.department}</strong><span>${formatBudgetRange(t.capex)} · ${t.schoolCount} écoles</span><span style="opacity:0.7;font-size:10px">Identité masquée</span></div>`,
             { direction: 'top', offset: [0, -6], opacity: 1, className: 'radar-tooltip' },
           );
         }

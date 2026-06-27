@@ -21,9 +21,10 @@ export default async function CguPage() {
       </p>
       <h2>Accès gratuit et payant</h2>
       <p>
-        L&apos;{COPY.explorer.toLowerCase()} est gratuit : carte, liste, chiffres agrégés et score de priorité.
-        L&apos;accès aux noms de communes, écoles et contacts est payant (achat à l&apos;unité
-        ou {COPY.subscription.toLowerCase()}). Prix HT.
+        L&apos;{COPY.explorer.toLowerCase()} est gratuit : carte, liste, tranches de budget,
+        profil énergétique agrégé et note de priorité — sans montants exacts ni contacts.
+        L&apos;accès aux chiffres détaillés, noms de communes, écoles et contacts est payant
+        (achat à l&apos;unité ou {COPY.subscription.toLowerCase()}). Prix HT.
       </p>
       <h2>Utilisation des exports</h2>
       <p>

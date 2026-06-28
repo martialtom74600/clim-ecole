@@ -28,6 +28,7 @@ import { PackSlotsBadge } from '@/components/marketplace/pack-slots-badge';
 import { RadarMapClient } from '@/components/map/radar-map-client';
 import { formatInt } from '@/lib/format';
 import { PackBudgetLabel } from '@/components/marketplace/pack-budget-label';
+import { ActiveTenderBadge } from '@/components/marketplace/active-tender-badge';
 import {
   getCompareList,
   getWatchlist,
@@ -231,6 +232,9 @@ export function ExplorerSplitView({
                 <div className="flex flex-wrap items-center gap-1.5">
                   <RadarScoreBadge score={selectedPack.radarScore} grade={selectedPack.radarGrade} size="sm" previewOnly />
                   {selectedPack.isHot && <span className="badge-hot">{COPY.hot}</span>}
+                  {selectedPack.hasActiveTender && (
+                    <ActiveTenderBadge size="sm" title={selectedPack.tenderTitle} />
+                  )}
                 </div>
                 <p className="mt-2 font-medium">{selectedPack.publicName}</p>
                 <p className="text-xs text-radar-muted">
@@ -281,6 +285,7 @@ export function ExplorerSplitView({
                     <div className="flex flex-wrap items-center gap-1">
                       <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} size="sm" previewOnly />
                       {pack.isHot && <Flame className="h-3 w-3 text-radar-heat" />}
+                      {pack.hasActiveTender && <ActiveTenderBadge size="sm" title={pack.tenderTitle} />}
                       {pack.isNew && <span className="badge-new">{COPY.new}</span>}
                     </div>
                     <p className="mt-1.5 truncate text-sm font-medium">{pack.publicName}</p>

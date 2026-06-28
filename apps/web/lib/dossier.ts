@@ -1,5 +1,6 @@
 import type { EpciDetail } from './types';
 import { formatEur, formatInt } from './format';
+import { buildMgpeSummary } from './dossier-helpers';
 
 function esc(s: string): string {
   return String(s ?? '')
@@ -16,9 +17,10 @@ export function buildMgpeDossierHtml(epci: EpciDetail): string {
     year: 'numeric',
   }).format(new Date());
 
-  const lead = epci.batiments[0];
-  const argLoi = lead?.argumentaireLoiElan ?? '';
-  const argMgpe = lead?.argumentaireMgpePd ?? '';
+  const mgpe = buildMgpeSummary(epci.batiments);
+  const argLoi = mgpe?.argumentaireLoiElan ?? '';
+  const argMgpe = mgpe?.argumentaireMgpePd ?? '';
+  const racAfterSubs = Math.max(0, epci.packCapexTotal - epci.subventionsTotal);
 
   const batRows = epci.batiments
     .map(
@@ -29,10 +31,17 @@ export function buildMgpeDossierHtml(epci: EpciDetail): string {
         <td>${esc(b.classeDpe)}</td>
         <td class="num">${formatInt(b.surfaceM2)} m²</td>
         <td class="num">${formatEur(b.capexTotal)}</td>
+        <td class="num">${formatEur(b.gainNetAnnuelMairieEuros)}/an</td>
         <td>${esc(b.closingTemperature)}</td>
       </tr>`,
     )
     .join('');
+
+  const mgpeKpis = mgpe
+    ? `
+    <div class="kpi"><label>Durée contrat MGPE</label><span class="kpi-value">${mgpe.dureeContratAns} ans</span></div>
+    <div class="kpi"><label>Gain net contractuel (pack)</label><span class="kpi-value">${formatEur(mgpe.gainNetContractuelEuros)}</span></div>`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -71,15 +80,17 @@ export function buildMgpeDossierHtml(epci: EpciDetail): string {
   <div class="kpis">
     <div class="kpi"><label>Budget travaux</label><span class="kpi-value">${formatEur(epci.packCapexTotal)}</span></div>
     <div class="kpi"><label>Aides publiques</label><span class="kpi-value">${formatEur(epci.subventionsTotal)}</span></div>
-    <div class="kpi"><label>Reste à charge</label><span class="kpi-value">${formatEur(epci.resteAChargeTotal)}</span></div>
+    <div class="kpi"><label>Reste à charge après subventions</label><span class="kpi-value">${formatEur(racAfterSubs)}</span></div>
+    <div class="kpi"><label>Part Fonds Vert (pessimiste)</label><span class="kpi-value">${formatEur(epci.resteAChargeTotal)}</span></div>
     <div class="kpi"><label>Économie annuelle mairie</label><span class="kpi-value">${formatEur(epci.gainNetMairieTotal)}/an</span></div>
+    ${mgpeKpis}
   </div>
 
   <h2>Patrimoine scolaire (${epci.batimentCount} bâtiment${epci.batimentCount > 1 ? 's' : ''})</h2>
   <table>
     <thead>
       <tr>
-        <th>École</th><th>Commune</th><th>DPE</th><th>Surface</th><th>Budget</th><th>Urgence</th>
+        <th>École</th><th>Commune</th><th>DPE</th><th>Surface</th><th>Budget</th><th>Gain net/an</th><th>Urgence</th>
       </tr>
     </thead>
     <tbody>${batRows}</tbody>

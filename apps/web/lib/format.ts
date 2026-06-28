@@ -26,6 +26,18 @@ export function formatPct(ratio: number, decimals = 0): string {
   return `${v.toFixed(decimals)} %`;
 }
 
+export function formatDateFr(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(d);
+}
+
 export function abbreviateEpciName(name: string): string {
   return String(name ?? '')
     .replace(/^Communauté de communes (du |de |de l'|des |d'|)/i, '')

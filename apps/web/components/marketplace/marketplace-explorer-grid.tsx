@@ -22,6 +22,7 @@ import { WatchlistButton } from '@/components/marketplace/watchlist-button';
 import { PackSlotsBadge } from '@/components/marketplace/pack-slots-badge';
 import { formatInt } from '@/lib/format';
 import { PackBudgetLabel } from '@/components/marketplace/pack-budget-label';
+import { ActiveTenderBadge } from '@/components/marketplace/active-tender-badge';
 import {
   getCompareList,
   getWatchlist,
@@ -135,6 +136,9 @@ export function MarketplaceExplorerGrid({
                         <Flame className="h-3 w-3" />
                       </span>
                     )}
+                    {pack.hasActiveTender && (
+                      <ActiveTenderBadge size="sm" title={pack.tenderTitle} />
+                    )}
                     <PackSlotsBadge
                       remaining={pack.slotsRemaining}
                       max={pack.slotsMax}
@@ -189,6 +193,9 @@ export function MarketplaceExplorerGrid({
             </div>
             <div className="mt-2 flex flex-wrap gap-1.5">
               <PersonaBadgeGroup personas={pack.personas} />
+              {pack.hasActiveTender && (
+                <ActiveTenderBadge size="sm" title={pack.tenderTitle} />
+              )}
               {pack.isNew && <span className="badge-new">Nouveau</span>}
               <PackSlotsBadge
                 remaining={pack.slotsRemaining}

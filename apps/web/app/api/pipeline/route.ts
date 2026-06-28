@@ -1,52 +1,73 @@
 import { NextResponse } from 'next/server';
-import { patchPipelineItem } from '@/lib/pipeline';
-import type { PipelineStage } from '@/lib/types';
-import { requireAdminApi } from '@/lib/api-guard';
-
-const VALID: PipelineStage[] = [
-  'identifie',
-  'qualifie',
-  'dossier',
-  'proposition',
-  'signe',
-];
+import { getCustomerSession } from '@/lib/auth';
+import { getAccount, updatePackPipelineStatus } from '@/lib/entitlements';
+import { decodePackId, getMarketplacePackById } from '@/lib/marketplace';
+import { getTerritoryTenderSignal } from '@/lib/territory-tenders';
+import {
+  computePipelineStats,
+  isPackPipelineStatus,
+  type PipelineTerritoryCard,
+} from '@/lib/pipeline-crm';
 
 export async function GET() {
-  const denied = await requireAdminApi();
-  if (denied) return denied;
+  const session = await getCustomerSession();
+  if (!session) {
+    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  }
 
-  const { readPipelineStore } = await import('@/lib/pipeline');
-  const store = await readPipelineStore();
-  return NextResponse.json(store);
+  const account = await getAccount(session.accountId);
+  if (!account) {
+    return NextResponse.json({ error: 'Compte introuvable' }, { status: 404 });
+  }
+
+  const cards: PipelineTerritoryCard[] = [];
+
+  for (const packId of account.packIds) {
+    const detail = await getMarketplacePackById(packId, account.id);
+    if (!detail) continue;
+
+    const codeEpci = decodePackId(packId);
+    const tender = codeEpci ? await getTerritoryTenderSignal(codeEpci) : null;
+
+    cards.push({
+      packId,
+      name: detail.pack.publicName,
+      department: detail.pack.department,
+      capex: detail.pack.packCapexTotal,
+      gainNetMairie: detail.pack.gainNetMairieTotal,
+      pipelineStatus: account.pipelineByPackId?.[packId] ?? 'new',
+      hasActiveTender: Boolean(tender?.hasActiveTender ?? detail.pack.hasActiveTender),
+    });
+  }
+
+  return NextResponse.json({
+    territories: cards,
+    stats: computePipelineStats(cards),
+  });
 }
 
 export async function PATCH(request: Request) {
-  const denied = await requireAdminApi();
-  if (denied) return denied;
-
-  const body = (await request.json()) as {
-    id?: string;
-    stage?: PipelineStage;
-    note?: string;
-    followUpDate?: string | null;
-  };
-
-  if (!body.id) {
-    return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+  const session = await getCustomerSession();
+  if (!session) {
+    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
   }
 
-  if (body.stage && !VALID.includes(body.stage)) {
-    return NextResponse.json({ error: 'Invalid stage' }, { status: 400 });
-  }
-
+  let body: { packId?: string; status?: string };
   try {
-    const store = await patchPipelineItem(body.id, {
-      stage: body.stage,
-      note: body.note,
-      followUpDate: body.followUpDate,
-    });
-    return NextResponse.json(store);
+    body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Update failed' }, { status: 400 });
+    return NextResponse.json({ error: 'Corps JSON invalide' }, { status: 400 });
   }
+
+  const { packId, status } = body;
+  if (!packId || !status || !isPackPipelineStatus(status)) {
+    return NextResponse.json({ error: 'packId et status requis' }, { status: 400 });
+  }
+
+  const ok = await updatePackPipelineStatus(session.accountId, packId, status);
+  if (!ok) {
+    return NextResponse.json({ error: 'Mise à jour refusée' }, { status: 403 });
+  }
+
+  return NextResponse.json({ ok: true, packId, status });
 }

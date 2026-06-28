@@ -5,10 +5,12 @@ import { requirePackAccessApi } from '@/lib/api-guard';
 import { getCustomerSession } from '@/lib/auth';
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ packId: string }> },
 ) {
   const { packId } = await params;
+  const { searchParams } = new URL(request.url);
+  const full = searchParams.get('full') === '1';
   const session = await getCustomerSession();
   const denied = await requirePackAccessApi(packId);
   if (denied instanceof NextResponse) return denied;
@@ -19,8 +21,10 @@ export async function GET(
   }
 
   const code = decodePackId(packId);
-  const csv = buildPackCsv(data.pack, data.buildings);
-  const filename = `clim-ecole-${code ?? 'pack'}.csv`;
+  const csv = buildPackCsv(data.pack, data.buildings, { full });
+  const filename = full
+    ? `clim-ecole-${code ?? 'pack'}-complet.csv`
+    : `clim-ecole-${code ?? 'pack'}.csv`;
 
   return new NextResponse(csv, {
     headers: {

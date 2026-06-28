@@ -16,11 +16,31 @@ import { CheckoutButton } from '@/components/marketplace/checkout-button';
 import { PackSlotsBadge } from '@/components/marketplace/pack-slots-badge';
 import { PostPurchaseChecklist } from '@/components/marketplace/post-purchase-checklist';
 import { TerritoryFreePreviewPanel } from '@/components/marketplace/territory-free-preview';
+import { DossierTrustBar } from '@/components/marketplace/dossier-trust-bar';
+import { DossierMgpeSection } from '@/components/marketplace/dossier-mgpe-section';
+import { DossierArtisansSection } from '@/components/marketplace/dossier-artisans-section';
+import { PackSchoolMap } from '@/components/marketplace/pack-school-map';
+import { ActiveTenderBadge } from '@/components/marketplace/active-tender-badge';
 
 export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetail }) {
-  const { pack, buildings, unlocked, freePreview, personaExplanations, radarFactors } = data;
+  const {
+    pack,
+    buildings,
+    unlocked,
+    freePreview,
+    personaExplanations,
+    radarFactors,
+    communesLabel,
+    nomEpci,
+    dataLoadedAt,
+    scoreClosingMax,
+    mgpe,
+    resteAChargeAfterSubsTotal,
+  } = data;
+
+  const racTotal = resteAChargeAfterSubsTotal ?? pack.packCapexTotal - pack.subventionsTotal;
   const subPct = Math.min(100, pack.subventionRatio * 100);
-  const racPct = Math.min(100 - subPct, (pack.resteAChargeTotal / (pack.packCapexTotal || 1)) * 100);
+  const racPct = Math.min(100 - subPct, (racTotal / (pack.packCapexTotal || 1)) * 100);
   const dossierSoldOut = pack.soldOut && !unlocked;
 
   const buildingList = (
@@ -39,56 +59,110 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
             Liste masquée — débloquez pour voir chaque école (DPE, surfaces, montants, contacts).
           </p>
         )}
+        {unlocked && (
+          <p className="mt-1 text-xs text-radar-muted">
+            CAPEX, gain net mairie, énergie, travaux et contacts par établissement
+          </p>
+        )}
       </div>
-      <div className="divide-y divide-radar-border">
-        {buildings.map((b) => (
-          <div
-            key={b.buildingId}
-            className="grid grid-cols-[1fr_auto] items-center gap-4 px-6 py-4 sm:grid-cols-[2fr_1fr_auto_auto_auto]"
-          >
-            <div>
-              <p
-                className={cn(
-                  'font-medium',
-                  unlocked ? 'text-radar-text' : 'tracking-widest text-radar-muted',
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[720px] text-left text-sm">
+          <thead>
+            <tr className="border-b border-radar-border bg-radar-elevated text-[11px] uppercase tracking-wide text-radar-muted">
+              <th className="px-6 py-3 font-semibold">École</th>
+              <th className="px-4 py-3 font-semibold">DPE</th>
+              <th className="px-4 py-3 text-right font-semibold">Surface</th>
+              <th className="px-4 py-3 text-right font-semibold">CAPEX</th>
+              <th className="px-4 py-3 text-right font-semibold">Gain net/an</th>
+              <th className="px-4 py-3 font-semibold">Travaux</th>
+              <th className="px-4 py-3 font-semibold">Contact</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-radar-border">
+            {buildings.map((b) => (
+              <tr key={b.buildingId} className="align-top">
+                <td className="px-6 py-4">
+                  <p
+                    className={cn(
+                      'font-medium',
+                      unlocked ? 'text-radar-text' : 'tracking-widest text-radar-muted',
+                    )}
+                  >
+                    {b.publicName}
+                  </p>
+                  <p className="text-xs text-radar-muted">{b.publicCommune}</p>
+                  {unlocked && b.codeUai && (
+                    <p className="mt-0.5 font-mono text-[10px] text-radar-subtle">{b.codeUai}</p>
+                  )}
+                  {unlocked && b.alerteSurdimensionnement && (
+                    <p className="mt-1 text-xs text-radar-heat" title={b.alerteSurdimensionnementNote}>
+                      ⚠ PAC possiblement surdimensionnée
+                    </p>
+                  )}
+                  {unlocked && b.alerteFinancement && (
+                    <p className="mt-1 text-xs text-amber-600">{b.alerteFinancement}</p>
+                  )}
+                </td>
+                {b.detailsHidden ? (
+                  <td colSpan={6} className="px-4 py-4 text-xs text-radar-subtle">
+                    Détail après achat
+                  </td>
+                ) : (
+                  <>
+                    <td className="px-4 py-4">
+                      <DpeBadge classe={b.classeDpe} />
+                      {b.anneeDpe ? (
+                        <p className="mt-1 text-[10px] text-radar-subtle">DPE {b.anneeDpe}</p>
+                      ) : null}
+                    </td>
+                    <td className="px-4 py-4 text-right tabular-nums text-radar-muted">
+                      {formatInt(b.surfaceM2)} m²
+                      {b.consoSpecifiqueKwhM2 ? (
+                        <p className="text-[10px]">{b.consoSpecifiqueKwhM2} kWh/m²</p>
+                      ) : null}
+                    </td>
+                    <td className="px-4 py-4 text-right font-semibold tabular-nums">
+                      {formatEur(b.capexTotal, true)}
+                    </td>
+                    <td className="px-4 py-4 text-right tabular-nums text-radar-signal">
+                      {formatEur(b.gainNetMairie, true)}
+                    </td>
+                    <td className="px-4 py-4 text-xs text-radar-muted">
+                      {b.typeTravaux ?? '—'}
+                      {b.puissancePacKw ? (
+                        <p className="mt-0.5">{b.puissancePacKw} kW PAC</p>
+                      ) : null}
+                      {b.dureeEstimeeSemaines ? (
+                        <p className="mt-0.5">{b.dureeEstimeeSemaines} sem.</p>
+                      ) : null}
+                      {b.periodeIdealeChantier ? (
+                        <p className="mt-0.5">{b.periodeIdealeChantier}</p>
+                      ) : null}
+                    </td>
+                    <td className="px-4 py-4">
+                      {b.emailMairie ? (
+                        <a
+                          href={`mailto:${b.emailMairie}`}
+                          className="inline-flex items-center gap-1 text-xs text-radar-signal"
+                        >
+                          <Mail className="h-3 w-3" />
+                          {b.emailMairie}
+                        </a>
+                      ) : (
+                        <span className="text-xs text-radar-subtle">{COPY.emailMissing}</span>
+                      )}
+                      {b.scoreEligibiliteClosing != null && b.scoreEligibiliteClosing > 0 && (
+                        <p className="mt-1 text-[10px] text-radar-muted">
+                          Score {b.scoreEligibiliteClosing} · {b.closingTemperature}
+                        </p>
+                      )}
+                    </td>
+                  </>
                 )}
-              >
-                {b.publicName}
-              </p>
-              <p className="text-xs text-radar-muted">{b.publicCommune}</p>
-              {unlocked && b.emailMairie && (
-                <a
-                  href={`mailto:${b.emailMairie}`}
-                  className="mt-1 inline-flex items-center gap-1 text-xs text-radar-signal"
-                >
-                  <Mail className="h-3 w-3" />
-                  {b.emailMairie}
-                </a>
-              )}
-              {unlocked && b.alerteSurdimensionnement && (
-                <p className="mt-1 text-xs text-radar-heat" title="La puissance PAC estimée dépasse les besoins réels — point d'attention pour le chiffrage">
-                  ⚠ PAC possiblement surdimensionnée
-                </p>
-              )}
-            </div>
-            {b.detailsHidden ? (
-              <span className="text-xs text-radar-subtle sm:col-span-4">Détail après achat</span>
-            ) : (
-              <>
-                <DpeBadge classe={b.classeDpe} />
-                <span className="hidden text-sm tabular-nums text-radar-muted sm:block">
-                  {formatInt(b.surfaceM2)} m²
-                </span>
-                <span className="text-sm font-semibold tabular-nums text-radar-text">
-                  {formatEur(b.capexTotal, true)}
-                </span>
-                <span className="hidden text-sm font-semibold tabular-nums text-radar-signal sm:block">
-                  {formatEur(b.resteACharge, true)}
-                </span>
-              </>
-            )}
-          </div>
-        ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -102,17 +176,14 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
 
       <header className="mb-10 animate-fade-in-up">
         <div className="flex flex-wrap items-center gap-2">
-          <RadarScoreBadge
-            score={pack.radarScore}
-            grade={pack.radarGrade}
-            previewOnly={!unlocked}
-          />
+          <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} previewOnly={!unlocked} />
           <PersonaBadgeGroup personas={pack.personas} size="md" />
-          {pack.isQualified && (
-            <span className="badge-qualified">{COPY.qualified}</span>
-          )}
+          {pack.isQualified && <span className="badge-qualified">{COPY.qualified}</span>}
           {pack.isNew && <span className="badge-new">{COPY.new}</span>}
           {pack.isHot && <span className="badge-hot">{COPY.hot}</span>}
+          {pack.hasActiveTender && (
+            <ActiveTenderBadge title={pack.tenderTitle} />
+          )}
           <PackSlotsBadge
             remaining={pack.slotsRemaining}
             max={pack.slotsMax}
@@ -134,9 +205,23 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
         </h1>
         <p className="mt-2 text-sm text-radar-muted">
           {unlocked
-            ? `${pack.department} · ${pack.batimentCount} écoles · intercommunalité`
+            ? `${pack.department}${nomEpci ? ` · ${nomEpci}` : ''} · ${pack.batimentCount} écoles${communesLabel ? ` · ${communesLabel}` : ''}`
             : `${pack.department} · ${pack.batimentCount} écoles · montants exacts et contacts après déblocage`}
         </p>
+        {unlocked && (pack.statutProjetEpci || scoreClosingMax) && (
+          <div className="mt-3 flex flex-wrap gap-2 text-xs">
+            {pack.statutProjetEpci && (
+              <span className="rounded-md bg-radar-elevated px-2.5 py-1 text-radar-muted">
+                {COPY.statutProjet} · {pack.statutProjetEpci.replace(/_/g, ' ')}
+              </span>
+            )}
+            {scoreClosingMax != null && scoreClosingMax > 0 && (
+              <span className="rounded-md bg-radar-elevated px-2.5 py-1 text-radar-muted">
+                {COPY.scoreClosing} · {scoreClosingMax}/100 · {pack.temperatureLevel}
+              </span>
+            )}
+          </div>
+        )}
         {unlocked && radarFactors && radarFactors.length > 0 && (
           <ul className="mt-4 flex flex-wrap gap-2">
             {radarFactors.slice(0, 3).map((f) => (
@@ -149,9 +234,16 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
       </header>
 
       {unlocked && (
-        <div className="mb-8">
-          <PostPurchaseChecklist packId={pack.packId} />
-        </div>
+        <>
+          <DossierTrustBar
+            dataLoadedAt={dataLoadedAt}
+            nomEpci={nomEpci}
+            communesLabel={communesLabel}
+          />
+          <div className="mb-8">
+            <PostPurchaseChecklist packId={pack.packId} />
+          </div>
+        </>
       )}
 
       {!unlocked && freePreview && (
@@ -167,25 +259,64 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
 
       {unlocked && (
         <>
-          <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <FinanceCard label={COPY.budgetTravaux} hint={COPY.budgetTravauxHint} value={formatEur(pack.packCapexTotal, true)} highlight />
-            <FinanceCard label={COPY.resteACharge} hint={COPY.resteAChargeHint} value={formatEur(pack.resteAChargeTotal, true)} accent />
-            <FinanceCard label={COPY.subventions} hint={COPY.subventionsHint} value={formatEur(pack.subventionsTotal, true)} />
-            <FinanceCard label={COPY.fondsVert} hint={COPY.fondsVertHint} value={formatEur(pack.fondsVertPotential, true)} />
+          <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <FinanceCard
+              label={COPY.budgetTravaux}
+              hint={COPY.budgetTravauxHint}
+              value={formatEur(pack.packCapexTotal, true)}
+              highlight
+            />
+            <FinanceCard
+              label={COPY.subventions}
+              hint={COPY.subventionsHint}
+              value={formatEur(pack.subventionsTotal, true)}
+            />
+            <FinanceCard
+              label={COPY.resteAChargeAfterSubs}
+              hint={COPY.resteAChargeAfterSubsHint}
+              value={formatEur(racTotal, true)}
+              accent
+            />
+            <FinanceCard
+              label={COPY.partFondsVert}
+              hint={COPY.partFondsVertHint}
+              value={formatEur(pack.resteAChargeTotal, true)}
+            />
+            <FinanceCard
+              label={COPY.gainNetMairie}
+              hint={COPY.gainNetMairieHint}
+              value={`${formatEur(pack.gainNetMairieTotal, true)}/an`}
+            />
+            <FinanceCard
+              label={COPY.fondsVert}
+              hint={COPY.fondsVertHint}
+              value={formatEur(pack.fondsVertPotential, true)}
+            />
           </div>
 
           <div className="card mb-8 p-6 md:p-8">
             <p className="text-sm font-medium">Répartition du financement</p>
-            <p className="mt-1 text-xs text-radar-muted">Part subventions vs part collectivité (estimation)</p>
+            <p className="mt-1 text-xs text-radar-muted">
+              Subventions publiques vs reste à charge après aides (hors lissage MGPE)
+            </p>
             <div className="mt-4 flex h-2 overflow-hidden rounded-full bg-radar-elevated">
               <div className="bg-radar-signal transition-all" style={{ width: `${subPct}%` }} title="Subventions" />
               <div className="bg-radar-heat transition-all" style={{ width: `${racPct}%` }} title="Reste à charge" />
             </div>
             <div className="mt-4 flex flex-wrap gap-6 text-xs text-radar-muted">
-              <span><GlossaryTerm term="Subventions">{COPY.subventions}</GlossaryTerm> {formatEur(pack.subventionsTotal, true)} ({formatPct(pack.subventionRatio)})</span>
-              <span><GlossaryTerm term="Reste à charge (RAC)">{COPY.resteACharge}</GlossaryTerm> {formatEur(pack.resteAChargeTotal, true)}</span>
+              <span>
+                <GlossaryTerm term="Subventions">{COPY.subventions}</GlossaryTerm>{' '}
+                {formatEur(pack.subventionsTotal, true)} ({formatPct(pack.subventionRatio)})
+              </span>
+              <span>
+                <GlossaryTerm term="Reste à charge (RAC)">{COPY.resteAChargeAfterSubs}</GlossaryTerm>{' '}
+                {formatEur(racTotal, true)}
+              </span>
+              <span title={COPY.partFondsVertHint}>
+                {COPY.partFondsVert} {formatEur(pack.resteAChargeTotal, true)}
+              </span>
               {pack.roiAnnees > 0 && (
-                <span className="font-semibold text-radar-signal" title="Années pour que les économies d'énergie remboursent l'investissement">
+                <span className="font-semibold text-radar-signal">
                   Retour sur investissement · {pack.roiAnnees.toFixed(1)} ans
                 </span>
               )}
@@ -200,6 +331,20 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
 
           <div className="mb-8">
             <RacSimulator capex={pack.packCapexTotal} baseSubventionRatio={pack.subventionRatio} />
+          </div>
+
+          {mgpe && (
+            <div className="mb-8">
+              <DossierMgpeSection mgpe={mgpe} />
+            </div>
+          )}
+
+          <div className="mb-8">
+            <DossierArtisansSection buildings={buildings} />
+          </div>
+
+          <div className="mb-8">
+            <PackSchoolMap buildings={buildings} />
           </div>
         </>
       )}

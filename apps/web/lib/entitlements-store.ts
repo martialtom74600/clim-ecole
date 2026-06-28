@@ -13,6 +13,8 @@ export interface CustomerAccount {
   email: string;
   proUntil: string | null;
   packIds: string[];
+  /** Statut pipeline CRM par packId (Module 1) */
+  pipelineByPackId?: Record<string, import('./pipeline-crm').PackPipelineStatus>;
   stripeCustomerId?: string;
   createdAt: string;
   updatedAt: string;
@@ -95,7 +97,9 @@ export async function jsonGetOrCreateAccount(
 
 export async function jsonUpdateAccount(
   accountId: string,
-  patch: Partial<Pick<CustomerAccount, 'email' | 'proUntil' | 'packIds' | 'stripeCustomerId'>>,
+  patch: Partial<
+    Pick<CustomerAccount, 'email' | 'proUntil' | 'packIds' | 'stripeCustomerId' | 'pipelineByPackId'>
+  >,
 ): Promise<CustomerAccount | null> {
   const store = await readStore();
   const account = store.accounts[accountId];
@@ -135,7 +139,11 @@ export async function jsonGrantPackAccess(accountId: string, packId: string): Pr
 
   if (!proActive && used >= max) return false;
 
-  await jsonUpdateAccount(accountId, { packIds: [...account.packIds, packId] });
+  const pipelineByPackId = { ...(account.pipelineByPackId ?? {}), [packId]: 'new' as const };
+  await jsonUpdateAccount(accountId, {
+    packIds: [...account.packIds, packId],
+    pipelineByPackId,
+  });
   return true;
 }
 
@@ -207,4 +215,28 @@ export async function jsonDeleteAlertSubscription(email: string): Promise<boolea
   if (store.alerts.length === before) return false;
   await writeStore(store);
   return true;
+}
+
+export async function jsonListPipelineTerritories(accountId: string) {
+  const account = await jsonGetAccount(accountId);
+  if (!account) return [];
+  return account.packIds.map((packId) => ({
+    packId,
+    pipelineStatus: account.pipelineByPackId?.[packId] ?? ('new' as const),
+    pipelineUpdatedAt: account.updatedAt,
+    unlockedAt: account.createdAt,
+  }));
+}
+
+export async function jsonUpdatePackPipelineStatus(
+  accountId: string,
+  packId: string,
+  status: import('./pipeline-crm').PackPipelineStatus,
+): Promise<boolean> {
+  const account = await jsonGetAccount(accountId);
+  if (!account?.packIds.includes(packId)) return false;
+
+  const pipelineByPackId = { ...(account.pipelineByPackId ?? {}), [packId]: status };
+  const updated = await jsonUpdateAccount(accountId, { pipelineByPackId });
+  return Boolean(updated);
 }

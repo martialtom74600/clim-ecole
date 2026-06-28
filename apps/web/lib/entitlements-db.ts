@@ -25,20 +25,31 @@ function rowToAccount(row: {
   };
 }
 
-async function loadPackIds(accountId: string): Promise<string[]> {
+async function loadPackUnlockRows(accountId: string): Promise<
+  { packId: string; pipelineStatus: import('./pipeline-crm').PackPipelineStatus; pipelineUpdatedAt?: string; unlockedAt?: string }[]
+> {
   const sb = getSupabaseServer();
   const { data } = await sb
     .from('pack_unlocks')
-    .select('pack_id')
-    .eq('account_id', accountId);
-  return (data ?? []).map((r) => r.pack_id as string);
+    .select('pack_id, pipeline_status, pipeline_updated_at, created_at')
+    .eq('account_id', accountId)
+    .order('created_at', { ascending: false });
+
+  return (data ?? []).map((r) => ({
+    packId: r.pack_id as string,
+    pipelineStatus: (r.pipeline_status as import('./pipeline-crm').PackPipelineStatus) ?? 'new',
+    pipelineUpdatedAt: (r.pipeline_updated_at as string | null) ?? undefined,
+    unlockedAt: (r.created_at as string | null) ?? undefined,
+  }));
 }
 
 async function hydrateAccount(
   row: Parameters<typeof rowToAccount>[0],
 ): Promise<CustomerAccount> {
   const account = rowToAccount(row);
-  account.packIds = await loadPackIds(account.id);
+  const rows = await loadPackUnlockRows(account.id);
+  account.packIds = rows.map((r) => r.packId);
+  account.pipelineByPackId = Object.fromEntries(rows.map((r) => [r.packId, r.pipelineStatus]));
   return account;
 }
 
@@ -260,4 +271,30 @@ export async function dbDeleteAlertSubscription(email: string): Promise<boolean>
     .delete({ count: 'exact' })
     .ilike('email', email.trim());
   return (count ?? 0) > 0;
+}
+
+export async function dbListPipelineTerritories(accountId: string) {
+  return loadPackUnlockRows(accountId);
+}
+
+export async function dbUpdatePackPipelineStatus(
+  accountId: string,
+  packId: string,
+  status: import('./pipeline-crm').PackPipelineStatus,
+): Promise<boolean> {
+  const sb = getSupabaseServer();
+  const now = new Date().toISOString();
+  const { data, error } = await sb
+    .from('pack_unlocks')
+    .update({ pipeline_status: status, pipeline_updated_at: now })
+    .eq('account_id', accountId)
+    .eq('pack_id', packId)
+    .select('pack_id')
+    .maybeSingle();
+
+  if (error) {
+    console.error('[pipeline] update error:', error.message);
+    return false;
+  }
+  return Boolean(data);
 }

@@ -214,3 +214,6 @@ create policy "pipeline_jobs_auth_all" on public.pipeline_jobs
 grant all on public.pipeline_jobs to service_role;
 grant select on public.pipeline_jobs to authenticated;
 -- anon : pas de SELECT (voir migrations entitlements_security)
+
+-- ── CRM Pipeline + Signaux AO (voir migrations/20260628000000_pipeline_crm_tenders.sql) ──
+-- pack_unlocks.pipeline_status, territory_tender_signals

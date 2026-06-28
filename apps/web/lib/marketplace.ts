@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { getAllEpciSummary, getDashboardKpis, getEpciByCode, getEpciAccumulatorMap } from './data';
+import { getAllEpciSummary, getDashboardKpis, getEpciByCode, getEpciAccumulatorMap, getCsvSyncMeta } from './data';
 import { dominantDepartment } from './geo-france';
 import { getCoverageBadge } from './coverage';
 import { explainDealPersona, inferDealPersona } from './persona-engine';
@@ -15,7 +15,10 @@ import type {
   MarketplaceGlobalStats,
   MarketplacePack,
   MarketplacePackDetail,
+  ProspectRow,
 } from './types';
+import { buildMgpeSummary, resteAChargeAfterSubs } from './dossier-helpers';
+import { getTerritoryTenderSignal, getTerritoryTenderSignalsMap } from './territory-tenders';
 
 const PREFIX = 'clim-pack:';
 
@@ -75,6 +78,7 @@ function toMarketplacePack(
   unlocked: boolean,
   coverageLabel: string,
   availability: PackAvailability,
+  tender?: { hasActiveTender: boolean; tenderTitle?: string },
 ): MarketplacePack {
   const roiAnnees = bestRoiAnnees(detail.batiments);
   const personaResult = inferDealPersona({
@@ -128,6 +132,8 @@ function toMarketplacePack(
     slotsRemaining: availability.remaining,
     slotsMax: availability.max,
     soldOut: availability.soldOut,
+    hasActiveTender: Boolean(tender?.hasActiveTender),
+    tenderTitle: tender?.tenderTitle,
   };
 
   return {
@@ -180,19 +186,7 @@ function encodeBuildingId(packId: string, index: number): string {
 function toMarketplaceBuilding(
   packId: string,
   index: number,
-  b: {
-    nomEcole: string;
-    commune: string;
-    emailMairie: string;
-    alerteSurdimensionnement: boolean;
-    surfaceM2: number;
-    classeDpe: string;
-    capexTotal: number;
-    partFondsPessimisteEuros: number;
-    gainNetAnnuelMairieEuros: number;
-    fondsRoiPessimisteAnnees: number;
-    closingTemperature: string;
-  },
+  b: ProspectRow,
   unlocked: boolean,
   regionShort = 'France',
 ): MarketplaceBuilding {
@@ -212,6 +206,8 @@ function toMarketplaceBuilding(
     };
   }
 
+  const subs = b.subventionsPessimisteEuros || 0;
+
   return {
     buildingId: encodeBuildingId(packId, index),
     publicName: b.nomEcole,
@@ -226,7 +222,27 @@ function toMarketplaceBuilding(
     realName: b.nomEcole,
     realCommune: b.commune,
     emailMairie: b.emailMairie || undefined,
+    emailMissing: !b.emailMairie?.trim(),
     alerteSurdimensionnement: b.alerteSurdimensionnement,
+    partFondsVert: b.partFondsPessimisteEuros,
+    resteAChargeAfterSubs: resteAChargeAfterSubs(b.capexTotal, subs),
+    codeUai: b.codeUai,
+    typeTravaux: b.typeTravaux || undefined,
+    puissancePacKw: b.puissancePacKw || undefined,
+    dureeEstimeeSemaines: b.dureeEstimeeSemaines || undefined,
+    periodeIdealeChantier: b.periodeIdealeChantier || undefined,
+    alerteFinancement: b.alerteFinancement || undefined,
+    alerteSurdimensionnementNote: b.alerteSurdimensionnementNote || undefined,
+    factureAnnuelleEuros: b.factureAnnuelleEuros || undefined,
+    consoSpecifiqueKwhM2: b.consoSpecifiqueKwhM2 || undefined,
+    anneeDpe: b.anneeDpe || undefined,
+    scoreEligibiliteClosing: b.scoreEligibiliteClosing || undefined,
+    artisanNom: b.artisanNom || undefined,
+    artisanEmail: b.artisanEmail || undefined,
+    artisanDistanceKm: b.artisanDistanceKm || undefined,
+    artisanEffectifLabel: b.artisanEffectifLabel || undefined,
+    latitude: b.latitude,
+    longitude: b.longitude,
   };
 }
 
@@ -259,11 +275,12 @@ export const getMarketplaceGlobalStats = cache(async (): Promise<MarketplaceGlob
 });
 
 export const getMarketplacePacks = cache(async (): Promise<MarketplacePack[]> => {
-  const [coverageLabel, summaries, unlockCounts, accMap] = await Promise.all([
+  const [coverageLabel, summaries, unlockCounts, accMap, tenderMap] = await Promise.all([
     getCoverageBadge(),
     getAllEpciSummary(),
     getPackUnlockCountsMap(),
     getEpciAccumulatorMap(),
+    getTerritoryTenderSignalsMap(),
   ]);
   const previewAll = isTestMode();
   const packs: MarketplacePack[] = [];
@@ -271,6 +288,7 @@ export const getMarketplacePacks = cache(async (): Promise<MarketplacePack[]> =>
   for (const summary of summaries) {
     const acc = accMap.get(summary.codeEpci);
     if (!acc) continue;
+    const tender = tenderMap.get(summary.codeEpci);
     const detail = {
       codeEpci: acc.codeEpci,
       nomEpci: acc.nomEpci,
@@ -295,6 +313,9 @@ export const getMarketplacePacks = cache(async (): Promise<MarketplacePack[]> =>
         previewAll,
         coverageLabel,
         packAvailabilityFromMap(packId, unlockCounts),
+        tender
+          ? { hasActiveTender: tender.hasActiveTender, tenderTitle: tender.tenderTitle }
+          : undefined,
       ),
     );
   }
@@ -320,12 +341,15 @@ export const getMarketplacePackById = cache(
     const codeEpci = decodePackId(packId);
     if (!codeEpci) return null;
 
-    const [summaries, detail, unlocked, coverageLabel, unlockCounts] = await Promise.all([
+    const [summaries, detail, unlocked, coverageLabel, unlockCounts, syncMeta, tender] =
+      await Promise.all([
       getAllEpciSummary(),
       getEpciByCode(codeEpci),
       checkPackEntitlement(accountId, packId),
       getCoverageBadge(),
       getPackUnlockCountsMap(),
+      getCsvSyncMeta(),
+      getTerritoryTenderSignal(codeEpci),
     ]);
 
     const index = summaries.findIndex((s) => s.codeEpci === codeEpci);
@@ -339,6 +363,9 @@ export const getMarketplacePackById = cache(
       unlocked,
       coverageLabel,
       packAvailabilityFromMap(packId, unlockCounts),
+      tender
+        ? { hasActiveTender: tender.hasActiveTender, tenderTitle: tender.tenderTitle }
+        : undefined,
     );
     const buildings = detail.batiments.map((b, i) =>
       toMarketplaceBuilding(pack.packId, i, b, unlocked, regionShort),
@@ -377,6 +404,15 @@ export const getMarketplacePackById = cache(
           }),
       personaExplanations: unlocked ? explainDealPersona(personaInput) : undefined,
       radarFactors: unlocked ? radar.factors : undefined,
+      communesLabel: detail.communesLabel,
+      nomEpci: detail.nomEpci,
+      dataLoadedAt: syncMeta.loadedAt,
+      scoreClosingMax: Math.max(...detail.batiments.map((b) => b.scoreEligibiliteClosing || 0), 0),
+      financementStatut: detail.batiments[0]?.financementStatut,
+      mgpe: unlocked ? buildMgpeSummary(detail.batiments) : undefined,
+      resteAChargeAfterSubsTotal: unlocked
+        ? resteAChargeAfterSubs(detail.packCapexTotal, detail.subventionsTotal)
+        : undefined,
     };
   },
 );

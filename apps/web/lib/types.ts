@@ -283,6 +283,9 @@ export interface MarketplacePack {
   primaryPersona: ClientPersona;
   radarScore: number;
   radarGrade: 'A' | 'B' | 'C' | 'D';
+  /** Appel d'offres BOAMP actif détecté sur ce territoire */
+  hasActiveTender?: boolean;
+  tenderTitle?: string;
 }
 
 export interface MarketplaceBuilding {
@@ -304,6 +307,38 @@ export interface MarketplaceBuilding {
   realCommune?: string;
   emailMairie?: string;
   alerteSurdimensionnement?: boolean;
+  /** Part Fonds Vert pessimiste (≠ RAC post-MGPE) */
+  partFondsVert?: number;
+  /** CAPEX − subventions pessimistes */
+  resteAChargeAfterSubs?: number;
+  codeUai?: string;
+  typeTravaux?: string;
+  puissancePacKw?: number;
+  dureeEstimeeSemaines?: number;
+  periodeIdealeChantier?: string;
+  alerteFinancement?: string;
+  alerteSurdimensionnementNote?: string;
+  factureAnnuelleEuros?: number;
+  consoSpecifiqueKwhM2?: number;
+  anneeDpe?: number;
+  scoreEligibiliteClosing?: number;
+  artisanNom?: string;
+  artisanEmail?: string;
+  artisanDistanceKm?: number;
+  artisanEffectifLabel?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  emailMissing?: boolean;
+}
+
+export interface MarketplaceMgpeSummary {
+  loyerLtEuros: number;
+  redevanceFtEuros: number;
+  partServicesEuros: number;
+  dureeContratAns: number;
+  gainNetContractuelEuros: number;
+  argumentaireLoiElan: string;
+  argumentaireMgpePd: string;
 }
 
 export interface MarketplacePackDetail {
@@ -314,4 +349,12 @@ export interface MarketplacePackDetail {
   freePreview?: import('./freemium').TerritoryFreePreview;
   personaExplanations?: import('./persona-engine').PersonaExplanation[];
   radarFactors?: string[];
+  communesLabel?: string;
+  nomEpci?: string;
+  dataLoadedAt?: string;
+  scoreClosingMax?: number;
+  financementStatut?: string;
+  mgpe?: MarketplaceMgpeSummary;
+  /** Somme CAPEX − subventions au niveau pack */
+  resteAChargeAfterSubsTotal?: number;
 }

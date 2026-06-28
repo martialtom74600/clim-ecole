@@ -53,7 +53,7 @@ export function RacSimulator({
           </p>
         </div>
         <div className="rounded-xl border border-radar-border bg-radar-canvas p-4">
-          <p className="text-xs font-medium text-radar-muted">{COPY.resteACharge}</p>
+          <p className="text-xs font-medium text-radar-muted">{COPY.resteAChargeAfterSubs}</p>
           <p className="mt-1 text-xl font-bold tabular-nums text-radar-signal">
             {formatEur(rac, true)}
           </p>

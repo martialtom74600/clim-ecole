@@ -55,7 +55,8 @@ export function OpportunityNote({
   showPrintButton?: boolean;
   className?: string;
 }) {
-  const { pack, buildings } = data;
+  const { pack, buildings, mgpe, resteAChargeAfterSubsTotal, nomEpci, communesLabel } = data;
+  const racTotal = resteAChargeAfterSubsTotal ?? pack.packCapexTotal - pack.subventionsTotal;
   const date = new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
     month: 'long',
@@ -63,14 +64,14 @@ export function OpportunityNote({
   }).format(new Date());
 
   const subPct = Math.min(100, pack.subventionRatio * 100);
-  const racPct = Math.min(
-    100 - subPct,
-    (pack.resteAChargeTotal / (pack.packCapexTotal || 1)) * 100,
-  );
+  const racPct = Math.min(100 - subPct, (racTotal / (pack.packCapexTotal || 1)) * 100);
 
-  const mgpeText = `Sur la base des ${formatEur(pack.packCapexTotal)} d'investissement, le projet est éligible à un Marché Global de Performance Énergétique à Paiement Différé (Loi du 30 mars 2023). Les économies d'énergie générées permettront de lisser le Reste à Charge de ${formatEur(pack.resteAChargeTotal)} sur la durée du contrat.`;
+  const mgpeText =
+    mgpe?.argumentaireMgpePd ||
+    `Sur la base des ${formatEur(pack.packCapexTotal)} d'investissement, le projet est éligible à un Marché Global de Performance Énergétique à Paiement Différé (Loi du 30 mars 2023). Le reste à charge après subventions est estimé à ${formatEur(racTotal)} — lissable sur ${mgpe?.dureeContratAns || '…'} ans via les économies d'énergie.`;
 
   const legalElan =
+    mgpe?.argumentaireLoiElan ||
     "Dérogation à l'allotissement : Ce projet justifie un marché global car la séparation en lots rendrait techniquement ou financièrement impossible l'atteinte des objectifs de performance énergétique garantis.";
 
   return (
@@ -109,7 +110,9 @@ export function OpportunityNote({
         </h1>
         <p className="mt-2 text-lg text-slate-700 print:text-base">{pack.publicName}</p>
         <p className="mt-1 text-sm text-slate-500">
-          {pack.batimentCount} établissement{pack.batimentCount > 1 ? 's' : ''} · intercommunalité
+          {pack.batimentCount} établissement{pack.batimentCount > 1 ? 's' : ''}
+          {nomEpci ? ` · ${nomEpci}` : ' · intercommunalité'}
+          {communesLabel ? ` · ${communesLabel}` : ''}
         </p>
       </header>
 
@@ -124,6 +127,9 @@ export function OpportunityNote({
                 <th className="px-4 py-3 font-semibold">Commune</th>
                 <th className="px-4 py-3 font-semibold">DPE</th>
                 <th className="px-4 py-3 text-right font-semibold">Surface (m²)</th>
+                <th className="px-4 py-3 text-right font-semibold">CAPEX</th>
+                <th className="px-4 py-3 text-right font-semibold">Gain net/an</th>
+                <th className="px-4 py-3 font-semibold">Contact mairie</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -135,6 +141,13 @@ export function OpportunityNote({
                     <DpePrintBadge classe={b.classeDpe} />
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums">{formatInt(b.surfaceM2)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">{formatEur(b.capexTotal, true)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums text-teal-700">
+                    {formatEur(b.gainNetMairie, true)}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-slate-600">
+                    {b.emailMairie ?? COPY.emailMissing}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -145,11 +158,20 @@ export function OpportunityNote({
       {/* 3. Synthèse financière */}
       <section className="mt-10 break-inside-avoid page-break-before-auto print:mt-8">
         <SectionTitle number={2} title="Synthèse financière — le montage" />
-        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard label="CAPEX total estimé" value={formatEur(pack.packCapexTotal, true)} highlight />
           <KpiCard label="Potentiel subventions publiques" value={formatEur(pack.subventionsTotal, true)} />
-          <KpiCard label="Reste à charge collectivité" value={formatEur(pack.resteAChargeTotal, true)} accent />
+          <KpiCard label={COPY.resteAChargeAfterSubs} value={formatEur(racTotal, true)} accent />
+          <KpiCard label={COPY.gainNetMairie} value={`${formatEur(pack.gainNetMairieTotal, true)}/an`} />
         </div>
+        {pack.resteAChargeTotal > 0 && (
+          <p className="mt-4 text-sm text-slate-600">
+            {COPY.partFondsVert} :{' '}
+            <strong className="font-semibold text-slate-900">
+              {formatEur(pack.resteAChargeTotal, true)}
+            </strong>
+          </p>
+        )}
         {pack.fondsVertPotential > 0 && (
           <p className="mt-4 text-sm text-slate-600">
             Dont potentiel Fonds Vert estimé :{' '}
@@ -179,7 +201,7 @@ export function OpportunityNote({
           </div>
           <div className="mt-2 flex flex-wrap gap-4 text-xs text-slate-600">
             <span>Subventions {formatEur(pack.subventionsTotal, true)} ({formatPct(pack.subventionRatio)})</span>
-            <span>RAC {formatEur(pack.resteAChargeTotal, true)}</span>
+            <span>RAC {formatEur(racTotal, true)}</span>
           </div>
         </div>
       </section>
@@ -187,13 +209,27 @@ export function OpportunityNote({
       {/* 4. MGPE-PD */}
       <section className="mt-10 break-inside-avoid print:mt-8">
         <SectionTitle number={3} title="Modèle de tiers-financement (MGPE-PD)" />
-        <p className="mt-4 text-sm leading-relaxed text-slate-700">{mgpeText}</p>
+        <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{mgpeText}</p>
+        {mgpe && (mgpe.dureeContratAns > 0 || mgpe.gainNetContractuelEuros > 0) && (
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            {mgpe.dureeContratAns > 0 && (
+              <KpiCard label="Durée contrat" value={`${mgpe.dureeContratAns} ans`} />
+            )}
+            {mgpe.gainNetContractuelEuros > 0 && (
+              <KpiCard
+                label="Gain net contractuel (pack)"
+                value={formatEur(mgpe.gainNetContractuelEuros, true)}
+                highlight
+              />
+            )}
+          </div>
+        )}
       </section>
 
       {/* 5. Loi ELAN */}
       <section className="mt-10 break-inside-avoid print:mt-8">
         <SectionTitle number={4} title="Argumentaire juridique (Loi ELAN)" />
-        <blockquote className="mt-4 border-l-4 border-slate-400 bg-slate-50 px-5 py-4 text-sm leading-relaxed text-slate-700 print:border-slate-600 print:bg-slate-100">
+        <blockquote className="mt-4 whitespace-pre-wrap border-l-4 border-slate-400 bg-slate-50 px-5 py-4 text-sm leading-relaxed text-slate-700 print:border-slate-600 print:bg-slate-100">
           {legalElan}
         </blockquote>
       </section>

@@ -14,8 +14,10 @@ import {
   jsonGrantPackAccess,
   jsonGrantProSubscription,
   jsonListAlertSubscriptions,
+  jsonListPipelineTerritories,
   jsonRevokeProSubscription,
   jsonUpdateAccount,
+  jsonUpdatePackPipelineStatus,
   jsonUpsertAlertSubscription,
   type AlertSubscription,
   type CustomerAccount,
@@ -31,9 +33,11 @@ import {
   dbGrantProSubscription,
   dbIsStripeEventProcessed,
   dbListAlertSubscriptions,
+  dbListPipelineTerritories,
   dbMarkStripeEventProcessed,
   dbRevokeProSubscription,
   dbUpdateAccount,
+  dbUpdatePackPipelineStatus,
   dbUpsertAlertSubscription,
 } from './entitlements-db';
 
@@ -211,6 +215,26 @@ export async function upsertAlertSubscription(input: {
 
 export async function deleteAlertSubscription(email: string): Promise<boolean> {
   return useDb() ? dbDeleteAlertSubscription(email) : jsonDeleteAlertSubscription(email);
+}
+
+export async function updatePackPipelineStatus(
+  accountId: string,
+  packId: string,
+  status: import('./pipeline-crm').PackPipelineStatus,
+): Promise<boolean> {
+  if (!accountId || !packId) return false;
+  const account = await getAccount(accountId);
+  if (!account?.packIds.includes(packId)) return false;
+
+  if (useDb()) {
+    return dbUpdatePackPipelineStatus(accountId, packId, status);
+  }
+  return jsonUpdatePackPipelineStatus(accountId, packId, status);
+}
+
+export async function listPipelineTerritories(accountId: string) {
+  if (useDb()) return dbListPipelineTerritories(accountId);
+  return jsonListPipelineTerritories(accountId);
 }
 
 /** Attend que le webhook ait activé l'entitlement (success page). */

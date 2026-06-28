@@ -11,11 +11,13 @@ export function PackSchoolMap({
   variant = 'card',
   className,
   showHeader = true,
+  fill,
 }: {
   buildings: MarketplaceBuilding[];
   variant?: 'card' | 'embedded';
   className?: string;
   showHeader?: boolean;
+  fill?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import('leaflet').Map | null>(null);
@@ -114,17 +116,22 @@ export function PackSchoolMap({
       ref={containerRef}
       className={cn(
         'radar-map-shell w-full',
-        variant === 'card' ? 'h-72 md:h-96' : 'h-full min-h-[16rem]',
-        variant === 'embedded' && className,
+        variant === 'card' ? 'h-72 md:h-96' : fill ? 'absolute inset-0' : 'h-full min-h-[16rem]',
+        variant === 'embedded' && !fill && className,
       )}
     />
   );
 
   if (variant === 'embedded') {
     return (
-      <div className={cn('overflow-hidden', className)}>
+      <div
+        className={cn(
+          fill ? 'flex h-full min-h-0 flex-col' : 'overflow-hidden',
+          className,
+        )}
+      >
         {showHeader && (
-          <div className="border-b border-slate-200/80 px-4 py-3">
+          <div className="shrink-0 border-b border-slate-200/80 px-4 py-3">
             <p className="text-xs font-semibold text-slate-700">Carte · DPE</p>
             <p className="text-[11px] text-slate-500">
               {geo.length} établissement{geo.length > 1 ? 's' : ''} géolocalisé
@@ -132,7 +139,9 @@ export function PackSchoolMap({
             </p>
           </div>
         )}
-        {mapShell}
+        <div className={cn('relative', fill ? 'min-h-0 flex-1' : undefined)}>
+          {mapShell}
+        </div>
       </div>
     );
   }

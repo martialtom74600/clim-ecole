@@ -2,6 +2,8 @@ import fs from 'fs/promises';
 import fsSync from 'fs';
 import path from 'path';
 import { parse } from 'csv-parse/sync';
+import { config } from '../config.js';
+import { logger } from '../utils/logger.js';
 import { fetchGeoCommunesForDepartment } from './geoCommunesService.js';
 
 const CACHE_FILE = 'insee-epci.json';

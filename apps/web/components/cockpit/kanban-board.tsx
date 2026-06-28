@@ -30,7 +30,7 @@ export function KanbanBoard({ initialCards }: { initialCards: PipelineCard[] }) 
   ) {
     setSaving(id);
     try {
-      const res = await fetch('/api/pipeline', {
+      const res = await fetch('/api/admin/pipeline', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, ...payload }),

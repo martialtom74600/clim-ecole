@@ -500,7 +500,12 @@ async function runPipeline({ embedded = false, resetCheckpoint = config.resetChe
     logger.info(`${mainBatch.length}/${patrimoineAssets.length} bâtiments à traiter (checkpoint + reprise)`);
     const rnbInEducation = collectRnbIdsFromSchools(mainBatch);
     const estBdnbCalls = estimateBdnbCallsForSchools(mainBatch.length, rnbInEducation.length);
-    if (config.bdnb.apiToken) {
+    if (config.bdnb.localOnly) {
+      logger.info(
+        `BDNB : mode local uniquement — 0 appel API (~${rnbInEducation.length} RNB via index/c cache). `
+        + 'Pas de quota API consommé.',
+      );
+    } else if (config.bdnb.apiToken) {
       logger.info(`BDNB : clé API configurée (Open Plus / Expert — en-tête X-Gravitee-Api-Key)`);
     } else {
       logger.warn(

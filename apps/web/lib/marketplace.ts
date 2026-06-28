@@ -131,7 +131,7 @@ function toMarketplacePack(
   };
 }
 
-/** Retire les € exacts et signaux fins du payload client (gratuit). */
+/** Retire les montants exacts € du payload client (gratuit). Garde score, personas et tranches. */
 function redactPackFinancials(pack: MarketplacePack): MarketplacePack {
   if (!pack.financialsHidden) return pack;
   return {
@@ -143,11 +143,6 @@ function redactPackFinancials(pack: MarketplacePack): MarketplacePack {
     gainNetMairieTotal: 0,
     roiAnnees: 0,
     subventionRatio: 0,
-    radarScore: 0,
-    isHot: false,
-    temperatureLevel: 'froid',
-    statutProjetEpci: 'SOUS_SEUIL_A_CREUSER',
-    personas: pack.primaryPersona ? [pack.primaryPersona] : [],
   };
 }
 
@@ -183,7 +178,7 @@ function toMarketplaceBuilding(
       publicName: obfuscateBuildingName(),
       publicCommune: obfuscateCommune(index, regionShort),
       surfaceM2: 0,
-      classeDpe: '?',
+      classeDpe: b.classeDpe || '?',
       capexTotal: 0,
       resteACharge: 0,
       gainNetMairie: 0,

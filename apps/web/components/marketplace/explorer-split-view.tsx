@@ -36,6 +36,7 @@ import {
   savePersonaFilter,
   toggleCompare,
 } from '@/lib/radar-client-storage';
+import { EXPLORER_GUIDE } from '@/lib/site-guide';
 import { cn } from '@/lib/utils';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -197,6 +198,22 @@ export function ExplorerSplitView({
               {COPY.compare} ({compareIds.length})
             </Link>
           )}
+
+          <details className="mt-3 rounded-lg border border-radar-border bg-radar-canvas/80">
+            <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-radar-muted">
+              Comment lire cette carte · {EXPLORER_GUIDE.length} étapes
+            </summary>
+            <ol className="space-y-2 border-t border-radar-border px-3 py-3">
+              {EXPLORER_GUIDE.map(({ step, title, description }) => (
+                <li key={step} className="text-xs text-radar-muted">
+                  <span className="font-semibold text-radar-text">
+                    {step}. {title}
+                  </span>
+                  <span className="mt-0.5 block leading-relaxed">{description}</span>
+                </li>
+              ))}
+            </ol>
+          </details>
         </div>
       </div>
 

@@ -14,7 +14,8 @@ export function PersonaExplainPanel({
         Pertinence par métier
       </h2>
       <p className="mt-1 text-sm text-radar-muted">
-        Clim École classe chaque territoire selon votre profil (travaux, ingénierie ou financement).
+        Clim École classe chaque territoire selon votre profil (travaux, ingénierie ou financement). Consultez
+        la section <strong className="font-medium text-radar-text">Synthèse</strong> pour le résumé chiffré.
       </p>
       <ul className="mt-6 space-y-4">
         {explanations.map(({ persona, reasons }) => (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { SlidersHorizontal } from 'lucide-react';
 import { formatEur } from '@/lib/format';
 import { COPY } from '@/lib/copy';
 
@@ -20,20 +21,19 @@ export function RacSimulator({
   }, [capex, ratio]);
 
   return (
-    <div className="card p-6 md:p-8">
-      <p className="text-xs font-semibold uppercase tracking-wide text-radar-subtle">Simulateur</p>
-      <h2 className="mt-2 text-lg font-semibold">
-        Et si le taux de subvention change ?
-      </h2>
-      <p className="mt-2 text-sm text-radar-muted">
-        Faites varier le pourcentage d&apos;aides publiques pour estimer ce que la collectivité devra financer.
-        Estimation indicative — non contractuelle.
+    <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm xl:sticky xl:top-[7.5rem]">
+      <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+        <SlidersHorizontal className="h-4 w-4 text-slate-400" />
+        Simulateur RAC
+      </div>
+      <p className="mt-1 text-xs leading-relaxed text-slate-500">
+        Faites varier le taux de subvention pour estimer le reste à charge collectivité.
       </p>
 
-      <div className="mt-6">
+      <div className="mt-5">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-radar-muted">Part subventions</span>
-          <span className="font-bold tabular-nums">{ratio} %</span>
+          <span className="text-slate-500">Part subventions</span>
+          <span className="font-bold tabular-nums text-slate-900">{ratio} %</span>
         </div>
         <input
           type="range"
@@ -41,24 +41,28 @@ export function RacSimulator({
           max={70}
           value={ratio}
           onChange={(e) => setRatio(Number(e.target.value))}
-          className="mt-2 w-full accent-radar-text"
+          className="mt-2 w-full accent-slate-900"
         />
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-radar-border bg-radar-canvas p-4">
-          <p className="text-xs font-medium text-radar-muted">{COPY.subventions}</p>
-          <p className="mt-1 text-xl font-bold tabular-nums">
+      <div className="mt-5 space-y-3">
+        <div className="rounded-lg bg-slate-50 px-4 py-3">
+          <p className="text-[11px] text-slate-500">{COPY.subventions}</p>
+          <p className="mt-0.5 text-lg font-bold tabular-nums text-slate-900">
             {formatEur(subventions, true)}
           </p>
         </div>
-        <div className="rounded-xl border border-radar-border bg-radar-canvas p-4">
-          <p className="text-xs font-medium text-radar-muted">{COPY.resteAChargeAfterSubs}</p>
-          <p className="mt-1 text-xl font-bold tabular-nums text-radar-signal">
+        <div className="rounded-lg bg-orange-50 px-4 py-3">
+          <p className="text-[11px] text-orange-600/80">{COPY.resteAChargeAfterSubs}</p>
+          <p className="mt-0.5 text-lg font-bold tabular-nums text-orange-700">
             {formatEur(rac, true)}
           </p>
         </div>
       </div>
+
+      <p className="mt-4 text-[10px] leading-relaxed text-slate-400">
+        Estimation indicative — non contractuelle.
+      </p>
     </div>
   );
 }

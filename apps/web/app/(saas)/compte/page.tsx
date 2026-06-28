@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { CheckCircle2, Kanban, LogOut } from 'lucide-react';
 import { COPY } from '@/lib/copy';
 import { AlertPreferencesPanel } from '@/components/marketplace/alert-preferences';
+import { GuidedSteps } from '@/components/marketplace/guided-steps';
+import { COMPTE_PIPELINE_GUIDE } from '@/lib/site-guide';
 import { PipelineKanbanBoard } from '@/components/compte/pipeline-kanban';
 
 interface AccountState {
@@ -86,6 +88,11 @@ export default function ComptePage() {
           </div>
 
           <section>
+            <GuidedSteps
+              title="Comment utiliser le pipeline"
+              steps={COMPTE_PIPELINE_GUIDE}
+              className="mb-6"
+            />
             <div className="mb-4 flex items-center gap-2">
               <Kanban className="h-5 w-5 text-radar-signal" />
               <h2 className="text-xl font-semibold">Pipeline commercial</h2>

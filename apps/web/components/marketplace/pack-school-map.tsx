@@ -3,22 +3,20 @@
 import { useEffect, useRef } from 'react';
 import type { MarketplaceBuilding } from '@/lib/types';
 import { FRANCE_CENTER } from '@/lib/map-utils';
+import { dpeHex } from '@/lib/dpe-colors';
+import { cn } from '@/lib/utils';
 
-const DPE_COLORS: Record<string, string> = {
-  A: '#22c55e',
-  B: '#84cc16',
-  C: '#eab308',
-  D: '#f59e0b',
-  E: '#f97316',
-  F: '#ef4444',
-  G: '#e11d48',
-};
-
-function dpeColor(classe: string): string {
-  return DPE_COLORS[classe?.charAt(0)?.toUpperCase() ?? '?'] ?? '#2dd4bf';
-}
-
-export function PackSchoolMap({ buildings }: { buildings: MarketplaceBuilding[] }) {
+export function PackSchoolMap({
+  buildings,
+  variant = 'card',
+  className,
+  showHeader = true,
+}: {
+  buildings: MarketplaceBuilding[];
+  variant?: 'card' | 'embedded';
+  className?: string;
+  showHeader?: boolean;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import('leaflet').Map | null>(null);
 
@@ -63,7 +61,7 @@ export function PackSchoolMap({ buildings }: { buildings: MarketplaceBuilding[] 
 
         const marker = L.circleMarker([lat, lon], {
           radius: 9,
-          fillColor: dpeColor(b.classeDpe),
+          fillColor: dpeHex(b.classeDpe),
           color: '#fff',
           weight: 2,
           fillOpacity: 0.9,
@@ -99,21 +97,58 @@ export function PackSchoolMap({ buildings }: { buildings: MarketplaceBuilding[] 
 
   if (geo.length === 0) {
     return (
-      <div className="card flex h-64 items-center justify-center p-6 text-sm text-radar-muted">
+      <div
+        className={cn(
+          'flex items-center justify-center p-6 text-sm text-slate-500',
+          variant === 'card' ? 'card h-64' : 'h-full min-h-[12rem] rounded-2xl bg-slate-100',
+          className,
+        )}
+      >
         Coordonnées GPS non disponibles pour ce territoire.
+      </div>
+    );
+  }
+
+  const mapShell = (
+    <div
+      ref={containerRef}
+      className={cn(
+        'radar-map-shell w-full',
+        variant === 'card' ? 'h-72 md:h-96' : 'h-full min-h-[16rem]',
+        variant === 'embedded' && className,
+      )}
+    />
+  );
+
+  if (variant === 'embedded') {
+    return (
+      <div className={cn('overflow-hidden', className)}>
+        {showHeader && (
+          <div className="border-b border-slate-200/80 px-4 py-3">
+            <p className="text-xs font-semibold text-slate-700">Carte · DPE</p>
+            <p className="text-[11px] text-slate-500">
+              {geo.length} établissement{geo.length > 1 ? 's' : ''} géolocalisé
+              {geo.length > 1 ? 's' : ''}
+            </p>
+          </div>
+        )}
+        {mapShell}
       </div>
     );
   }
 
   return (
     <div className="card overflow-hidden">
-      <div className="border-b border-radar-border px-6 py-4">
-        <h2 className="font-semibold text-radar-text">Carte des écoles</h2>
-        <p className="mt-1 text-xs text-radar-muted">
-          {geo.length} établissement{geo.length > 1 ? 's' : ''} géolocalisé{geo.length > 1 ? 's' : ''} · couleur = classe DPE
-        </p>
-      </div>
-      <div ref={containerRef} className="radar-map-shell h-72 w-full md:h-96" />
+      {showHeader && (
+        <div className="border-b border-radar-border px-6 py-4">
+          <h2 className="font-semibold text-radar-text">Carte des écoles</h2>
+          <p className="mt-1 text-xs text-radar-muted">
+            {geo.length} établissement{geo.length > 1 ? 's' : ''} géolocalisé
+            {geo.length > 1 ? 's' : ''} · couleur = classe DPE
+          </p>
+        </div>
+      )}
+      {mapShell}
     </div>
   );
 }

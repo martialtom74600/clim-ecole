@@ -52,15 +52,6 @@ export async function patchPipelineItem(
   return store;
 }
 
-/** @deprecated use patchPipelineItem */
-export async function updatePipelineItem(
-  id: string,
-  stage: PipelineStage,
-  note?: string,
-): Promise<PipelineStore> {
-  return patchPipelineItem(id, { stage, note });
-}
-
 export const getPipelineStore = cache(readPipelineStore);
 
 export function schoolPipelineId(codeUai: string): string {
@@ -69,17 +60,4 @@ export function schoolPipelineId(codeUai: string): string {
 
 export function epciPipelineId(codeEpci: string): string {
   return `epci:${codeEpci}`;
-}
-
-export function isFollowUpOverdue(followUpDate?: string): boolean {
-  if (!followUpDate) return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return new Date(followUpDate) < today;
-}
-
-export function isFollowUpToday(followUpDate?: string): boolean {
-  if (!followUpDate) return false;
-  const today = new Date().toISOString().slice(0, 10);
-  return followUpDate.slice(0, 10) === today;
 }

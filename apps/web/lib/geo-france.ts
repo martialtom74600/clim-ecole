@@ -140,8 +140,6 @@ export function getDeptLabel(code: string): string | null {
   return null;
 }
 
-export const FRANCE_CENTER: [number, number] = [46.6, 2.4];
-
 /** Département dominant d'un territoire (libellé France entière). */
 export function dominantDepartment(codesInsee: string[]): string {
   if (!codesInsee.length) return 'France';

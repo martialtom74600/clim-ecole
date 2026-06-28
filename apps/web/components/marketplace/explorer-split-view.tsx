@@ -125,7 +125,6 @@ export function ExplorerSplitView({
       {/* Carte plein écran */}
       <div className="absolute inset-0 z-0">
         <RadarMapClient
-          mode="departments"
           departments={departmentMarkers}
           selectedId={mapSelectedDept}
           onSelect={handleSelectDept}

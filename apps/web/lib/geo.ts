@@ -42,9 +42,3 @@ export function deptCodeFromInsee(codeInsee: string): string {
   if (c.startsWith('2A') || c.startsWith('2B')) return c.slice(0, 2).toUpperCase();
   return c.slice(0, 2);
 }
-
-export function formatDepartment(codeInsee: string): string {
-  const dept = deptCodeFromInsee(codeInsee);
-  const label = AURA_DEPT_LABELS[dept];
-  return label ? `${dept} · ${label}` : dept;
-}

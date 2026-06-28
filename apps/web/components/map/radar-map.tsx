@@ -3,25 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
-  AURA_CENTER,
   FRANCE_CENTER,
   DEFAULT_ZOOM,
   capexToRadius,
-  dpeColor,
-  gradeColor,
   type DepartmentMarker,
-  type TerritoryMarker,
 } from '@/lib/map-utils';
-import type { MapMarker } from '@/lib/types';
-import { formatBudgetRange } from '@/lib/freemium';
-
-export type RadarMapMode = 'territories' | 'departments' | 'schools';
 
 interface RadarMapProps {
-  mode?: RadarMapMode;
-  territories?: TerritoryMarker[];
   departments?: DepartmentMarker[];
-  schools?: MapMarker[];
   selectedId?: string | null;
   onSelect?: (id: string | null) => void;
   className?: string;
@@ -37,34 +26,6 @@ type MapPoint = { id: string; lat: number; lon: number };
 interface MarkerRecord {
   marker: import('leaflet').Marker;
   pointId: string;
-  isHot?: boolean;
-}
-
-function territoryColor(t: TerritoryMarker) {
-  return t.isHot ? '#DC2626' : gradeColor(t.radarGrade);
-}
-
-function territorySize(t: TerritoryMarker) {
-  return capexToRadius(t.capex) * 2;
-}
-
-function buildTerritoryIcon(L: LeafletModule, t: TerritoryMarker) {
-  const size = territorySize(t);
-  const color = territoryColor(t);
-  const html = `
-    <div class="radar-marker-wrap" style="width:${size}px;height:${size}px" data-hot="${t.isHot}">
-      <span class="radar-marker-pulse is-hidden" style="--pulse-color:${color}"></span>
-      <span
-        class="radar-marker-dot${t.isHot ? ' is-hot' : ''}"
-        style="--dot-size:${size}px;--dot-color:${color}"
-      ></span>
-    </div>`;
-  return L.divIcon({
-    className: 'radar-marker-icon',
-    html,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-  });
 }
 
 function buildDepartmentIcon(L: LeafletModule, d: DepartmentMarker, selected: boolean) {
@@ -77,18 +38,6 @@ function buildDepartmentIcon(L: LeafletModule, d: DepartmentMarker, selected: bo
         <span class="radar-dept-count">${d.territoryCount}</span>
       </span>
     </div>`;
-  return L.divIcon({
-    className: 'radar-marker-icon',
-    html,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-  });
-}
-
-function buildSchoolIcon(L: LeafletModule, s: MapMarker) {
-  const size = 14;
-  const color = dpeColor(s.dpe);
-  const html = `<span class="radar-marker-dot is-school" style="--dot-size:${size}px;--dot-color:${color}"></span>`;
   return L.divIcon({
     className: 'radar-marker-icon',
     html,
@@ -111,7 +60,7 @@ function applySelection(record: MarkerRecord, selected: boolean) {
     record.marker.openTooltip();
   } else {
     pulse?.classList.add('is-hidden');
-    record.marker.setZIndexOffset(record.isHot ? 500 : 0);
+    record.marker.setZIndexOffset(0);
     record.marker.closeTooltip();
   }
 }
@@ -121,10 +70,7 @@ function boundsKey(points: MapPoint[]) {
 }
 
 export function RadarMap({
-  mode = 'departments',
-  territories = [],
   departments = [],
-  schools = [],
   selectedId,
   onSelect,
   className,
@@ -149,15 +95,10 @@ export function RadarMap({
   onSelectRef.current = onSelect;
   selectedIdRef.current = selectedId;
 
-  const points = useMemo<MapPoint[]>(() => {
-    if (mode === 'departments') {
-      return departments.map((d) => ({ id: d.id, lat: d.lat, lon: d.lon }));
-    }
-    if (mode === 'territories') {
-      return territories.map((t) => ({ id: t.packId, lat: t.lat, lon: t.lon }));
-    }
-    return schools.map((s) => ({ id: s.id, lat: s.lat, lon: s.lon }));
-  }, [mode, departments, territories, schools]);
+  const points = useMemo<MapPoint[]>(
+    () => departments.map((d) => ({ id: d.id, lat: d.lat, lon: d.lon })),
+    [departments],
+  );
 
   const pointsKey = useMemo(() => boundsKey(points), [points]);
 
@@ -175,7 +116,7 @@ export function RadarMap({
     });
   }, [points]);
 
-  const flyToPoint = useCallback((lat: number, lon: number, z = 10.5) => {
+  const flyToPoint = useCallback((lat: number, lon: number, z = 9) => {
     mapRef.current?.flyTo([lat, lon], z, { duration: 0.9, easeLinearity: 0.22 });
   }, []);
 
@@ -254,7 +195,6 @@ export function RadarMap({
     };
   }, [ready]);
 
-  // Sync marker data (without selection styling)
   useEffect(() => {
     if (!ready || !mapRef.current || !layerRef.current || !leafletRef.current) return;
 
@@ -275,100 +215,46 @@ export function RadarMap({
       }, 280);
     }
 
-    if (mode === 'departments') {
-      for (const d of departments) {
-        const existing = current.get(d.id);
-        const selected = activeSelection === d.id;
+    for (const d of departments) {
+      const existing = current.get(d.id);
+      const selected = activeSelection === d.id;
 
-        if (existing) {
-          existing.marker.setIcon(buildDepartmentIcon(L, d, selected));
-          if (existing.marker.getTooltip()) {
-            existing.marker.setTooltipContent(
-              `<div class="radar-tooltip-inner"><strong>${d.department}</strong><span>${d.territoryCount} territoires · ${d.schoolCount} écoles</span><span style="opacity:0.7;font-size:10px">Tranches budget visibles dans la liste — détail € après achat</span></div>`,
-            );
-          }
-          continue;
-        }
-
-        const marker = L.marker([d.lat, d.lon], {
-          icon: buildDepartmentIcon(L, d, selected),
-          zIndexOffset: selected ? 1000 : 0,
-        });
-
-        marker.on('add', () => {
-          applySelection({ marker, pointId: d.id }, selected);
-        });
-
-        if (interactive) {
-          marker.on('click', () => onSelectRef.current?.(d.id));
-          marker.bindTooltip(
+      if (existing) {
+        existing.marker.setIcon(buildDepartmentIcon(L, d, selected));
+        if (existing.marker.getTooltip()) {
+          existing.marker.setTooltipContent(
             `<div class="radar-tooltip-inner"><strong>${d.department}</strong><span>${d.territoryCount} territoires · ${d.schoolCount} écoles</span><span style="opacity:0.7;font-size:10px">Tranches budget visibles dans la liste — détail € après achat</span></div>`,
-            { direction: 'top', offset: [0, -6], opacity: 1, className: 'radar-tooltip' },
           );
         }
-
-        marker.addTo(layer);
-        current.set(d.id, { marker, pointId: d.id });
+        continue;
       }
-    } else if (mode === 'territories') {
-      for (const t of territories) {
-        const existing = current.get(t.packId);
 
-        if (existing) {
-          existing.marker.setLatLng([t.lat, t.lon]);
-          existing.isHot = t.isHot;
-          if (existing.marker.getTooltip()) {
-            existing.marker.setTooltipContent(
-              `<div class="radar-tooltip-inner"><strong>${t.department}</strong><span>${formatBudgetRange(t.capex)} · ${t.schoolCount} écoles</span><span style="opacity:0.7;font-size:10px">Identité masquée</span></div>`,
-            );
-          }
-          continue;
-        }
+      const marker = L.marker([d.lat, d.lon], {
+        icon: buildDepartmentIcon(L, d, selected),
+        zIndexOffset: selected ? 1000 : 0,
+      });
 
-        const marker = L.marker([t.lat, t.lon], {
-          icon: buildTerritoryIcon(L, t),
-          zIndexOffset: t.isHot ? 500 : 0,
-        });
+      marker.on('add', () => {
+        applySelection({ marker, pointId: d.id }, selected);
+      });
 
-        marker.on('add', () => {
-          const wrap = marker.getElement()?.querySelector('.radar-marker-wrap');
-          if (wrap) {
-            wrap.classList.add('is-entering');
-            requestAnimationFrame(() => wrap.classList.remove('is-entering'));
-          }
-          applySelection({ marker, pointId: t.packId, isHot: t.isHot }, activeSelection === t.packId);
-        });
-
-        if (interactive) {
-          marker.on('click', () => onSelectRef.current?.(t.packId));
-          marker.bindTooltip(
-            `<div class="radar-tooltip-inner"><strong>${t.department}</strong><span>${formatBudgetRange(t.capex)} · ${t.schoolCount} écoles</span><span style="opacity:0.7;font-size:10px">Identité masquée</span></div>`,
-            { direction: 'top', offset: [0, -6], opacity: 1, className: 'radar-tooltip' },
-          );
-        }
-
-        marker.addTo(layer);
-        current.set(t.packId, { marker, pointId: t.packId, isHot: t.isHot });
+      if (interactive) {
+        marker.on('click', () => onSelectRef.current?.(d.id));
+        marker.bindTooltip(
+          `<div class="radar-tooltip-inner"><strong>${d.department}</strong><span>${d.territoryCount} territoires · ${d.schoolCount} écoles</span><span style="opacity:0.7;font-size:10px">Tranches budget visibles dans la liste — détail € après achat</span></div>`,
+          { direction: 'top', offset: [0, -6], opacity: 1, className: 'radar-tooltip' },
+        );
       }
-    } else if (mode === 'schools') {
-      for (const s of schools) {
-        const existing = current.get(s.id);
-        if (existing) {
-          existing.marker.setLatLng([s.lat, s.lon]);
-          continue;
-        }
 
-        const marker = L.marker([s.lat, s.lon], { icon: buildSchoolIcon(L, s) });
-        if (interactive) {
-          marker.on('click', () => onSelectRef.current?.(s.id));
-        }
-        marker.addTo(layer);
-        current.set(s.id, { marker, pointId: s.id });
-      }
+      marker.addTo(layer);
+      current.set(d.id, { marker, pointId: d.id });
     }
 
     const filterChanged = lastBoundsKey.current !== pointsKey;
-    const shouldFit = fitOnLoad && points.length > 0 && !activeSelection &&
+    const shouldFit =
+      fitOnLoad &&
+      points.length > 0 &&
+      !activeSelection &&
       (!initialFitDone.current || filterChanged);
 
     if (shouldFit) {
@@ -379,9 +265,8 @@ export function RadarMap({
     if (filterChanged) {
       lastBoundsKey.current = pointsKey;
     }
-  }, [ready, mode, departments, territories, schools, points, pointsKey, interactive, fitOnLoad, fitToPoints]);
+  }, [ready, departments, points, pointsKey, interactive, fitOnLoad, fitToPoints]);
 
-  // Selection styling — CSS transitions, no DOM rebuild
   useEffect(() => {
     if (!ready) return;
     for (const [id, record] of markersRef.current) {
@@ -389,22 +274,18 @@ export function RadarMap({
     }
   }, [selectedId, ready]);
 
-  // Fly to selected point
   useEffect(() => {
     if (!ready) return;
 
     if (selectedId) {
       const d = departments.find((x) => x.id === selectedId);
-      const t = territories.find((x) => x.packId === selectedId);
-      const s = schools.find((x) => x.id === selectedId);
-      const target = d ?? t ?? s;
-      if (target) flyToPoint(target.lat, target.lon, mode === 'departments' ? 9 : 10.5);
+      if (d) flyToPoint(d.lat, d.lon, 9);
     } else if (prevSelectedId.current && points.length > 0) {
       fitToPoints(true);
     }
 
     prevSelectedId.current = selectedId;
-  }, [selectedId, ready, departments, territories, schools, flyToPoint, fitToPoints, points.length, mode]);
+  }, [selectedId, ready, departments, flyToPoint, fitToPoints, points.length]);
 
   return (
     <div ref={shellRef} className={cn('radar-map-shell', className)}>

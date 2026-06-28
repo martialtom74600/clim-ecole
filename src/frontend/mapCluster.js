@@ -141,8 +141,3 @@ export function createEpciHubLayer({ packages, schools, visibleFn, onHubClick })
 
   return root;
 }
-
-/** @deprecated — conservé pour compat ; préférer createEpciPartitionedClusterLayer */
-export function createSchoolClusterGroup() {
-  return createEpciClusterGroup('legacy', null);
-}

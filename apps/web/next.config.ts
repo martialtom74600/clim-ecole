@@ -1,21 +1,22 @@
 import type { NextConfig } from 'next';
 import path from 'path';
-import { loadEnvConfig } from '@next/env';
+import { loadMonorepoEnvFromDir } from './lib/load-env';
+import { validateProductionEnv } from './lib/env';
 
-const repoRoot = path.join(__dirname, '../..');
+const webRoot = __dirname;
 
-/** Un seul `.env` à la racine du monorepo (pipeline + Next.js). */
-loadEnvConfig(repoRoot);
+loadMonorepoEnvFromDir(webRoot);
+validateProductionEnv();
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Monorepo : évite que Next scanne mal le repo (warning lockfiles + perf dev)
-  outputFileTracingRoot: repoRoot,
+  outputFileTracingRoot: path.join(webRoot, '..', '..'),
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
   webpack: (config, { dev }) => {
     if (dev) {
+      const repoRoot = path.join(webRoot, '..', '..');
       config.watchOptions = {
         ...config.watchOptions,
         ignored: [

@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/run-next.mjs dev --port 3001",
-    "build": "node scripts/run-next.mjs build",
-    "start": "node scripts/run-next.mjs start --port 3001",
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start --port 3001",
+    "typecheck": "tsc --noEmit",
     "test:security": "node --test tests/security.test.mjs"
   },
   "dependencies": {

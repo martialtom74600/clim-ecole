@@ -80,4 +80,6 @@ export const PERSONA_FILTER_LABELS = {
   btp: { short: 'BTP', long: 'Entreprises de travaux' },
   be: { short: 'BE', long: 'Bureaux d\'études' },
   amo: { short: 'AMO', long: 'Montage financier' },
+  esco: { short: 'ESCO', long: 'Exploitants & CPE' },
+  cee: { short: 'CEE', long: 'Délégataires CEE' },
 } as const;

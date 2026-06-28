@@ -1,0 +1,70 @@
+name: Client crons (alertes + BOAMP)
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'
+    - cron: '0 6 * * 3'
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Job à exécuter'
+        required: true
+        default: 'digest'
+        type: choice
+        options:
+          - alerts
+          - digest
+          - boamp
+
+jobs:
+  cron:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Resolve job
+        id: job
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ github.event.inputs.job }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "0 7 * * 1" ]; then
+            echo "name=digest" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=boamp" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Send territory alerts
+        if: steps.job.outputs.name == 'alerts'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+        run: npm run cron:alerts
+
+      - name: Send weekly digest
+        if: steps.job.outputs.name == 'digest'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+        run: npm run cron:alerts:digest
+
+      - name: Sync BOAMP tenders
+        if: steps.job.outputs.name == 'boamp'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run cron:boamp

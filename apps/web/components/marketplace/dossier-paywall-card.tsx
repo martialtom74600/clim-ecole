@@ -25,32 +25,32 @@ export function DossierPaywallCard({
   return (
     <div
       className={cn(
-        'rounded-xl border border-slate-200 bg-white p-6',
-        embedded ? 'shadow-none' : 'shadow-sm lg:sticky lg:top-20',
+        'rounded-2xl border border-line bg-white p-6',
+        embedded ? 'shadow-card' : 'shadow-raised lg:sticky lg:top-20',
         className,
       )}
     >
-      <div className="flex items-center gap-2 text-slate-500">
+      <div className="flex items-center gap-2 text-ink-muted">
         <Lock className="h-4 w-4" strokeWidth={1.5} />
-        <span className="text-xs font-semibold uppercase tracking-wide">Accès dossier</span>
+        <span className="label-caps">Accès dossier</span>
       </div>
 
       {freePreview && (
-        <p className="mt-3 text-sm text-slate-600">
+        <p className="mt-3 text-sm text-ink-muted">
           Territoire estimé{' '}
-          <strong className="font-semibold text-slate-900">{freePreview.budgetRange}</strong>
+          <strong className="font-semibold text-ink">{freePreview.budgetRange}</strong>
           {' · '}
           {freePreview.dpeProfile.label}
         </p>
       )}
 
       <div className="mt-5 flex items-baseline gap-2">
-        <span className="text-3xl font-bold tracking-tight text-slate-900">290 €</span>
-        <span className="text-sm text-slate-500">HT · achat unique</span>
+        <span className="font-mono text-3xl font-bold tracking-tight text-ink">290 €</span>
+        <span className="text-sm text-ink-muted">HT · achat unique</span>
       </div>
 
       {!soldOut && pack.slotsRemaining <= 2 && (
-        <p className="mt-2 text-xs font-medium text-amber-700">
+        <p className="mt-2 text-xs font-medium text-warning-text">
           Plus que {pack.slotsRemaining} place{pack.slotsRemaining > 1 ? 's' : ''} à l&apos;unité
         </p>
       )}
@@ -66,8 +66,8 @@ export function DossierPaywallCard({
 
       <ul className="mt-6 space-y-2.5">
         {PAYWALL_INCLUDES.slice(0, 4).map((item) => (
-          <li key={item} className="flex gap-2.5 text-xs leading-relaxed text-slate-600">
-            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" aria-hidden />
+          <li key={item} className="flex gap-2.5 text-xs leading-relaxed text-ink-muted">
+            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-positive" aria-hidden />
             <span>{item}</span>
           </li>
         ))}
@@ -89,7 +89,7 @@ export function DossierPaywallCard({
         </CheckoutButton>
       </div>
 
-      <p className="mt-4 text-[11px] leading-relaxed text-slate-400">{COPY.estimatesNote}</p>
+      <p className="mt-4 text-[11px] leading-relaxed text-ink-subtle">{COPY.estimatesNote}</p>
     </div>
   );
 }

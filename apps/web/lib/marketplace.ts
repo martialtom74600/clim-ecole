@@ -18,6 +18,7 @@ import type {
   ProspectRow,
 } from './types';
 import { buildMgpeSummary, resteAChargeAfterSubs } from './dossier-helpers';
+import { aggregatePackCee } from './cee-engine';
 import { getTerritoryTenderSignal, getTerritoryTenderSignalsMap } from './territory-tenders';
 import { decodePackId, encodePackId } from './pack-id';
 
@@ -68,10 +69,20 @@ function toMarketplacePack(
   tender?: { hasActiveTender: boolean; tenderTitle?: string },
 ): MarketplacePack {
   const roiAnnees = bestRoiAnnees(detail.batiments);
+  const ceeAgg = aggregatePackCee(
+    detail.batiments.map((b) => ({
+      surfaceM2: b.surfaceM2,
+      ceeEuros: b.ceeEuros,
+      anneeConstruction: b.anneeConstruction,
+      capexTotal: b.capexTotal,
+    })),
+  );
   const personaResult = inferDealPersona({
     packCapexTotal: detail.packCapexTotal,
     subventionsTotal: detail.subventionsTotal,
     statutProjetEpci: summary.statutProjetEpci,
+    batimentCount: summary.batimentCount,
+    ceeEurosTotal: ceeAgg.ceeEurosTotal,
     batiments: detail.batiments.map((b) => ({
       classeDpe: b.classeDpe,
       surfaceM2: b.surfaceM2,
@@ -121,6 +132,9 @@ function toMarketplacePack(
     soldOut: availability.soldOut,
     hasActiveTender: Boolean(tender?.hasActiveTender),
     tenderTitle: tender?.tenderTitle,
+    ceeEurosTotal: ceeAgg.ceeEurosTotal,
+    cumacKwhTotal: ceeAgg.cumacKwhTotal,
+    isMutualizable: personaResult.isMutualizable,
   };
 
   return {
@@ -219,6 +233,8 @@ function toMarketplaceBuilding(
     consoSpecifiqueKwhM2: b.consoSpecifiqueKwhM2 || undefined,
     anneeDpe: b.anneeDpe || undefined,
     scoreEligibiliteClosing: b.scoreEligibiliteClosing || undefined,
+    ceeEuros: b.ceeEuros || undefined,
+    anneeConstruction: b.anneeConstruction || undefined,
     artisanNom: b.artisanNom || undefined,
     artisanEmail: b.artisanEmail || undefined,
     artisanDistanceKm: b.artisanDistanceKm || undefined,
@@ -229,19 +245,26 @@ function toMarketplaceBuilding(
 }
 
 export const getMarketplaceGlobalStats = cache(async (): Promise<MarketplaceGlobalStats> => {
-  const packs = await getMarketplacePacks();
+  const packs = await getMarketplacePacksRaw();
   const [kpis] = await Promise.all([getDashboardKpis()]);
 
   let totalPackCapex = 0;
   let totalResteACharge = 0;
   let totalSubventions = 0;
   let totalGainMairie = 0;
+  let totalCeeEuros = 0;
+  let totalCumacKwh = 0;
+  const depts = new Set<string>();
 
   for (const p of packs) {
     totalPackCapex += p.packCapexTotal;
     totalResteACharge += p.resteAChargeTotal;
     totalSubventions += p.subventionsTotal;
     totalGainMairie += p.gainNetMairieTotal;
+    totalCeeEuros += p.ceeEurosTotal ?? 0;
+    totalCumacKwh += p.cumacKwhTotal ?? 0;
+    const dept = p.department.split('·')[0]?.trim();
+    if (dept) depts.add(dept);
   }
 
   return {
@@ -253,10 +276,19 @@ export const getMarketplaceGlobalStats = cache(async (): Promise<MarketplaceGlob
     totalResteACharge,
     totalSubventions,
     totalGainMairie,
+    totalCeeEuros,
+    totalCumacKwh,
+    departmentCount: depts.size,
   };
 });
 
-export const getMarketplacePacks = cache(async (): Promise<MarketplacePack[]> => {
+/**
+ * Packs avec montants réels (CAPEX, subventions, RAC) — usage SERVEUR uniquement
+ * pour l'agrégation (stats nationales, portefeuille). Ne jamais renvoyer tel quel
+ * au client : passer par {@link getMarketplacePacks} qui caviarde les montants par
+ * territoire. Les agrégats nationaux/départementaux ne révèlent aucun montant unitaire.
+ */
+export const getMarketplacePacksRaw = cache(async (): Promise<MarketplacePack[]> => {
   const [coverageLabel, summaries, unlockCounts, accMap, tenderMap] = await Promise.all([
     getCoverageBadge(),
     getAllEpciSummary(),
@@ -303,15 +335,16 @@ export const getMarketplacePacks = cache(async (): Promise<MarketplacePack[]> =>
   }
 
   const sorted = sortPacksForPublicList(packs);
+  return sorted.map((pack, i) => ({ ...pack, isNew: i < 8 }));
+});
 
-  return sorted.map((pack, i) =>
+export const getMarketplacePacks = cache(async (): Promise<MarketplacePack[]> => {
+  const previewAll = isTestMode();
+  const raw = await getMarketplacePacksRaw();
+  return raw.map((pack) =>
     previewAll
-      ? { ...pack, isNew: i < 8, financialsHidden: false }
-      : redactPackFinancials({
-          ...pack,
-          isNew: i < 8,
-          financialsHidden: true,
-        }),
+      ? { ...pack, financialsHidden: false }
+      : redactPackFinancials({ ...pack, financialsHidden: true }),
   );
 });
 

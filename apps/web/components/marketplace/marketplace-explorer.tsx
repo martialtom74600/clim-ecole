@@ -2,7 +2,11 @@ import { getMarketplaceGlobalStats, getMarketplacePacks } from '@/lib/marketplac
 import { getCoverageBadge } from '@/lib/coverage';
 import { ExplorerSplitView } from '@/components/marketplace/explorer-split-view';
 
-export async function MarketplaceExplorer() {
+export async function MarketplaceExplorer({
+  initialPersonaFilter,
+}: {
+  initialPersonaFilter?: string;
+}) {
   const [packs, stats, coverageBadge] = await Promise.all([
     getMarketplacePacks(),
     getMarketplaceGlobalStats(),
@@ -14,6 +18,7 @@ export async function MarketplaceExplorer() {
       packs={packs}
       qualifiedCount={stats.qualifiedCount}
       coverageBadge={coverageBadge}
+      initialPersonaFilter={initialPersonaFilter}
     />
   );
 }

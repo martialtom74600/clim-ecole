@@ -86,8 +86,8 @@ function SuccessInner() {
   }
 
   return (
-    <div className="page-content max-w-xl py-16">
-      <div className="card p-8 text-center md:p-10">
+    <div className="page-content">
+      <div className="card mx-auto max-w-xl p-8 text-center md:p-10">
         <CheckCircle2 className="mx-auto h-12 w-12 text-radar-signal" />
         <h1 className="mt-4 text-2xl font-semibold">Paiement confirmé</h1>
         <p className="mt-2 text-radar-muted">

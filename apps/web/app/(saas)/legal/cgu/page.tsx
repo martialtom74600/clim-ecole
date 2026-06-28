@@ -38,12 +38,12 @@ export default async function CguPage() {
 
 function LegalLayout({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="page-content prose prose-slate max-w-3xl">
+    <div className="page-content">
       <Link href="/" className="btn-ghost mb-6 -ml-2 text-sm">
         ← Accueil
       </Link>
-      <h1 className="text-3xl font-semibold text-slate-900">{title}</h1>
-      <div className="mt-8 space-y-6 text-slate-600 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-slate-900">
+      <h1 className="text-3xl font-semibold text-ink">{title}</h1>
+      <div className="mt-8 space-y-6 leading-relaxed text-ink-muted [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-ink">
         {children}
       </div>
     </div>

@@ -26,12 +26,19 @@ function rowToAccount(row: {
 }
 
 async function loadPackUnlockRows(accountId: string): Promise<
-  { packId: string; pipelineStatus: import('./pipeline-crm').PackPipelineStatus; pipelineUpdatedAt?: string; unlockedAt?: string }[]
+  {
+    packId: string;
+    pipelineStatus: import('./pipeline-crm').PackPipelineStatus;
+    pipelineUpdatedAt?: string;
+    unlockedAt?: string;
+    note?: string;
+    nextFollowUp?: string;
+  }[]
 > {
   const sb = getSupabaseServer();
   const { data } = await sb
     .from('pack_unlocks')
-    .select('pack_id, pipeline_status, pipeline_updated_at, created_at')
+    .select('pack_id, pipeline_status, pipeline_updated_at, created_at, note, next_follow_up')
     .eq('account_id', accountId)
     .order('created_at', { ascending: false });
 
@@ -40,6 +47,8 @@ async function loadPackUnlockRows(accountId: string): Promise<
     pipelineStatus: (r.pipeline_status as import('./pipeline-crm').PackPipelineStatus) ?? 'new',
     pipelineUpdatedAt: (r.pipeline_updated_at as string | null) ?? undefined,
     unlockedAt: (r.created_at as string | null) ?? undefined,
+    note: (r.note as string | null) ?? undefined,
+    nextFollowUp: (r.next_follow_up as string | null) ?? undefined,
   }));
 }
 

@@ -247,6 +247,9 @@ export interface MarketplaceGlobalStats {
   totalResteACharge: number;
   totalSubventions: number;
   totalGainMairie: number;
+  totalCeeEuros: number;
+  totalCumacKwh: number;
+  departmentCount: number;
 }
 
 export interface MarketplacePack {
@@ -286,6 +289,11 @@ export interface MarketplacePack {
   /** Appel d'offres BOAMP actif détecté sur ce territoire */
   hasActiveTender?: boolean;
   tenderTitle?: string;
+  /** CEE agrégés territoire */
+  ceeEurosTotal?: number;
+  cumacKwhTotal?: number;
+  /** 5+ écoles et CAPEX > 800 k€ */
+  isMutualizable?: boolean;
 }
 
 export interface MarketplaceBuilding {
@@ -322,6 +330,8 @@ export interface MarketplaceBuilding {
   consoSpecifiqueKwhM2?: number;
   anneeDpe?: number;
   scoreEligibiliteClosing?: number;
+  ceeEuros?: number;
+  anneeConstruction?: number;
   artisanNom?: string;
   artisanEmail?: string;
   artisanDistanceKm?: number;

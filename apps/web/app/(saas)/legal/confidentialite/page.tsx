@@ -3,7 +3,7 @@ import { COPY } from '@/lib/copy';
 
 export default function ConfidentialitePage() {
   return (
-    <div className="page-content max-w-3xl">
+    <div className="page-content">
       <Link href="/" className="btn-ghost mb-6 -ml-2 text-sm">
         ← Accueil
       </Link>

@@ -8,19 +8,19 @@ import {
   HardHat,
   Landmark,
   LayoutGrid,
+  Leaf,
   List,
   Map,
   Ruler,
   Sparkles,
   Star,
   X,
+  Zap,
 } from 'lucide-react';
 import { COPY, PERSONA_FILTER_LABELS } from '@/lib/copy';
 import type { ClientPersona, MarketplacePack } from '@/lib/types';
 import { parseDepartmentCode } from '@/lib/geo';
 import { buildDepartmentMarkers } from '@/lib/map-departments';
-import { packMatchesPersonaFilter } from '@/lib/persona-engine';
-import { packMatchesExplorerFilter } from '@/lib/curated-deals';
 import { PersonaBadgeGroup } from '@/components/brand/personas';
 import { RadarScoreBadge } from '@/components/marketplace/radar-score-badge';
 import { WatchlistButton } from '@/components/marketplace/watchlist-button';
@@ -34,11 +34,19 @@ import {
   getWatchlist,
   loadPersonaFilter,
   savePersonaFilter,
-  toggleCompare,
 } from '@/lib/radar-client-storage';
 import { EXPLORER_GUIDE } from '@/lib/site-guide';
 import { cn } from '@/lib/utils';
 import { useEffect, useMemo, useState } from 'react';
+import { useAccountPreferences } from '@/hooks/use-account-preferences';
+import { isClientPersona } from '@/lib/brand';
+import { filterExplorerPacks, type ExplorerFilterState } from '@/lib/explorer-filters';
+import {
+  ExplorerAdvancedFilters,
+  ExplorerCoveragePanel,
+  ExplorerSearchBar,
+  OnboardingModal,
+} from '@/components/marketplace/explorer-enhancements';
 
 type PersonaFilter = ClientPersona | 'all' | 'qualified' | 'watchlist';
 
@@ -48,6 +56,8 @@ const PERSONA_TABS: { id: PersonaFilter; label: string; hint?: string; icon?: ty
   { id: 'btp', label: PERSONA_FILTER_LABELS.btp.short, hint: PERSONA_FILTER_LABELS.btp.long, icon: HardHat },
   { id: 'be', label: PERSONA_FILTER_LABELS.be.short, hint: PERSONA_FILTER_LABELS.be.long, icon: Ruler },
   { id: 'amo', label: PERSONA_FILTER_LABELS.amo.short, hint: PERSONA_FILTER_LABELS.amo.long, icon: Landmark },
+  { id: 'esco', label: PERSONA_FILTER_LABELS.esco.short, hint: PERSONA_FILTER_LABELS.esco.long, icon: Zap },
+  { id: 'cee', label: PERSONA_FILTER_LABELS.cee.short, hint: PERSONA_FILTER_LABELS.cee.long, icon: Leaf },
   { id: 'watchlist', label: COPY.filterFavorites, icon: Star },
 ];
 
@@ -55,17 +65,32 @@ export function ExplorerSplitView({
   packs,
   qualifiedCount,
   coverageBadge = 'France',
+  initialPersonaFilter,
 }: {
   packs: MarketplacePack[];
   qualifiedCount: number;
   coverageBadge?: string;
+  initialPersonaFilter?: string;
 }) {
-  const [filter, setFilter] = useState<PersonaFilter>('all');
+  const defaultFilter: PersonaFilter =
+    initialPersonaFilter && isClientPersona(initialPersonaFilter)
+      ? initialPersonaFilter
+      : 'all';
+
+  const [filter, setFilter] = useState<PersonaFilter>(defaultFilter);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [watchIds, setWatchIds] = useState<string[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
   const [listOpen, setListOpen] = useState(true);
+  const [minCapex, setMinCapex] = useState(0);
+  const [minGrade, setMinGrade] = useState<'A' | 'B' | 'C' | 'D' | 'all'>('all');
+  const [aoOnly, setAoOnly] = useState(false);
+  const [mutualizableOnly, setMutualizableOnly] = useState(defaultFilter === 'esco');
+  const [minCeeEuros, setMinCeeEuros] = useState(defaultFilter === 'cee' ? 25_000 : 0);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const { prefs, loaded, toggleCompare, completeOnboarding } = useAccountPreferences();
 
   useEffect(() => {
     const saved = loadPersonaFilter();
@@ -76,29 +101,45 @@ export function ExplorerSplitView({
     setWatchIds(getWatchlist());
   }, []);
 
+  useEffect(() => {
+    if (!loaded) return;
+    setWatchIds(prefs.watchlist.length ? prefs.watchlist : getWatchlist());
+    setCompareIds(prefs.compareIds.length ? prefs.compareIds : getCompareList());
+    if (prefs.onboarding?.minCapex) setMinCapex(prefs.onboarding.minCapex);
+    if (!prefs.onboarding?.completedAt) setShowOnboarding(true);
+  }, [loaded, prefs.watchlist, prefs.compareIds, prefs.onboarding]);
+
   function changeFilter(f: PersonaFilter) {
     setFilter(f);
     savePersonaFilter(f);
   }
 
-  const personaFiltered = useMemo(() => {
-    return packs.filter((p) => {
-      if (filter === 'watchlist') return watchIds.includes(p.packId);
-      if (filter === 'qualified') return packMatchesExplorerFilter(p, 'qualified', watchIds);
-      if (filter === 'all') return true;
-      return packMatchesPersonaFilter(p.personas, filter);
-    });
-  }, [packs, filter, watchIds]);
+  const explorerFilters: ExplorerFilterState = useMemo(
+    () => ({
+      query: '',
+      persona: filter,
+      minCapex,
+      minGrade,
+      aoOnly,
+      passoiresOnly: false,
+      mutualizableOnly,
+      minCeeEuros,
+      departments: selectedDept ? [selectedDept] : [],
+    }),
+    [filter, minCapex, minGrade, aoOnly, mutualizableOnly, minCeeEuros, selectedDept],
+  );
+
+  const personaFiltered = useMemo(
+    () => filterExplorerPacks(packs, explorerFilters, watchIds),
+    [packs, explorerFilters, watchIds],
+  );
 
   const departmentMarkers = useMemo(
     () => buildDepartmentMarkers(personaFiltered),
     [personaFiltered],
   );
 
-  const filtered = useMemo(() => {
-    if (!selectedDept) return personaFiltered;
-    return personaFiltered.filter((p) => parseDepartmentCode(p.department) === selectedDept);
-  }, [personaFiltered, selectedDept]);
+  const filtered = personaFiltered;
 
   const mapSelectedDept = useMemo(() => {
     if (selectedId) {
@@ -123,6 +164,21 @@ export function ExplorerSplitView({
 
   return (
     <div className="relative h-[calc(100svh-3.5rem)] min-h-[480px] w-full">
+      <OnboardingModal
+        open={showOnboarding}
+        onComplete={(persona, capex) => {
+          completeOnboarding({ persona, minCapex: capex });
+          setMinCapex(capex);
+          changeFilter(persona);
+          if (persona === 'esco') setMutualizableOnly(true);
+          if (persona === 'cee') setMinCeeEuros(25_000);
+          setShowOnboarding(false);
+        }}
+        onSkip={() => {
+          completeOnboarding({});
+          setShowOnboarding(false);
+        }}
+      />
       {/* Carte plein écran */}
       <div className="absolute inset-0 z-0">
         <RadarMapClient
@@ -157,7 +213,7 @@ export function ExplorerSplitView({
 
       {/* Panneau gauche : titre + filtres */}
       <div className="absolute left-4 top-4 z-20 flex max-w-[calc(100%-2rem)] flex-col gap-3 md:max-w-xs">
-        <div className="rounded-xl border border-radar-border bg-white/95 p-4 shadow-sm backdrop-blur-sm">
+        <div className="rounded-2xl border border-line bg-white/95 p-4 shadow-overlay backdrop-blur-md">
           <h1 className="text-lg font-semibold md:text-xl">{COPY.explorer}</h1>
           <p className="mt-1 text-sm text-radar-muted">
             Carte par département — tranches et priorité visibles, chiffres exacts et contacts après achat.
@@ -170,6 +226,8 @@ export function ExplorerSplitView({
               </button>
             )}
           </p>
+
+          <ExplorerSearchBar className="mt-3" />
 
           <div className="mt-3 flex flex-wrap gap-1.5">
             {PERSONA_TABS.map(({ id, label, hint, icon: Icon }) => (
@@ -188,6 +246,21 @@ export function ExplorerSplitView({
               </button>
             ))}
           </div>
+
+          <ExplorerAdvancedFilters
+            minCapex={minCapex}
+            minGrade={minGrade}
+            aoOnly={aoOnly}
+            mutualizableOnly={mutualizableOnly}
+            minCeeEuros={minCeeEuros}
+            onMinCapexChange={setMinCapex}
+            onMinGradeChange={setMinGrade}
+            onAoOnlyChange={setAoOnly}
+            onMutualizableOnlyChange={setMutualizableOnly}
+            onMinCeeEurosChange={setMinCeeEuros}
+          />
+
+          <ExplorerCoveragePanel packs={packs} />
 
           {compareIds.length > 0 && (
             <Link
@@ -230,8 +303,8 @@ export function ExplorerSplitView({
       {/* Panneau liste — droite */}
       <div
         className={cn(
-          'absolute z-20 flex flex-col border-radar-border bg-white shadow-lg transition-transform duration-300',
-          'bottom-0 right-0 top-auto max-h-[55vh] w-full rounded-t-2xl border-t md:bottom-4 md:top-4 md:max-h-none md:w-[min(100%,380px)] md:rounded-xl md:border',
+          'absolute z-20 flex flex-col border-line bg-white shadow-overlay transition-transform duration-300',
+          'bottom-0 right-0 top-auto max-h-[55vh] w-full rounded-t-2xl border-t md:bottom-4 md:top-4 md:max-h-none md:w-[min(100%,380px)] md:rounded-2xl md:border',
           listOpen ? 'translate-y-0' : 'translate-y-full md:translate-y-0',
         )}
       >
@@ -287,7 +360,7 @@ export function ExplorerSplitView({
             <div
               key={pack.packId}
               className={cn(
-                'group border-b border-radar-border transition-colors hover:bg-radar-canvas',
+                'group relative border-b border-radar-border transition-colors hover:bg-radar-canvas',
                 selectedId === pack.packId && 'bg-radar-canvas',
               )}
             >
@@ -296,25 +369,32 @@ export function ExplorerSplitView({
                 onClick={() => handleSelectPack(pack.packId)}
                 className="w-full px-4 py-3 text-left"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-1">
-                      <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} size="sm" previewOnly />
-                      {pack.isHot && <Flame className="h-3 w-3 text-radar-heat" />}
-                      {pack.hasActiveTender && <ActiveTenderBadge size="sm" title={pack.tenderTitle} />}
-                      {pack.isNew && <span className="badge-new">{COPY.new}</span>}
-                    </div>
-                    <p className="mt-1.5 truncate text-sm font-medium">{pack.publicName}</p>
-                    <p className="text-xs text-radar-muted">{formatInt(pack.batimentCount)} écoles</p>
-                    <div className="mt-1"><PersonaBadgeGroup personas={pack.personas} /></div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} size="sm" previewOnly />
+                    <p className="truncate text-sm font-semibold text-ink">{pack.publicName}</p>
                   </div>
-                  <div className="shrink-0 text-right">
-                    <PackBudgetLabel rangeLabel={pack.budgetRange} capex={pack.packCapexTotal} className="text-sm font-bold" />
-                    <PackSlotsBadge remaining={pack.slotsRemaining} max={pack.slotsMax} soldOut={pack.soldOut} />
-                  </div>
+                  <PackBudgetLabel
+                    rangeLabel={pack.budgetRange}
+                    capex={pack.packCapexTotal}
+                    className="shrink-0 text-sm font-bold text-ink"
+                  />
                 </div>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-radar-muted">
+                  <span>{formatInt(pack.batimentCount)} écoles</span>
+                  {pack.isHot && (
+                    <span className="inline-flex items-center gap-0.5 font-medium text-radar-heat">
+                      <Flame className="h-3 w-3" />
+                      {COPY.hot}
+                    </span>
+                  )}
+                  {pack.hasActiveTender && <ActiveTenderBadge size="sm" title={pack.tenderTitle} />}
+                  {pack.isNew && <span className="badge-new">{COPY.new}</span>}
+                  <PackSlotsBadge remaining={pack.slotsRemaining} max={pack.slotsMax} soldOut={pack.soldOut} />
+                </div>
+                <div className="mt-1.5"><PersonaBadgeGroup personas={pack.personas} /></div>
               </button>
-              <div className="flex justify-end gap-1 px-4 pb-2 opacity-0 transition-opacity group-hover:opacity-100">
+              <div className="absolute bottom-2.5 right-3 flex gap-1 opacity-100 transition-opacity focus-within:opacity-100 md:opacity-0 md:group-hover:opacity-100">
                 <WatchlistButton packId={pack.packId} />
                 <CompareToggle
                   packId={pack.packId}

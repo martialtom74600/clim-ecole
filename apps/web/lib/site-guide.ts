@@ -58,7 +58,7 @@ export const EXPLORER_GUIDE: GuideStep[] = [
   {
     step: 1,
     title: 'Choisissez votre filtre',
-    description: 'BTP, BE ou AMO : chaque profil met en avant ce qui compte pour votre métier.',
+    description: 'BTP, BE, AMO, ESCO ou CEE : chaque profil met en avant ce qui compte pour votre métier.',
   },
   {
     step: 2,
@@ -128,6 +128,22 @@ export const PERSONA_DOSSIER_TIPS = {
       'Comparez subventions, part Fonds Vert et reste à charge après aides.',
       'Utilisez la section MGPE et la note PDF pour convaincre le DGS.',
       'Le simulateur RAC teste la sensibilité du montage aux variations d’aides.',
+    ],
+  },
+  esco: {
+    title: 'Vous mutualisez l\'exploitation-maintenance',
+    tips: [
+      'Priorisez les territoires 5+ écoles — volume critique pour un CPE global.',
+      'Intégrez GTB / décret BACS dans votre offre mutualisée.',
+      'Modélisez le gain net contractuel sur 15–20 ans avant l\'approche EPCI.',
+    ],
+  },
+  cee: {
+    title: 'Vous originez du cumac tertiaire',
+    tips: [
+      'Ciblez les passoires F/G — fiches BAT-TH-163 (PAC) et BAT-TH-104 (isolation).',
+      'Vérifiez l\'antériorité CEE avant publication de l\'appel d\'offres.',
+      'Proposez le préfinancement en échange de la cession exclusive des CEE.',
     ],
   },
 } as const;

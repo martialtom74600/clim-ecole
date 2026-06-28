@@ -15,6 +15,8 @@ const PERSONA_PILL: Record<ClientPersona, string> = {
   btp: 'bg-violet-600 text-white ring-violet-700/30',
   be: 'bg-sky-600 text-white ring-sky-700/30',
   amo: 'bg-emerald-600 text-white ring-emerald-700/30',
+  esco: 'bg-cyan-600 text-white ring-cyan-700/30',
+  cee: 'bg-fuchsia-600 text-white ring-fuchsia-700/30',
 };
 
 function Pill({

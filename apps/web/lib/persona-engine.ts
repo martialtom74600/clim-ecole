@@ -1,19 +1,21 @@
 /**
  * Moteur de tri algorithmique — Radar de prospection
- * Taggage multi-personas par deal (BTP · BE · AMO)
+ * Taggage multi-personas par deal (BTP · BE · AMO · ESCO · CEE)
  */
 
 import type { ClientPersona } from './brand';
 
 export const PERSONA_THRESHOLDS = {
-  /** Volume & Travaux — cible BTP */
   BTP_CAPEX_MIN: 400_000,
-  /** Montage Financier — cible AMO */
   AMO_SUBVENTION_RATIO_MIN: 0.4,
-  /** Ingénierie & Audit — surface moyenne par bâtiment (m²) */
   BE_SURFACE_MAX_M2: 1_500,
-  /** Part minimale de bâtiments F/G pour tag BE */
   BE_PASSOIRE_MAJORITY: 0.5,
+  /** ESCO — volume mutualisable */
+  ESCO_BATIMENT_MIN: 5,
+  ESCO_CAPEX_MIN: 800_000,
+  /** CEE — cumac significatif */
+  CEE_EUROS_MIN: 25_000,
+  CEE_PASSOIRE_MIN: 0.4,
 } as const;
 
 const PASSOIRE_DPE = new Set(['F', 'G']);
@@ -22,6 +24,8 @@ export interface DealPersonaInput {
   packCapexTotal: number;
   subventionsTotal: number;
   statutProjetEpci: string;
+  batimentCount?: number;
+  ceeEurosTotal?: number;
   batiments: {
     classeDpe: string;
     surfaceM2: number;
@@ -34,16 +38,17 @@ export interface DealPersonaResult {
   subventionRatio: number;
   passoireRatio: number;
   avgSurfaceM2: number;
+  isMutualizable: boolean;
 }
 
 function isPassoireDpe(classe: string): boolean {
   return PASSOIRE_DPE.has(classe.trim().toUpperCase());
 }
 
-/** Tag automatique — un deal peut cumuler plusieurs profils acheteurs */
 export function inferDealPersona(deal: DealPersonaInput): DealPersonaResult {
   const { packCapexTotal, subventionsTotal, statutProjetEpci, batiments } = deal;
   const personas: ClientPersona[] = [];
+  const batimentCount = deal.batimentCount ?? batiments.length;
 
   const subventionRatio =
     packCapexTotal > 0 ? subventionsTotal / packCapexTotal : 0;
@@ -57,12 +62,14 @@ export function inferDealPersona(deal: DealPersonaInput): DealPersonaResult {
       ? batiments.reduce((s, b) => s + b.surfaceM2, 0) / batiments.length
       : 0;
 
-  // Volume & Travaux (BTP)
+  const isMutualizable =
+    batimentCount >= PERSONA_THRESHOLDS.ESCO_BATIMENT_MIN &&
+    packCapexTotal >= PERSONA_THRESHOLDS.ESCO_CAPEX_MIN;
+
   if (packCapexTotal > PERSONA_THRESHOLDS.BTP_CAPEX_MIN) {
     personas.push('btp');
   }
 
-  // Ingénierie & Audit (BE) — majorité F/G + petites surfaces
   if (
     passoireRatio > PERSONA_THRESHOLDS.BE_PASSOIRE_MAJORITY &&
     avgSurfaceM2 < PERSONA_THRESHOLDS.BE_SURFACE_MAX_M2
@@ -70,7 +77,6 @@ export function inferDealPersona(deal: DealPersonaInput): DealPersonaResult {
     personas.push('be');
   }
 
-  // Montage Financier (AMO)
   if (
     subventionRatio > PERSONA_THRESHOLDS.AMO_SUBVENTION_RATIO_MIN ||
     statutProjetEpci === 'PROJET_GLOBAL_VALIDE'
@@ -78,7 +84,18 @@ export function inferDealPersona(deal: DealPersonaInput): DealPersonaResult {
     personas.push('amo');
   }
 
-  // Fallback : tout deal packagé a un intérêt financier minimum
+  if (isMutualizable) {
+    personas.push('esco');
+  }
+
+  const ceeTotal = deal.ceeEurosTotal ?? 0;
+  if (
+    ceeTotal >= PERSONA_THRESHOLDS.CEE_EUROS_MIN ||
+    (passoireRatio >= PERSONA_THRESHOLDS.CEE_PASSOIRE_MIN && batimentCount >= 3)
+  ) {
+    personas.push('cee');
+  }
+
   if (personas.length === 0) {
     personas.push('amo');
   }
@@ -87,6 +104,8 @@ export function inferDealPersona(deal: DealPersonaInput): DealPersonaResult {
     packCapexTotal,
     subventionRatio,
     statutProjetEpci,
+    isMutualizable,
+    ceeEurosTotal: ceeTotal,
   });
 
   return {
@@ -95,18 +114,27 @@ export function inferDealPersona(deal: DealPersonaInput): DealPersonaResult {
     subventionRatio,
     passoireRatio,
     avgSurfaceM2,
+    isMutualizable,
   };
 }
 
-/** Persona principal pour l'affichage carte (priorité métier) */
 export function inferPrimaryPersona(
   personas: ClientPersona[],
   ctx: {
     packCapexTotal: number;
     subventionRatio: number;
     statutProjetEpci: string;
+    isMutualizable?: boolean;
+    ceeEurosTotal?: number;
   },
 ): ClientPersona {
+  if (ctx.isMutualizable && personas.includes('esco')) return 'esco';
+  if (
+    (ctx.ceeEurosTotal ?? 0) >= PERSONA_THRESHOLDS.CEE_EUROS_MIN &&
+    personas.includes('cee')
+  ) {
+    return 'cee';
+  }
   if (
     ctx.statutProjetEpci === 'PROJET_GLOBAL_VALIDE' &&
     personas.includes('amo')
@@ -118,6 +146,8 @@ export function inferPrimaryPersona(
   if (personas.includes('btp')) return 'btp';
   if (personas.includes('amo')) return 'amo';
   if (personas.includes('be')) return 'be';
+  if (personas.includes('esco')) return 'esco';
+  if (personas.includes('cee')) return 'cee';
   return personas[0] ?? 'amo';
 }
 
@@ -134,7 +164,6 @@ export interface PersonaExplanation {
   reasons: string[];
 }
 
-/** Explainability — pourquoi chaque tag persona a été appliqué */
 export function explainDealPersona(deal: DealPersonaInput): PersonaExplanation[] {
   const result = inferDealPersona(deal);
   const explanations: PersonaExplanation[] = [];
@@ -154,8 +183,8 @@ export function explainDealPersona(deal: DealPersonaInput): PersonaExplanation[]
       persona: 'be',
       reasons: [
         `${Math.round(result.passoireRatio * 100)} % de bâtiments DPE F/G`,
-        `Surface moyenne ${Math.round(result.avgSurfaceM2)} m² (< ${PERSONA_THRESHOLDS.BE_SURFACE_MAX_M2} m²)`,
-        'Profil Ingénierie & Audit — conseil thermique pointu',
+        `Surface moyenne ${Math.round(result.avgSurfaceM2)} m²`,
+        'Profil Ingénierie & Audit',
       ],
     });
   }
@@ -169,6 +198,28 @@ export function explainDealPersona(deal: DealPersonaInput): PersonaExplanation[]
     }
     reasons.push('Profil Montage Financier — dossier MGPE-PD');
     explanations.push({ persona: 'amo', reasons });
+  }
+
+  if (result.personas.includes('esco')) {
+    explanations.push({
+      persona: 'esco',
+      reasons: [
+        `${deal.batimentCount ?? deal.batiments.length} écoles — mutualisation CPE viable`,
+        `CAPEX ${Math.round(deal.packCapexTotal / 1000)} k€ (> ${PERSONA_THRESHOLDS.ESCO_CAPEX_MIN / 1000} k€)`,
+      ],
+    });
+  }
+
+  if (result.personas.includes('cee')) {
+    explanations.push({
+      persona: 'cee',
+      reasons: [
+        deal.ceeEurosTotal
+          ? `CEE estimés ${Math.round((deal.ceeEurosTotal ?? 0) / 1000)} k€`
+          : `${Math.round(result.passoireRatio * 100)} % passoires F/G`,
+        'Profil Origination CEE / cumac',
+      ],
+    });
   }
 
   return explanations;

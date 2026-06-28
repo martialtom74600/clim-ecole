@@ -93,3 +93,56 @@ export async function sendAlertWelcomeEmail(to: string): Promise<boolean> {
     `,
   });
 }
+
+export async function sendTerritoryAlertEmail(
+  to: string,
+  packs: { name: string; packId: string; budgetRange: string; grade: string }[],
+): Promise<boolean> {
+  const base = appUrl();
+  const items = packs
+    .map(
+      (p) =>
+        `<li style="margin:8px 0"><a href="${base}/explorer/${p.packId}" style="color:#059669;font-weight:600">${p.name}</a> — ${p.budgetRange} · Score ${p.grade}</li>`,
+    )
+    .join('');
+
+  return sendEmail({
+    to,
+    subject: `${packs.length} nouveau(x) territoire(s) sur Clim École`,
+    html: `
+      <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#0f172a">
+        <h1 style="font-size:20px;font-weight:600">Nouveaux territoires disponibles</h1>
+        <ul style="color:#475569;line-height:1.6;padding-left:20px">${items}</ul>
+        <p style="margin-top:24px"><a href="${base}/explorer" style="color:#059669;font-weight:600">Ouvrir l'explorateur →</a></p>
+      </div>
+    `,
+  });
+}
+
+export async function sendWeeklyDigestEmail(
+  to: string,
+  packs: { name: string; packId: string; budgetRange: string; grade: string; score: number }[],
+): Promise<boolean> {
+  const base = appUrl();
+  const rows = packs
+    .map(
+      (p, i) =>
+        `<tr><td style="padding:8px;border-bottom:1px solid #e2e8f0">${i + 1}</td><td style="padding:8px;border-bottom:1px solid #e2e8f0"><a href="${base}/explorer/${p.packId}">${p.name}</a></td><td style="padding:8px;border-bottom:1px solid #e2e8f0">${p.grade}</td><td style="padding:8px;border-bottom:1px solid #e2e8f0">${p.budgetRange}</td></tr>`,
+    )
+    .join('');
+
+  return sendEmail({
+    to,
+    subject: 'Votre top territoires de la semaine — Clim École',
+    html: `
+      <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#0f172a">
+        <h1 style="font-size:20px;font-weight:600">Top ${packs.length} territoires pour vous</h1>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;color:#475569">
+          <thead><tr><th align="left">#</th><th align="left">Territoire</th><th align="left">Score</th><th align="left">Budget</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <p style="margin-top:24px"><a href="${base}/explorer" style="color:#059669;font-weight:600">Explorer →</a></p>
+      </div>
+    `,
+  });
+}

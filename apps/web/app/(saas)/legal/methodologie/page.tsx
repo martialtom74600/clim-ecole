@@ -6,7 +6,7 @@ export default async function MethodologiePage() {
   const scope = await getCoverageScopePhrase();
 
   return (
-    <div className="page-content max-w-3xl">
+    <div className="page-content">
       <Link href="/" className="btn-ghost mb-6 -ml-2 text-sm">
         ← Accueil
       </Link>

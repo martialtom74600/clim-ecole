@@ -63,6 +63,27 @@ export function PipelineKanbanBoard() {
     }
   }
 
+  async function updateMeta(
+    packId: string,
+    patch: { note?: string | null; nextFollowUp?: string | null },
+  ) {
+    setUpdatingId(packId);
+    setError(null);
+    try {
+      const res = await fetch('/api/pipeline', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packId, ...patch }),
+      });
+      if (!res.ok) throw new Error('Mise à jour refusée');
+      await load();
+    } catch {
+      setError('Échec de la mise à jour.');
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
   if (loading) {
     return (
       <div className="card flex items-center justify-center gap-2 p-12 text-radar-muted">
@@ -130,6 +151,34 @@ export function PipelineKanbanBoard() {
                       {card.department}
                       {card.capex ? ` · ${formatEur(card.capex, true)}` : ''}
                     </p>
+
+                    <div className="mt-2 space-y-1.5">
+                      <input
+                        type="text"
+                        defaultValue={card.note ?? ''}
+                        placeholder="Note interne…"
+                        disabled={updatingId === card.packId}
+                        onBlur={(e) => {
+                          const v = e.target.value.trim();
+                          if (v !== (card.note ?? '')) {
+                            void updateMeta(card.packId, { note: v || null });
+                          }
+                        }}
+                        className="w-full rounded-md border border-radar-border bg-radar-canvas px-2 py-1 text-[11px]"
+                      />
+                      <input
+                        type="date"
+                        defaultValue={card.nextFollowUp?.slice(0, 10) ?? ''}
+                        disabled={updatingId === card.packId}
+                        onChange={(e) =>
+                          void updateMeta(card.packId, {
+                            nextFollowUp: e.target.value ? `${e.target.value}T09:00:00.000Z` : null,
+                          })
+                        }
+                        className="w-full rounded-md border border-radar-border bg-radar-canvas px-2 py-1 text-[11px]"
+                        aria-label="Prochaine relance"
+                      />
+                    </div>
 
                     <div className="mt-3 flex flex-col gap-2">
                       <select

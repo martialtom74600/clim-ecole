@@ -13,6 +13,7 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
     nomEpci,
     mgpe,
     resteAChargeAfterSubsTotal,
+    dataLoadedAt,
   } = data;
 
   const racTotal = resteAChargeAfterSubsTotal ?? pack.packCapexTotal - pack.subventionsTotal;
@@ -31,6 +32,7 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
           mgpe={mgpe}
           freePreview={freePreview}
           soldOut={soldOut}
+          dataLoadedAt={dataLoadedAt}
         />
       </Suspense>
     </div>

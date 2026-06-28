@@ -8,7 +8,7 @@ import {
 import { sendAlertWelcomeEmail } from '@/lib/email';
 import type { ClientPersona } from '@/lib/brand';
 
-const VALID_PERSONAS = new Set<ClientPersona>(['btp', 'be', 'amo']);
+const VALID_PERSONAS = new Set<ClientPersona>(['btp', 'be', 'amo', 'esco', 'cee']);
 
 export async function GET() {
   const session = await getCustomerSession();
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   }
 
   const minCapex = body.minCapex ?? 400_000;
-  const personas = (body.personas ?? ['btp', 'be', 'amo']).filter((p): p is ClientPersona =>
+  const personas = (body.personas ?? ['btp', 'be', 'amo', 'esco', 'cee']).filter((p): p is ClientPersona =>
     VALID_PERSONAS.has(p as ClientPersona),
   );
 

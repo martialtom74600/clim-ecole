@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bell, Check, HardHat, Landmark, Loader2, Ruler } from 'lucide-react';
+import { Bell, Check, HardHat, Landmark, Leaf, Loader2, Ruler, Zap } from 'lucide-react';
 import type { ClientPersona } from '@/lib/types';
 import { PERSONA_FILTER_LABELS } from '@/lib/copy';
 import { loadAlertPreferences, saveAlertPreferences } from '@/lib/radar-client-storage';
@@ -12,12 +12,14 @@ const PERSONA_OPTIONS: { id: ClientPersona; label: string; hint: string; icon: t
   { id: 'btp', label: PERSONA_FILTER_LABELS.btp.short, hint: PERSONA_FILTER_LABELS.btp.long, icon: HardHat },
   { id: 'be', label: PERSONA_FILTER_LABELS.be.short, hint: PERSONA_FILTER_LABELS.be.long, icon: Ruler },
   { id: 'amo', label: PERSONA_FILTER_LABELS.amo.short, hint: PERSONA_FILTER_LABELS.amo.long, icon: Landmark },
+  { id: 'esco', label: PERSONA_FILTER_LABELS.esco.short, hint: PERSONA_FILTER_LABELS.esco.long, icon: Zap },
+  { id: 'cee', label: PERSONA_FILTER_LABELS.cee.short, hint: PERSONA_FILTER_LABELS.cee.long, icon: Leaf },
 ];
 
 export function AlertPreferencesPanel() {
   const [minCapex, setMinCapex] = useState(400000);
   const [email, setEmail] = useState('');
-  const [personas, setPersonas] = useState<ClientPersona[]>(['btp', 'be', 'amo']);
+  const [personas, setPersonas] = useState<ClientPersona[]>(['btp', 'be', 'amo', 'esco', 'cee']);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +31,7 @@ export function AlertPreferencesPanel() {
       setEmail(prefs.email);
       if (prefs.personas?.length) {
         setPersonas(prefs.personas.filter((p): p is ClientPersona =>
-          ['btp', 'be', 'amo'].includes(p),
+          ['btp', 'be', 'amo', 'esco', 'cee'].includes(p),
         ));
       }
     }

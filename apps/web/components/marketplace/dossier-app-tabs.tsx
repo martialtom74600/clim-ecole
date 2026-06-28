@@ -18,10 +18,7 @@ export function DossierAppTabs({
   onChange: (tab: DossierTabId) => void;
 }) {
   return (
-    <nav
-      className="flex shrink-0 gap-1 border-b border-slate-200 bg-white px-4"
-      aria-label="Sections du dossier"
-    >
+    <nav className="flex shrink-0 gap-1" aria-label="Sections du dossier">
       {DOSSIER_TABS.map(({ id, label }) => (
         <button
           key={id}
@@ -30,8 +27,8 @@ export function DossierAppTabs({
           className={cn(
             'relative px-3 py-2.5 text-sm font-medium transition-colors',
             active === id
-              ? 'text-slate-900 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-slate-900'
-              : 'text-slate-500 hover:text-slate-700',
+              ? 'text-ink after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-ink'
+              : 'text-ink-muted hover:text-ink',
           )}
         >
           {label}

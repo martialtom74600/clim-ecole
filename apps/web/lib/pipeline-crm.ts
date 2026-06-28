@@ -80,6 +80,8 @@ export interface PipelineTerritoryCard {
   pipelineUpdatedAt?: string;
   unlockedAt?: string;
   hasActiveTender?: boolean;
+  note?: string;
+  nextFollowUp?: string;
 }
 
 export interface PipelinePortfolioStats {

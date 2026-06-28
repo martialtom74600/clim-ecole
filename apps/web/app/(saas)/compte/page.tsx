@@ -8,6 +8,10 @@ import { AlertPreferencesPanel } from '@/components/marketplace/alert-preference
 import { GuidedSteps } from '@/components/marketplace/guided-steps';
 import { COMPTE_PIPELINE_GUIDE } from '@/lib/site-guide';
 import { PipelineKanbanBoard } from '@/components/compte/pipeline-kanban';
+import {
+  MagicLinkLoginForm,
+  PipelineStatsLoader,
+} from '@/components/compte/account-enhancements';
 
 interface AccountState {
   authenticated: boolean;
@@ -33,7 +37,7 @@ export default function ComptePage() {
   }
 
   return (
-    <div className="page-content max-w-[1400px]">
+    <div className="page-content">
       <h1 className="text-3xl font-semibold">Mon compte</h1>
       <p className="mt-2 text-sm text-radar-muted">
         Pipeline de prospection, territoires débloqués et abonnement.
@@ -42,15 +46,18 @@ export default function ComptePage() {
       {!account && <p className="mt-8 text-radar-muted">Chargement…</p>}
 
       {account && !account.authenticated && (
-        <div className="card mt-8 p-8 text-center">
-          <p className="text-radar-muted">{COPY.accountNoAccess}</p>
-          <p className="mt-2 text-sm text-radar-subtle">{COPY.accountAccessHint}</p>
-          <Link href="/explorer" className="btn-secondary mt-6">
-            {COPY.openExplorer}
-          </Link>
-          <Link href="/tarifs" className="btn-primary mt-3">
-            Voir les tarifs
-          </Link>
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          <div className="card p-8 text-center">
+            <p className="text-radar-muted">{COPY.accountNoAccess}</p>
+            <p className="mt-2 text-sm text-radar-subtle">{COPY.accountAccessHint}</p>
+            <Link href="/explorer" className="btn-secondary mt-6">
+              {COPY.openExplorer}
+            </Link>
+            <Link href="/tarifs" className="btn-primary mt-3">
+              Voir les tarifs
+            </Link>
+          </div>
+          <MagicLinkLoginForm />
         </div>
       )}
 
@@ -80,6 +87,9 @@ export default function ComptePage() {
               <Link href="/explorer" className="btn-secondary">
                 {COPY.openExplorer}
               </Link>
+              <Link href="/parrainage" className="btn-ghost text-sm">
+                Parrainage
+              </Link>
               <button type="button" onClick={logout} className="btn-ghost text-sm">
                 <LogOut className="h-4 w-4" />
                 Réinitialiser cet appareil
@@ -101,7 +111,10 @@ export default function ComptePage() {
               Faites avancer vos territoires débloqués dans votre tunnel de vente. Un clic pour
               mettre à jour le statut — synchronisé en temps réel.
             </p>
-            <PipelineKanbanBoard />
+            <PipelineStatsLoader />
+            <div className="mt-6">
+              <PipelineKanbanBoard />
+            </div>
           </section>
 
           <AlertPreferencesPanel />

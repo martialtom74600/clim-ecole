@@ -5,13 +5,16 @@ import { cn } from '@/lib/utils';
 import { COPY } from '@/lib/copy';
 import { useEffect, useState } from 'react';
 import { getWatchlist, toggleWatchlist } from '@/lib/radar-client-storage';
+import { useAccountPreferences } from '@/hooks/use-account-preferences';
 
 export function WatchlistButton({ packId }: { packId: string }) {
+  const { prefs, toggleWatchlist: syncToggle } = useAccountPreferences();
   const [active, setActive] = useState(false);
 
   useEffect(() => {
-    setActive(getWatchlist().includes(packId));
-  }, [packId]);
+    const list = prefs.watchlist.length ? prefs.watchlist : getWatchlist();
+    setActive(list.includes(packId));
+  }, [packId, prefs.watchlist]);
 
   return (
     <button
@@ -20,7 +23,9 @@ export function WatchlistButton({ packId }: { packId: string }) {
       aria-label={active ? COPY.removeFromFavorites : COPY.addToFavorites}
       onClick={(e) => {
         e.stopPropagation();
-        setActive(toggleWatchlist(packId).includes(packId));
+        const next = syncToggle(packId);
+        toggleWatchlist(packId);
+        setActive(next.includes(packId));
       }}
       className={cn(
         'rounded-lg border p-2 transition-colors',

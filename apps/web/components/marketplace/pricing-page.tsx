@@ -1,40 +1,10 @@
-import { Check } from 'lucide-react';
+import { Check, Mail } from 'lucide-react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { COPY } from '@/lib/copy';
 import { CheckoutButton } from '@/components/marketplace/checkout-button';
 import { GlossaryTerm } from '@/components/ui/glossary-term';
-
-const PLANS = [
-  {
-    id: 'dossier',
-    name: 'Un territoire',
-    price: '290',
-    period: '€ HT',
-    desc: 'Débloquez un intercommunalité : noms, contacts, exports. Accès 30 jours.',
-    features: [
-      'Montants exacts (CAPEX, RAC, subventions, Fonds Vert)',
-      'Noms des communes et écoles',
-      'Emails des mairies',
-      'Détail DPE et surfaces par bâtiment',
-      'Simulateur RAC et export PDF montage financier (MGPE-PD)',
-    ],
-    highlight: false,
-  },
-  {
-    id: 'pro',
-    name: COPY.subscription,
-    price: '990',
-    period: '€ HT / mois',
-    desc: 'Tous les territoires débloqués pour votre équipe commerciale.',
-    features: [
-      'Accès illimité à tous les dossiers',
-      'Exports CSV et PDF',
-      'Alertes email nouveaux territoires',
-      'Jusqu\'à 3 utilisateurs',
-    ],
-    highlight: true,
-  },
-];
+import { PRICING_TIERS } from '@/lib/gtm';
 
 export function PricingPage({
   highlightPlan,
@@ -47,55 +17,89 @@ export function PricingPage({
     `Carte et liste des territoires recensés (${coverageBadge})`,
     'Tranche de budget et niveau de subventions (sans montant exact)',
     'Profil énergétique agrégé et score de priorité (A à D)',
-    'Nombre d\'écoles et filtres par métier (BTP, BE, AMO)',
+    'Filtres par métier (BTP, BE, AMO, ESCO, CEE)',
   ];
 
   return (
     <div className="page-content">
-      <div className="mx-auto max-w-3xl">
+      <div>
         <h1 className="text-3xl font-semibold tracking-tight">Tarifs</h1>
         <p className="mt-2 text-radar-muted">
-          Priorisez gratuitement. Payez pour chiffrer, contacter et exporter.
+          Priorisez gratuitement. Payez pour chiffrer, contacter et exporter — ou contactez-nous pour les offres équipe et institutionnelles.
         </p>
 
         <div className="card mt-10 p-6">
-          <h2 className="font-semibold">Gratuit — sans carte bancaire</h2>
-          <ul className="mt-4 space-y-2 text-sm text-radar-muted">
+          <h2 className="font-semibold text-ink">Gratuit — sans carte bancaire</h2>
+          <ul className="mt-4 space-y-2 text-sm text-ink-muted">
             {freeFeatures.map((f) => (
               <li key={f} className="flex gap-2">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-radar-text" />{f}
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-ink" />{f}
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
-          {PLANS.map((plan) => (
+        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {PRICING_TIERS.map((plan) => {
+            const flagship = plan.id === 'dataroom';
+            return (
             <div
               key={plan.id}
-              className={cn('card p-8', (plan.highlight || highlightPlan === plan.id) && 'border-radar-text ring-1 ring-radar-text/10')}
+              className={cn(
+                'card flex flex-col p-6',
+                (plan.highlight || highlightPlan === plan.id) && 'border-ink ring-1 ring-ink/10 shadow-raised',
+                flagship && 'bg-ink text-white lg:col-span-1',
+              )}
             >
-              <h2 className="font-semibold">{plan.name}</h2>
-              <p className="mt-1 text-sm text-radar-muted">{plan.desc}</p>
-              <p className="mt-6 font-mono text-4xl font-medium tabular-nums">
+              <div className="flex items-center gap-2">
+                <h2 className={cn('font-semibold', flagship ? 'text-white' : 'text-ink')}>{plan.name}</h2>
+                {flagship && (
+                  <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+                    Institutionnel
+                  </span>
+                )}
+              </div>
+              <p className={cn('mt-1 text-sm', flagship ? 'text-white/70' : 'text-ink-muted')}>{plan.desc}</p>
+              <p className={cn('mt-4 font-mono text-3xl font-medium tabular-nums', flagship ? 'text-white' : 'text-ink')}>
                 {plan.price}
-                <span className="ml-1 text-sm font-normal text-radar-muted">{plan.period}</span>
+                <span className={cn('ml-1 text-sm font-normal', flagship ? 'text-white/60' : 'text-ink-muted')}>{plan.period}</span>
               </p>
-              <ul className="mt-6 space-y-2 border-t border-radar-border pt-6 text-sm text-radar-muted">
+              <ul
+                className={cn(
+                  'mt-4 flex-1 space-y-2 border-t pt-4 text-sm',
+                  flagship ? 'border-white/15 text-white/80' : 'border-line text-ink-muted',
+                )}
+              >
                 {plan.features.map((f) => (
                   <li key={f} className="flex gap-2">
                     <Check className="mt-0.5 h-4 w-4 shrink-0" />{f}
                   </li>
                 ))}
               </ul>
-              <CheckoutButton
-                plan={plan.id as 'dossier' | 'pro'}
-                className={cn('mt-8 w-full', plan.highlight ? 'btn-primary' : 'btn-secondary')}
-              >
-                {plan.id === 'dossier' ? 'Acheter un territoire' : "S'abonner"}
-              </CheckoutButton>
+              {'checkout' in plan && plan.checkout ? (
+                <CheckoutButton
+                  plan={plan.id as 'dossier' | 'pro'}
+                  className={cn('mt-6 w-full', plan.highlight ? 'btn-primary' : 'btn-secondary')}
+                >
+                  {plan.id === 'dossier' ? 'Acheter un territoire' : "S'abonner"}
+                </CheckoutButton>
+              ) : (
+                <a
+                  href="mailto:contact@clim-ecole.fr?subject=Clim%20École%20—%20Offre%20entreprise"
+                  className={cn(
+                    'mt-6 inline-flex w-full justify-center gap-2',
+                    flagship
+                      ? 'items-center rounded-lg bg-white px-5 py-2.5 text-sm font-medium text-ink transition-transform hover:scale-[1.02] active:scale-95'
+                      : 'btn-secondary',
+                  )}
+                >
+                  <Mail className="h-4 w-4" />
+                  Nous contacter
+                </a>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <p className="mt-10 text-sm text-radar-muted">

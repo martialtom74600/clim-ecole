@@ -1,22 +1,21 @@
 import type { NextConfig } from 'next';
 import path from 'path';
-import { loadMonorepoEnvFromDir } from './lib/load-env';
-import { validateProductionEnv } from './lib/env';
+import { loadEnvConfig } from '@next/env';
 
 const webRoot = __dirname;
+const repoRoot = path.resolve(webRoot, '..', '..');
 
-loadMonorepoEnvFromDir(webRoot);
-validateProductionEnv();
+loadEnvConfig(repoRoot);
+loadEnvConfig(webRoot);
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  outputFileTracingRoot: path.join(webRoot, '..', '..'),
+  outputFileTracingRoot: repoRoot,
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
   webpack: (config, { dev }) => {
     if (dev) {
-      const repoRoot = path.join(webRoot, '..', '..');
       config.watchOptions = {
         ...config.watchOptions,
         ignored: [

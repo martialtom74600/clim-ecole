@@ -25,7 +25,7 @@
     "db:pipeline-jobs": "node src/scripts/applyPipelineJobsSchema.js",
     "db:entitlements": "node src/scripts/applyEntitlementsSecurity.js",
     "web:dev": "npm run dev --prefix apps/web",
-    "web:build": "npm run build --prefix apps/web",
+    "web:build": "npm run build --prefix apps/web"
   },
   "engines": {
     "node": ">=18"

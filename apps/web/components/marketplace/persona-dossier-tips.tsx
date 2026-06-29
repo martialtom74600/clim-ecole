@@ -3,6 +3,7 @@
 import { HardHat, Landmark, Leaf, Ruler, Zap } from 'lucide-react';
 import { PERSONA_DOSSIER_TIPS } from '@/lib/site-guide';
 import type { ClientPersona } from '@/lib/brand';
+import { DOSSIER_SECTION, DOSSIER_SECTION_TITLE } from '@/lib/dossier-ui';
 
 const ICONS = {
   btp: HardHat,
@@ -20,29 +21,27 @@ export function PersonaDossierTips({ personas }: { personas: ClientPersona[] }) 
   if (!ordered.length) return null;
 
   return (
-    <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))]">
-      {ordered.map((persona) => {
-        const block = PERSONA_DOSSIER_TIPS[persona];
-        const Icon = ICONS[persona];
-        return (
-          <div key={persona} className="rounded-xl border border-line bg-white p-4 shadow-card">
-            <p className="flex items-center gap-2 text-sm font-semibold text-ink">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-muted text-ink-soft">
-                <Icon className="h-4 w-4" />
-              </span>
-              {block.title}
-            </p>
-            <ul className="mt-3 space-y-1.5 text-xs leading-relaxed text-ink-muted">
-              {block.tips.map((tip) => (
-                <li key={tip} className="flex gap-1.5">
-                  <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-ink-subtle" />
-                  {tip}
-                </li>
-              ))}
-            </ul>
-          </div>
-        );
-      })}
-    </div>
+    <section className={DOSSIER_SECTION}>
+      <h2 className={DOSSIER_SECTION_TITLE}>Conseils selon votre métier</h2>
+      <ul className="mt-6 divide-y divide-slate-200 border border-slate-200">
+        {ordered.map((persona) => {
+          const block = PERSONA_DOSSIER_TIPS[persona];
+          const Icon = ICONS[persona];
+          return (
+            <li key={persona} className="px-4 py-4">
+              <p className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                <Icon className="h-4 w-4 text-slate-400" />
+                {block.title}
+              </p>
+              <ul className="mt-2 space-y-1 pl-6 text-sm text-slate-600">
+                {block.tips.map((tip) => (
+                  <li key={tip}>{tip}</li>
+                ))}
+              </ul>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }

@@ -140,13 +140,29 @@ export function getDeptLabel(code: string): string | null {
   return null;
 }
 
-/** Département dominant d'un territoire (libellé France entière). */
-export function dominantDepartment(codesInsee: string[]): string {
-  if (!codesInsee.length) return 'France';
+/** Département depuis code INSEE (repli CSV — préférer communes.departement en base). */
+export function departementFromInsee(codeInsee: string): string {
+  const c = codeInsee.trim();
+  if (!c) return '';
+  if (/^2[AB]/i.test(c)) return c.slice(0, 2).toUpperCase();
+  if (c.startsWith('97') || c.startsWith('98')) return c.slice(0, 3);
+  return normalizeDeptCode(c.slice(0, 2));
+}
+
+export type DeptRow = { codeInsee?: string; departement?: string };
+
+/** Département dominant d'un territoire — utilise communes.departement quand disponible. */
+export function dominantDepartment(rows: DeptRow[] | string[]): string {
+  const entries: DeptRow[] = rows.map((r) =>
+    typeof r === 'string' ? { codeInsee: r } : r,
+  );
+  if (!entries.length) return 'France';
   const counts = new Map<string, number>();
-  for (const c of codesInsee) {
-    const d = deptCodeFromInsee(c);
-    counts.set(d, (counts.get(d) ?? 0) + 1);
+  for (const e of entries) {
+    const raw = e.departement?.trim() || departementFromInsee(e.codeInsee ?? '');
+    if (!raw) continue;
+    const code = normalizeDeptCode(raw);
+    counts.set(code, (counts.get(code) ?? 0) + 1);
   }
   let bestDept = '';
   let bestCount = 0;

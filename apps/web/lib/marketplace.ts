@@ -106,7 +106,9 @@ function toMarketplacePack(
     packId,
     publicName: unlocked ? detail.displayName : obfuscatePackName(regionShort),
     publicZone: regionShort,
-    department: dominantDepartment(detail.batiments.map((b) => b.codeInsee)),
+    department: dominantDepartment(
+      detail.batiments.map((b) => ({ codeInsee: b.codeInsee, departement: b.departement })),
+    ),
     batimentCount: summary.batimentCount,
     packCapexTotal: detail.packCapexTotal,
     resteAChargeTotal: detail.resteAChargeTotal,

@@ -8,6 +8,7 @@ import type {
   MarketplacePack,
 } from '@/lib/types';
 import type { TerritoryFreePreview } from '@/lib/freemium';
+import { DOSSIER_PAGE, DOSSIER_STICKY } from '@/lib/dossier-ui';
 import { DossierAppHeader } from '@/components/marketplace/dossier-app-header';
 import {
   DossierAppTabs,
@@ -17,11 +18,6 @@ import {
 import { DossierTabFinance } from '@/components/marketplace/dossier-tab-finance';
 import { DossierTabProspect } from '@/components/marketplace/dossier-tab-prospect';
 import { DossierTabExports } from '@/components/marketplace/dossier-tab-exports';
-import {
-  DossierTabExportsLocked,
-  DossierTabFinanceLocked,
-  DossierTabProspectLocked,
-} from '@/components/marketplace/dossier-tab-locked';
 import { PostPurchaseChecklist } from '@/components/marketplace/post-purchase-checklist';
 import { PresentationModeToggle } from '@/components/marketplace/dossier-client-tools';
 
@@ -59,12 +55,7 @@ export function DossierApp({
   const [presentation, setPresentation] = useState(presentParam);
   const [showChecklist, setShowChecklist] = useState(false);
 
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, []);
+  const territoryName = communesLabel ?? nomEpci ?? pack.publicName;
 
   useEffect(() => {
     if (isDossierTabId(tabParam) && tabParam !== tab) {
@@ -92,84 +83,122 @@ export function DossierApp({
     [router, searchParams],
   );
 
-  const shellClass = presentation
-    ? 'fixed inset-0 z-[200] flex flex-col overflow-hidden bg-surface-sunken'
-    : 'flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden bg-surface-sunken';
+  if (presentation) {
+    return (
+      <div className="fixed inset-0 z-[200] flex flex-col overflow-hidden bg-slate-50">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-2">
+          <DossierAppTabs active={tab} onChange={changeTab} />
+          <PresentationModeToggle active={presentation} onChange={setPresentation} />
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {tab === 'finance' && (
+            <DossierTabFinance
+              pack={pack}
+              unlocked={unlocked}
+              soldOut={soldOut}
+              freePreview={freePreview}
+              packCapexTotal={pack.packCapexTotal}
+              subventionRatio={pack.subventionRatio}
+              resteAChargeTotal={pack.resteAChargeTotal}
+              gainNetMairieTotal={pack.gainNetMairieTotal}
+              fondsVertPotential={pack.fondsVertPotential}
+              roiAnnees={pack.roiAnnees}
+              mgpe={mgpe}
+              personas={pack.personas}
+              territoryName={territoryName}
+            />
+          )}
+          {tab === 'prospect' && (
+            <DossierTabProspect
+              buildings={buildings}
+              pack={pack}
+              unlocked={unlocked}
+              soldOut={soldOut}
+              freePreview={freePreview}
+              territoryName={territoryName}
+            />
+          )}
+          {tab === 'exports' && (
+            <DossierTabExports
+              packId={pack.packId}
+              pack={pack}
+              unlocked={unlocked}
+              soldOut={soldOut}
+              freePreview={freePreview}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={shellClass}>
-      {!presentation && (
+    <div className={DOSSIER_PAGE}>
+      <div className={DOSSIER_STICKY}>
         <DossierAppHeader
           pack={pack}
           unlocked={unlocked}
           communesLabel={communesLabel}
           nomEpci={nomEpci}
-          racTotal={racTotal}
-          freePreview={freePreview}
           dataLoadedAt={dataLoadedAt}
         />
-      )}
-
-      <div className="flex shrink-0 items-center justify-between border-b border-line bg-white px-4 py-1">
-        <DossierAppTabs active={tab} onChange={changeTab} />
-        {unlocked && (
-          <PresentationModeToggle active={presentation} onChange={setPresentation} />
-        )}
+        <div className="flex items-center justify-between px-4 pb-0">
+          <DossierAppTabs active={tab} onChange={changeTab} />
+          {unlocked && (
+            <PresentationModeToggle active={presentation} onChange={setPresentation} />
+          )}
+        </div>
       </div>
 
       {unlocked && showChecklist && (
-        <div className="max-h-[40vh] shrink-0 overflow-y-auto border-b border-line bg-surface-sunken p-3">
-          <PostPurchaseChecklist
-            packId={pack.packId}
-            onDismiss={() => setShowChecklist(false)}
-          />
+        <div className="border-b border-slate-200 bg-white/60 px-6 py-4 md:px-10">
+          <div className="mx-auto max-w-7xl">
+            <PostPurchaseChecklist
+              packId={pack.packId}
+              onDismiss={() => setShowChecklist(false)}
+            />
+          </div>
         </div>
       )}
 
-      <div className="min-h-0 flex-1 overflow-hidden">
-        {unlocked ? (
-          <>
-            {tab === 'finance' && (
-              <DossierTabFinance
-                pack={pack}
-                packCapexTotal={pack.packCapexTotal}
-                subventionsTotal={pack.subventionsTotal}
-                subventionRatio={pack.subventionRatio}
-                racTotal={racTotal}
-                resteAChargeTotal={pack.resteAChargeTotal}
-                gainNetMairieTotal={pack.gainNetMairieTotal}
-                fondsVertPotential={pack.fondsVertPotential}
-                roiAnnees={pack.roiAnnees}
-                capex={pack.packCapexTotal}
-                baseSubventionRatio={pack.subventionRatio}
-                mgpe={mgpe}
-                personas={pack.personas}
-                territoryName={communesLabel ?? nomEpci ?? pack.publicName}
-              />
-            )}
-            {tab === 'prospect' && (
-              <DossierTabProspect
-                buildings={buildings}
-                pack={pack}
-                territoryName={communesLabel ?? nomEpci ?? pack.publicName}
-              />
-            )}
-            {tab === 'exports' && <DossierTabExports packId={pack.packId} />}
-          </>
-        ) : (
-          <>
-            {tab === 'finance' && (
-              <DossierTabFinanceLocked pack={pack} freePreview={freePreview} soldOut={soldOut} />
-            )}
-            {tab === 'prospect' && (
-              <DossierTabProspectLocked buildings={buildings} freePreview={freePreview} />
-            )}
-            {tab === 'exports' && (
-              <DossierTabExportsLocked pack={pack} freePreview={freePreview} soldOut={soldOut} />
-            )}
-          </>
+      <main>
+        {tab === 'finance' && (
+          <DossierTabFinance
+            pack={pack}
+            unlocked={unlocked}
+            soldOut={soldOut}
+            freePreview={freePreview}
+            packCapexTotal={pack.packCapexTotal}
+            subventionRatio={pack.subventionRatio}
+            resteAChargeTotal={pack.resteAChargeTotal}
+            gainNetMairieTotal={pack.gainNetMairieTotal}
+            fondsVertPotential={pack.fondsVertPotential}
+            roiAnnees={pack.roiAnnees}
+            mgpe={mgpe}
+            personas={pack.personas}
+            territoryName={territoryName}
+          />
         )}
-      </div>
+        {tab === 'prospect' && (
+          <DossierTabProspect
+            buildings={buildings}
+            pack={pack}
+            unlocked={unlocked}
+            soldOut={soldOut}
+            freePreview={freePreview}
+            territoryName={territoryName}
+          />
+        )}
+        {tab === 'exports' && (
+          <DossierTabExports
+            packId={pack.packId}
+            pack={pack}
+            unlocked={unlocked}
+            soldOut={soldOut}
+            freePreview={freePreview}
+          />
+        )}
+      </main>
     </div>
   );
 }

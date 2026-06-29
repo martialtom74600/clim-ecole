@@ -26,6 +26,7 @@ import {
 import { loadProspectionFromCsv } from './data-csv';
 import { loadProspectionFromSupabase } from './data-supabase';
 import { isSupabaseConfigured } from './supabase-server';
+import { loadMonorepoEnv } from './load-env';
 
 import {
   isClosingChaud,
@@ -166,14 +167,25 @@ function accToEpciDetail(acc: EpciAccumulator): EpciDetail {
   };
 }
 
+const PROSPECTION_CACHE_TAG = 'prospection';
+
 const loadProspectionFromSupabaseCached = unstable_cache(
   loadProspectionFromSupabase,
-  ['prospection-supabase-v1'],
-  { revalidate: 120, tags: ['prospection'] },
+  ['prospection-supabase-v2'],
+  { revalidate: 300, tags: [PROSPECTION_CACHE_TAG] },
 );
 
+export { PROSPECTION_CACHE_TAG };
+
 export const loadProspectionData = cache(async (): Promise<ProspectionDataset> => {
+  if (!isSupabaseConfigured()) {
+    loadMonorepoEnv();
+  }
   if (isSupabaseConfigured()) {
+    // En dev : toujours lire Supabase à jour (évite un snapshot AURA périmé en cache)
+    if (process.env.NODE_ENV === 'development') {
+      return loadProspectionFromSupabase();
+    }
     return loadProspectionFromSupabaseCached();
   }
   return loadProspectionFromCsv();

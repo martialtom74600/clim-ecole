@@ -13,6 +13,24 @@ dotenv.config();
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
+/** Invalide le cache Next.js après sync (production / preview). */
+async function notifyWebRevalidate() {
+  const base = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  const secret = process.env.REVALIDATE_SECRET?.trim();
+  if (!base || !secret) return;
+  try {
+    const url = `${base.replace(/\/$/, '')}/api/revalidate?secret=${encodeURIComponent(secret)}`;
+    const res = await fetch(url, { method: 'POST' });
+    if (res.ok) {
+      console.log('[sync] Cache web invalidée (tag prospection)');
+    } else {
+      console.warn(`[sync] Revalidate web HTTP ${res.status}`);
+    }
+  } catch (err) {
+    console.warn('[sync] Revalidate web ignoré:', err.message);
+  }
+}
+
 function parseCliArgs() {
   const args = process.argv.slice(2);
   const out = {
@@ -475,6 +493,8 @@ export async function syncCsvToSupabase(options) {
       git_commit: options.gitCommit,
     });
   }
+
+  await notifyWebRevalidate();
 
   return { rowCount: batimentRows.length, skipped: false };
 }

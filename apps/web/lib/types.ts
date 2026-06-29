@@ -19,6 +19,8 @@ export type StatutProjetEpci =
 export interface ProspectRow {
   codeUai: string;
   codeInsee: string;
+  /** Département (ex. « 10 », « 74 ») — source fiable : table communes */
+  departement: string;
   codeEpci: string;
   nomEpci: string;
   nomEcole: string;

@@ -2,12 +2,11 @@
 
 import { Minus, Equal } from 'lucide-react';
 import { formatEur, formatPct } from '@/lib/format';
+import { narrativeRoi, narrativeSubventions } from '@/lib/narrative-copy';
+import { DOSSIER_BLOCK } from '@/lib/dossier-ui';
+import { GlossaryTerm } from '@/components/ui/glossary-term';
 import { cn } from '@/lib/utils';
 
-/**
- * Waterfall: Budget travaux  −  Subventions  =  Reste à charge.
- * Replaces the old cramped gauge with a single readable financing story.
- */
 export function DossierFundingWaterfall({
   capex,
   subventionsTotal,
@@ -26,48 +25,51 @@ export function DossierFundingWaterfall({
   const racPct = Math.max(0, Math.min(100 - subPct, (racTotal / base) * 100));
 
   return (
-    <div className="rounded-xl border border-line bg-white p-4 shadow-card">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-ink">Répartition du financement</p>
+    <div className={DOSSIER_BLOCK}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-medium text-slate-900">Répartition du financement</p>
         {roiAnnees > 0 && (
-          <span className="badge bg-positive-soft text-positive-text ring-1 ring-inset ring-positive-border">
-            ROI {roiAnnees.toFixed(1)} ans
-          </span>
+          <span className="text-xs text-slate-500">{narrativeRoi(roiAnnees)}</span>
         )}
       </div>
+      <p className="mt-1 text-sm text-slate-500 transition-all duration-300">
+        {narrativeSubventions(subventionsTotal, subventionRatio)}
+      </p>
 
-      {/* Stacked bar */}
-      <div className="mt-3 flex h-8 overflow-hidden rounded-lg ring-1 ring-inset ring-line">
+      <div className="mt-4 flex h-2 overflow-hidden rounded-full bg-slate-200">
         {subPct > 0 && (
           <div
-            className="flex items-center justify-center bg-positive text-[11px] font-semibold text-white transition-[width] duration-500"
+            className="bg-emerald-500 transition-[width] duration-500"
             style={{ width: `${subPct}%` }}
-          >
-            {subPct >= 16 ? `${Math.round(subPct)} %` : ''}
-          </div>
+          />
         )}
         {racPct > 0 && (
           <div
-            className="flex flex-1 items-center justify-center bg-warning text-[11px] font-semibold text-white transition-[width] duration-500"
+            className="bg-amber-500 transition-[width] duration-500"
             style={{ width: `${racPct}%` }}
-          >
-            {racPct >= 16 ? `${Math.round(racPct)} % RAC` : ''}
-          </div>
+          />
         )}
       </div>
+      <div className="mt-2 flex justify-between text-[11px] text-slate-400">
+        <span>Aides {Math.round(subPct)} %</span>
+        <span>Mairie {Math.round(racPct)} %</span>
+      </div>
 
-      {/* Waterfall steps */}
-      <div className="mt-4 grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-1">
-        <Step label="Budget travaux" value={formatEur(capex, true)} tone="neutral" />
-        <Operator icon={<Minus className="h-3.5 w-3.5" />} />
+      <div className="mt-6 grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2">
+        <Step label="Budget travaux" value={formatEur(capex, true)} />
+        <Operator icon={<Minus className="h-3 w-3" />} />
         <Step
-          label="Subventions"
+          label={
+            <>
+              <GlossaryTerm term="Subventions">Aides publiques</GlossaryTerm>
+            </>
+          }
           value={formatEur(subventionsTotal, true)}
           sub={formatPct(subventionRatio)}
           tone="positive"
         />
-        <Operator icon={<Equal className="h-3.5 w-3.5" />} />
-        <Step label="Reste à charge" value={formatEur(racTotal, true)} tone="warning" />
+        <Operator icon={<Equal className="h-3 w-3" />} />
+        <Step label="Reste à financer" value={formatEur(racTotal, true)} tone="warning" />
       </div>
     </div>
   );
@@ -79,49 +81,29 @@ function Step({
   sub,
   tone,
 }: {
-  label: string;
+  label: React.ReactNode;
   value: string;
   sub?: string;
-  tone: 'neutral' | 'positive' | 'warning';
+  tone?: 'positive' | 'warning';
 }) {
   return (
-    <div
-      className={cn(
-        'rounded-lg border px-2.5 py-2 text-center',
-        tone === 'neutral' && 'border-line bg-surface-sunken',
-        tone === 'positive' && 'border-positive-border bg-positive-soft',
-        tone === 'warning' && 'border-warning-border bg-warning-soft',
-      )}
-    >
+    <div className="text-center">
+      <p className="text-[11px] text-slate-500">{label}</p>
       <p
         className={cn(
-          'text-[10px] font-medium uppercase tracking-wide',
-          tone === 'neutral' && 'text-ink-muted',
-          tone === 'positive' && 'text-positive-text',
-          tone === 'warning' && 'text-warning-text',
-        )}
-      >
-        {label}
-      </p>
-      <p
-        className={cn(
-          'mt-0.5 font-mono text-sm font-bold tabular-nums',
-          tone === 'neutral' && 'text-ink',
-          tone === 'positive' && 'text-positive-text',
-          tone === 'warning' && 'text-warning-text',
+          'mt-0.5 font-mono text-sm font-semibold tabular-nums transition-all duration-300',
+          tone === 'positive' && 'text-emerald-700',
+          tone === 'warning' && 'text-amber-800',
+          !tone && 'text-slate-900',
         )}
       >
         {value}
       </p>
-      {sub && <p className="text-[10px] text-ink-subtle">{sub}</p>}
+      {sub && <p className="text-[10px] text-slate-400">{sub}</p>}
     </div>
   );
 }
 
 function Operator({ icon }: { icon: React.ReactNode }) {
-  return (
-    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-muted text-ink-muted">
-      {icon}
-    </div>
-  );
+  return <div className="text-slate-300">{icon}</div>;
 }

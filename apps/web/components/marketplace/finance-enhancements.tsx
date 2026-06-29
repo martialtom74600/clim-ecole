@@ -1,59 +1,78 @@
 'use client';
 
-import { useState } from 'react';
-import type { MarketplaceMgpeSummary } from '@/lib/types';
 import { formatEur } from '@/lib/format';
+import { narrativeGain } from '@/lib/narrative-copy';
+import { DOSSIER_BLOCK } from '@/lib/dossier-ui';
+import { GlossaryTerm } from '@/components/ui/glossary-term';
 
-export function MgpeInteractiveSimulator({ base }: { base: MarketplaceMgpeSummary }) {
-  const [duree, setDuree] = useState(base.dureeContratAns || 15);
-  const [loyerFactor, setLoyerFactor] = useState(1);
-
-  const loyer = (base.loyerLtEuros || 0) * loyerFactor;
-  const redevance = base.redevanceFtEuros || 0;
-  const gain = (base.gainNetContractuelEuros || 0) * (duree / Math.max(base.dureeContratAns || 15, 1));
-
+export function MgpeInteractiveSimulator({
+  loyer,
+  redevance,
+  gainNet,
+  dureeAns,
+  loyerFactor,
+  onDureeChange,
+  onLoyerFactorChange,
+}: {
+  loyer: number;
+  redevance: number;
+  gainNet: number;
+  dureeAns: number;
+  loyerFactor: number;
+  onDureeChange: (n: number) => void;
+  onLoyerFactorChange: (n: number) => void;
+}) {
   return (
-    <div className="rounded-xl border border-line bg-white p-4 text-xs shadow-card">
-      <p className="text-sm font-semibold text-ink">Simulateur MGPE interactif</p>
-      <p className="mt-0.5 text-[11px] text-ink-muted">Ajustez la durée et le loyer pour votre pitch</p>
-      <div className="mt-3 space-y-3 text-ink-soft">
-        <label className="block">
-          Durée contrat ({duree} ans)
+    <div className={DOSSIER_BLOCK}>
+      <p className="text-sm font-medium text-slate-900">
+        <GlossaryTerm term="Montage en tiers-financement">Montage zéro avance</GlossaryTerm>
+      </p>
+
+      <div className="mt-5 space-y-4">
+        <label className="block text-sm text-slate-600">
+          Durée du contrat — {dureeAns} ans
           <input
             type="range"
             min={10}
             max={25}
-            value={duree}
-            onChange={(e) => setDuree(Number(e.target.value))}
-            className="mt-1 w-full accent-ink"
+            value={dureeAns}
+            onChange={(e) => onDureeChange(Number(e.target.value))}
+            className="mt-2 h-1.5 w-full accent-slate-900"
           />
         </label>
-        <label className="block">
-          Loyer LT (×{loyerFactor.toFixed(2)})
+        <label className="block text-sm text-slate-600">
+          Ajustement loyer — ×{loyerFactor.toFixed(2)}
           <input
             type="range"
             min={80}
             max={120}
             value={loyerFactor * 100}
-            onChange={(e) => setLoyerFactor(Number(e.target.value) / 100)}
-            className="mt-1 w-full accent-ink"
+            onChange={(e) => onLoyerFactorChange(Number(e.target.value) / 100)}
+            className="mt-2 h-1.5 w-full accent-slate-900"
           />
         </label>
-        <dl className="grid grid-cols-3 gap-2 border-t border-line pt-2.5">
-          <div>
-            <dt className="text-ink-muted">Loyer/an</dt>
-            <dd className="font-mono font-bold tabular-nums text-ink">{formatEur(loyer, true)}</dd>
-          </div>
-          <div>
-            <dt className="text-ink-muted">Redevance/an</dt>
-            <dd className="font-mono font-bold tabular-nums text-ink">{formatEur(redevance, true)}</dd>
-          </div>
-          <div>
-            <dt className="text-ink-muted">Gain net estimé</dt>
-            <dd className="font-mono font-bold tabular-nums text-positive-text">{formatEur(gain, true)}</dd>
-          </div>
-        </dl>
       </div>
+
+      <dl className="mt-6 grid gap-4 border-t border-slate-200 pt-5 sm:grid-cols-3">
+        <div>
+          <dt className="text-xs text-slate-500">Loyer / an</dt>
+          <dd className="mt-1 font-mono font-semibold tabular-nums text-slate-900 transition-all duration-300">
+            {formatEur(loyer, true)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-slate-500">Redevance / an</dt>
+          <dd className="mt-1 font-mono font-semibold tabular-nums text-slate-900">
+            {formatEur(redevance, true)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-slate-500">Bilan commune</dt>
+          <dd className="mt-1 text-sm text-emerald-700 transition-all duration-300">
+            {gainNet > 0 ? narrativeGain(gainNet) : 'Équilibre sur la durée'}
+          </dd>
+        </div>
+      </dl>
     </div>
   );
 }
@@ -64,29 +83,34 @@ export function FinanceScenariosCompare({
   subventionsOpt,
   racPess,
   racOpt,
+  activeSubRate,
 }: {
   capex: number;
   subventionsPess: number;
   subventionsOpt: number;
   racPess: number;
   racOpt: number;
+  activeSubRate: number;
 }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-4 shadow-card">
-      <p className="text-sm font-semibold text-ink">Scénarios finance</p>
-      <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
-        <div className="rounded-lg border border-warning-border bg-warning-soft p-3">
-          <p className="font-semibold text-warning-text">Pessimiste</p>
-          <p className="mt-1 tabular-nums text-ink-soft">Subv. {formatEur(subventionsPess, true)}</p>
-          <p className="font-mono font-bold tabular-nums text-warning-text">RAC {formatEur(racPess, true)}</p>
-        </div>
-        <div className="rounded-lg border border-positive-border bg-positive-soft p-3">
-          <p className="font-semibold text-positive-text">Optimiste</p>
-          <p className="mt-1 tabular-nums text-ink-soft">Subv. {formatEur(subventionsOpt, true)}</p>
-          <p className="font-mono font-bold tabular-nums text-positive-text">RAC {formatEur(racOpt, true)}</p>
-        </div>
+    <div className="grid gap-4 sm:grid-cols-2">
+      <div className="rounded-lg border border-slate-200 px-4 py-3">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+          Prudent (−12 pts vs {activeSubRate} %)
+        </p>
+        <p className="mt-2 text-sm text-slate-600">Aides {formatEur(subventionsPess, true)}</p>
+        <p className="text-sm font-medium text-amber-800">Reste {formatEur(racPess, true)}</p>
       </div>
-      <p className="mt-2 text-[10px] text-ink-subtle">CAPEX total {formatEur(capex, true)} — fourchettes indicatives</p>
+      <div className="rounded-lg border border-slate-200 px-4 py-3">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+          Optimiste (+10 pts vs {activeSubRate} %)
+        </p>
+        <p className="mt-2 text-sm text-slate-600">Aides {formatEur(subventionsOpt, true)}</p>
+        <p className="text-sm font-medium text-emerald-700">Reste {formatEur(racOpt, true)}</p>
+      </div>
+      <p className="col-span-full text-xs text-slate-400">
+        Budget travaux : {formatEur(capex, true)}
+      </p>
     </div>
   );
 }

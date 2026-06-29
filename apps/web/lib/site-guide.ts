@@ -98,11 +98,11 @@ export const DOSSIER_SECTIONS = [
 ] as const;
 
 export const PAYWALL_INCLUDES = [
-  'Montants exacts : CAPEX, subventions, reste à charge, Fonds Vert',
-  'Liste complète des écoles avec DPE, surfaces et contacts mairie',
-  'Simulateur de financement et argumentaires MGPE / Loi ELAN',
-  'Carte des établissements et artisans RGE à proximité',
-  'Exports CSV, dossier MGPE HTML et note d’opportunité PDF',
+  'Montants exacts : budget travaux, aides publiques, reste à financer',
+  'Liste complète des écoles avec diagnostic énergétique et contacts mairie',
+  'Simulateur de financement et pitch prêt-à-l\'emploi pour le maire',
+  'Carte GPS des établissements et artisans certifiés à proximité',
+  'Exports tableur, dossier tiers-financement et synthèse pour élus',
 ] as const;
 
 export const PERSONA_DOSSIER_TIPS = {

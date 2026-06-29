@@ -2,6 +2,8 @@
 
 import { CEE_FICHES } from '@/lib/cee-engine';
 import { formatEur, formatInt } from '@/lib/format';
+import { DOSSIER_BLOCK } from '@/lib/dossier-ui';
+import { GlossaryTerm } from '@/components/ui/glossary-term';
 
 export function CeeTerritoryPanel({
   ceeEurosTotal,
@@ -15,44 +17,34 @@ export function CeeTerritoryPanel({
   unlocked: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-4 text-xs shadow-card">
-      <p className="text-sm font-semibold text-ink">Module CEE / cumac</p>
-      <p className="mt-0.5 text-[10px] text-ink-muted">
-        Estimation indicative — non audit PNCEE. Convention avant AO requise.
+    <div className={DOSSIER_BLOCK}>
+      <p className="text-sm font-medium text-slate-900">
+        <GlossaryTerm term="CEE">Primes énergie</GlossaryTerm>
       </p>
-
-      <dl className="mt-3 grid grid-cols-3 gap-2">
-        <div>
-          <dt className="text-ink-muted">CEE estimés</dt>
-          <dd className="font-mono font-bold tabular-nums text-ink">
-            {unlocked ? formatEur(ceeEurosTotal, true) : '—'}
+      <dl className="mt-4 space-y-3 text-sm">
+        <div className="flex justify-between gap-4">
+          <dt className="text-slate-500">Montant estimé</dt>
+          <dd className="text-slate-800">
+            {unlocked ? formatEur(ceeEurosTotal, true) : 'Après déblocage'}
           </dd>
         </div>
-        <div>
-          <dt className="text-ink-muted">Cumac kWh</dt>
-          <dd className="font-mono font-bold tabular-nums text-ink">
-            {unlocked ? formatInt(cumacKwhTotal) : '—'}
-          </dd>
+        <div className="flex justify-between gap-4">
+          <dt className="text-slate-500">Cumac kWh</dt>
+          <dd>{unlocked ? formatInt(cumacKwhTotal) : '—'}</dd>
         </div>
-        <div>
-          <dt className="text-ink-muted">Écoles</dt>
-          <dd className="font-mono font-bold tabular-nums text-ink">{batimentCount}</dd>
+        <div className="flex justify-between gap-4">
+          <dt className="text-slate-500">Écoles</dt>
+          <dd>{batimentCount}</dd>
         </div>
       </dl>
-
-      <div className="mt-4 border-t border-line pt-3">
-        <p className="font-medium text-ink">Fiches BAT applicables</p>
-        <ul className="mt-2 space-y-1">
-          {CEE_FICHES.map((f) => (
-            <li key={f.code} className="flex justify-between gap-2 text-[11px] text-ink-muted">
-              <span>
-                <span className="font-mono font-semibold text-ink-soft">{f.code}</span> — {f.label}
-              </span>
-              <span className="shrink-0 font-medium text-positive-text">{f.gainPct}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ul className="mt-4 space-y-1 border-t border-slate-200 pt-4 text-xs text-slate-600">
+        {CEE_FICHES.map((f) => (
+          <li key={f.code} className="flex justify-between">
+            <span>{f.label}</span>
+            <span className="text-emerald-700">{f.gainPct}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -71,41 +63,25 @@ export function EscoMutualizationPanel({
   unlocked: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-4 text-xs shadow-card">
-      <p className="text-sm font-semibold text-ink">Vue ESCO — mutualisation CPE</p>
-      <p className="mt-0.5 text-[10px] text-ink-muted">
-        Volume critique : 5+ écoles et CAPEX &gt; 800 k€ pour un marché global viable.
+    <div className={DOSSIER_BLOCK}>
+      <p className="text-sm font-medium text-slate-900">Regroupement multi-écoles</p>
+      <p className="mt-1 text-xs text-slate-500">
+        {isMutualizable ? 'Volume suffisant pour un contrat global' : 'Volume à consolider'}
+        {' · '}
+        {batimentCount} écoles
       </p>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span
-          className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${
-            isMutualizable
-              ? 'bg-positive text-white'
-              : 'bg-surface-muted text-ink-muted'
-          }`}
-        >
-          {isMutualizable ? 'Mutualisable ✓' : 'Volume insuffisant'}
-        </span>
-        <span className="rounded-full border border-line bg-surface-sunken px-2.5 py-1 text-[10px] font-medium text-ink-soft">
-          {batimentCount} écoles
-        </span>
-      </div>
-
-      {unlocked && (
-        <dl className="mt-3 grid grid-cols-2 gap-2 border-t border-line pt-3">
-          <div>
-            <dt className="text-ink-muted">CAPEX parc</dt>
-            <dd className="font-mono font-bold tabular-nums text-ink">{formatEur(packCapexTotal, true)}</dd>
+      <dl className="mt-4 space-y-2 text-sm">
+        <div className="flex justify-between gap-4">
+          <dt className="text-slate-500">Budget travaux</dt>
+          <dd>{unlocked ? formatEur(packCapexTotal, true) : 'Après déblocage'}</dd>
+        </div>
+        {unlocked && gainNetMairieTotal > 0 && (
+          <div className="flex justify-between gap-4">
+            <dt className="text-slate-500">Gain commune / an</dt>
+            <dd className="text-emerald-700">{formatEur(gainNetMairieTotal, true)}</dd>
           </div>
-          <div>
-            <dt className="text-ink-muted">Gain net mairie/an</dt>
-            <dd className="font-mono font-bold tabular-nums text-positive-text">
-              {formatEur(gainNetMairieTotal, true)}
-            </dd>
-          </div>
-        </dl>
-      )}
+        )}
+      </dl>
     </div>
   );
 }

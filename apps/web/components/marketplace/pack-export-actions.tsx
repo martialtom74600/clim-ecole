@@ -6,9 +6,9 @@ const EXPORTS = [
   {
     href: (id: string) => `/api/marketplace/export/${id}`,
     icon: Download,
-    label: 'Export CSV (CRM)',
+    label: 'Export CSV territoire',
     shortLabel: 'CSV',
-    desc: 'Liste écoles, DPE, budgets et contacts — à importer dans votre CRM.',
+    desc: 'Écoles, DPE, budgets et contacts mairies.',
     download: true,
     primary: false,
   },

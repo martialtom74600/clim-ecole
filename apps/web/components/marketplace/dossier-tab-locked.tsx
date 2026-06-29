@@ -132,11 +132,11 @@ export function DossierTabExportsLocked({
       <div className="w-full max-w-2xl space-y-4">
         <div>
           <p className="text-sm font-semibold text-ink">Téléchargements</p>
-          <p className="text-xs text-ink-muted">Exports prêts pour votre CRM ou vos rendez-vous</p>
+          <p className="text-xs text-ink-muted">Documents pour vos rendez-vous ou votre dossier interne</p>
         </div>
 
         <div className="grid gap-2 opacity-50 sm:grid-cols-2" aria-hidden>
-          {['CSV CRM', 'CSV complet', COPY.exportMgpeHtml, 'Note PDF'].map((label) => (
+          {['CSV territoire', 'CSV complet', COPY.exportMgpeHtml, 'Note PDF'].map((label) => (
             <div
               key={label}
               className="flex items-start gap-3 rounded-xl border border-line bg-white p-4"

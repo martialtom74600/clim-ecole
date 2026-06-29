@@ -5,6 +5,7 @@ import { loadEnvConfig } from '@next/env';
 const webRoot = __dirname;
 const repoRoot = path.resolve(webRoot, '..', '..');
 
+// Charge le .env monorepo avant toute config (chemins stables via __dirname)
 loadEnvConfig(repoRoot);
 loadEnvConfig(webRoot);
 

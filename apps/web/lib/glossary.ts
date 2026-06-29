@@ -147,6 +147,46 @@ export const GLOSSARY: GlossaryEntry[] = [
     short: 'Identifiant officiel de l’école',
     plain: 'Numéro unique du ministère de l’Éducation pour chaque établissement scolaire.',
   },
+  {
+    term: 'Reste à financer',
+    short: 'Reste à financer',
+    plain: 'Ce que la mairie doit encore payer après toutes les aides publiques. Ce montant peut être étalé dans le temps sans avance de trésorerie.',
+  },
+  {
+    term: 'Montage en tiers-financement',
+    short: 'Zéro euro d’avance',
+    plain: 'Un partenaire paie les travaux ; la commune rembourse uniquement avec l’argent économisé sur les factures d’énergie.',
+  },
+  {
+    term: 'DETR',
+    short: 'Aide régionale',
+    plain: 'Dotation de l’État aux collectivités pour des investissements locaux (voirie, écoles, rénovation…).',
+  },
+  {
+    term: 'DSIL',
+    short: 'Aide investissement local',
+    plain: 'Subvention de l’État pour les projets structurants des intercommunalités et grandes communes.',
+  },
+  {
+    term: 'IPMVP',
+    short: 'Mesure des économies',
+    plain: 'Protocole international qui prouve que les économies d’énergie sont réelles — indispensable pour rassurer un maire.',
+  },
+  {
+    term: 'CEE',
+    short: 'Prime énergie',
+    plain: 'Certificats d’économies d’énergie : prime versée par les fournisseurs d’énergie quand on réduit la consommation.',
+  },
+  {
+    term: 'Loi ELAN',
+    short: 'Loi bâtiments publics',
+    plain: 'Loi de 2018 qui autorise les collectivités à rénover sans avance de trésorerie grâce aux économies d’énergie.',
+  },
+  {
+    term: 'RGE',
+    short: 'Artisan certifié',
+    plain: 'Reconnu Garant de l’Environnement — label obligatoire pour les artisans qui font des travaux de rénovation énergétique.',
+  },
 ];
 
 export function getGlossary(term: string): GlossaryEntry | undefined {

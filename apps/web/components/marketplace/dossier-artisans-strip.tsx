@@ -1,5 +1,6 @@
 import { Mail, Wrench } from 'lucide-react';
 import type { MarketplaceBuilding } from '@/lib/types';
+import { GlossaryTerm } from '@/components/ui/glossary-term';
 
 type ArtisanRow = {
   nom: string;
@@ -35,24 +36,28 @@ export function DossierArtisansStrip({ buildings }: { buildings: MarketplaceBuil
   if (!artisans.length) return null;
 
   return (
-    <div className="shrink-0 border-t border-slate-100 bg-slate-50/80 px-3 py-2">
-      <p className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+    <div className="shrink-0 border-t border-line bg-surface-sunken px-3 py-2">
+      <p className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-ink-subtle">
         <Wrench className="h-3 w-3" />
-        Artisans RGE
+        <GlossaryTerm term="RGE">Artisans certifiés</GlossaryTerm> à proximité
       </p>
       <ul className="space-y-1">
         {artisans.map((a) => (
           <li key={a.nom} className="flex items-center justify-between gap-2 text-[11px]">
-            <span className="truncate text-slate-700">
+            <span className="truncate text-ink-soft">
               {a.nom}
               {a.distanceKm != null && (
-                <span className="text-slate-400"> · {a.distanceKm.toFixed(1)} km</span>
+                <span className="text-ink-subtle"> · {a.distanceKm.toFixed(1)} km</span>
+              )}
+              {a.schools > 1 && (
+                <span className="text-ink-subtle"> · {a.schools} écoles</span>
               )}
             </span>
             {a.email ? (
               <a
                 href={`mailto:${a.email}`}
-                className="inline-flex shrink-0 items-center gap-0.5 text-slate-600 hover:text-slate-900"
+                className="inline-flex shrink-0 items-center gap-0.5 text-ink-muted hover:text-ink"
+                aria-label={`Email ${a.nom}`}
               >
                 <Mail className="h-3 w-3" />
               </a>

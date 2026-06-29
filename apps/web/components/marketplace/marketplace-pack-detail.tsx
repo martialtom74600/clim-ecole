@@ -20,28 +20,26 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
   const soldOut = pack.soldOut && !unlocked;
 
   return (
-    <div className="overflow-hidden">
-      <Suspense fallback={<DossierAppLoading />}>
-        <DossierApp
-          pack={pack}
-          buildings={buildings}
-          unlocked={unlocked}
-          racTotal={racTotal}
-          communesLabel={communesLabel}
-          nomEpci={nomEpci}
-          mgpe={mgpe}
-          freePreview={freePreview}
-          soldOut={soldOut}
-          dataLoadedAt={dataLoadedAt}
-        />
-      </Suspense>
-    </div>
+    <Suspense fallback={<DossierAppLoading />}>
+      <DossierApp
+        pack={pack}
+        buildings={buildings}
+        unlocked={unlocked}
+        racTotal={racTotal}
+        communesLabel={communesLabel}
+        nomEpci={nomEpci}
+        mgpe={mgpe}
+        freePreview={freePreview}
+        soldOut={soldOut}
+        dataLoadedAt={dataLoadedAt}
+      />
+    </Suspense>
   );
 }
 
 function DossierAppLoading() {
   return (
-    <div className="flex h-[calc(100dvh-3.5rem)] items-center justify-center bg-slate-50">
+    <div className="flex min-h-[50vh] items-center justify-center bg-slate-50/50">
       <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
     </div>
   );

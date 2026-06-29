@@ -25,14 +25,14 @@ export function DossierPaywallCard({
   return (
     <div
       className={cn(
-        'rounded-2xl border border-line bg-white p-6',
+        'rounded-2xl border border-line bg-white p-5',
         embedded ? 'shadow-card' : 'shadow-raised lg:sticky lg:top-20',
         className,
       )}
     >
       <div className="flex items-center gap-2 text-ink-muted">
         <Lock className="h-4 w-4" strokeWidth={1.5} />
-        <span className="label-caps">Accès dossier</span>
+        <span className="text-[11px] font-semibold uppercase tracking-wide">Passer à l&apos;action</span>
       </div>
 
       {freePreview && (
@@ -44,9 +44,9 @@ export function DossierPaywallCard({
         </p>
       )}
 
-      <div className="mt-5 flex items-baseline gap-2">
+      <div className="mt-4 flex items-baseline gap-2">
         <span className="font-mono text-3xl font-bold tracking-tight text-ink">290 €</span>
-        <span className="text-sm text-ink-muted">HT · achat unique</span>
+        <span className="text-sm text-ink-muted">HT · un territoire</span>
       </div>
 
       {!soldOut && pack.slotsRemaining <= 2 && (
@@ -55,7 +55,7 @@ export function DossierPaywallCard({
         </p>
       )}
 
-      <div className="mt-3">
+      <div className="mt-2">
         <PackSlotsBadge
           remaining={pack.slotsRemaining}
           max={pack.slotsMax}
@@ -64,7 +64,7 @@ export function DossierPaywallCard({
         />
       </div>
 
-      <ul className="mt-6 space-y-2.5">
+      <ul className="mt-5 space-y-2.5">
         {PAYWALL_INCLUDES.slice(0, 4).map((item) => (
           <li key={item} className="flex gap-2.5 text-xs leading-relaxed text-ink-muted">
             <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-positive" aria-hidden />
@@ -73,7 +73,7 @@ export function DossierPaywallCard({
         ))}
       </ul>
 
-      <div className="mt-6 space-y-2.5">
+      <div className="mt-5 space-y-2.5">
         <CheckoutButton
           plan="dossier"
           packId={pack.packId}
@@ -85,7 +85,7 @@ export function DossierPaywallCard({
         </CheckoutButton>
         <CheckoutButton plan="pro" className="btn-secondary w-full py-3">
           <Zap className="h-4 w-4" />
-          {COPY.subscription} — 990 € HT/mois
+          Tous les territoires — 990 € HT/mois
         </CheckoutButton>
       </div>
 

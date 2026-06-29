@@ -2,10 +2,12 @@ import fs from 'fs/promises';
 import path from 'path';
 import Papa from 'papaparse';
 import type { ProspectRow, ProspectionDataset } from './types';
+import { departementFromInsee } from './geo-france';
 
 const CSV_COLUMNS: Record<string, keyof ProspectRow> = {
   Code_UAI: 'codeUai',
   Code_INSEE: 'codeInsee',
+  Code_Departement: 'departement',
   Code_EPCI: 'codeEpci',
   Nom_EPCI: 'nomEpci',
   Nom_Ecole: 'nomEcole',
@@ -158,7 +160,11 @@ export function mapCsvRecordToProspectRow(raw: Record<string, string>): Prospect
     }
   }
 
-  return out as ProspectRow;
+  const row = out as ProspectRow;
+  if (!row.departement?.trim()) {
+    row.departement = departementFromInsee(row.codeInsee);
+  }
+  return row;
 }
 
 export async function loadProspectionFromCsv(): Promise<ProspectionDataset> {

@@ -30,6 +30,7 @@ type SupabaseBatimentRow = {
   communes: {
     code_insee: string;
     nom: string;
+    departement: string | null;
     email_mairie: string | null;
     epci: { code_epci: string; nom: string };
   };
@@ -97,6 +98,7 @@ function toCsvRecord(row: SupabaseBatimentRow): Record<string, string> {
     ...jsonToCsvFields(row.technique_json),
     Code_UAI: row.code_uai,
     Code_INSEE: commune.code_insee,
+    Code_Departement: commune.departement ?? '',
     Code_EPCI: epci.code_epci,
     Nom_EPCI: epci.nom,
     Nom_Ecole: row.nom,
@@ -158,6 +160,7 @@ const BATIMENT_SELECT = `
   communes!inner (
     code_insee,
     nom,
+    departement,
     email_mairie,
     epci!inner (code_epci, nom)
   ),

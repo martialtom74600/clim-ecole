@@ -354,36 +354,41 @@ export function ExplorerSplitView({
           </div>
         )}
 
-        {/* Liste scrollable */}
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        {/* Liste scrollable — cartes territoire */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
           {filtered.map((pack) => (
             <div
               key={pack.packId}
               className={cn(
-                'group relative border-b border-radar-border transition-colors hover:bg-radar-canvas',
-                selectedId === pack.packId && 'bg-radar-canvas',
+                'group relative mb-2 last:mb-0',
+                selectedId === pack.packId && 'ring-2 ring-ink ring-offset-2 rounded-xl',
               )}
             >
               <button
                 type="button"
                 onClick={() => handleSelectPack(pack.packId)}
-                className="w-full px-4 py-3 text-left"
+                className={cn(
+                  'w-full rounded-xl border border-line bg-white p-3.5 text-left shadow-sm transition-all hover:border-line-strong hover:shadow-card',
+                  selectedId === pack.packId && 'border-ink bg-surface-sunken',
+                )}
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} size="sm" previewOnly />
-                    <p className="truncate text-sm font-semibold text-ink">{pack.publicName}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold leading-snug text-ink">{pack.publicName}</p>
+                    <p className="mt-1 text-xs text-ink-muted">
+                      {pack.department.split('·')[0]?.trim()} · {formatInt(pack.batimentCount)} écoles
+                    </p>
                   </div>
                   <PackBudgetLabel
                     rangeLabel={pack.budgetRange}
                     capex={pack.packCapexTotal}
-                    className="shrink-0 text-sm font-bold text-ink"
+                    className="shrink-0 text-right text-sm font-bold text-ink"
                   />
                 </div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-radar-muted">
-                  <span>{formatInt(pack.batimentCount)} écoles</span>
+                <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                  <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} size="sm" previewOnly />
                   {pack.isHot && (
-                    <span className="inline-flex items-center gap-0.5 font-medium text-radar-heat">
+                    <span className="inline-flex items-center gap-0.5 rounded-md bg-heat-soft px-1.5 py-0.5 text-[10px] font-semibold text-heat-text">
                       <Flame className="h-3 w-3" />
                       {COPY.hot}
                     </span>
@@ -392,9 +397,9 @@ export function ExplorerSplitView({
                   {pack.isNew && <span className="badge-new">{COPY.new}</span>}
                   <PackSlotsBadge remaining={pack.slotsRemaining} max={pack.slotsMax} soldOut={pack.soldOut} />
                 </div>
-                <div className="mt-1.5"><PersonaBadgeGroup personas={pack.personas} /></div>
+                <div className="mt-2"><PersonaBadgeGroup personas={pack.personas} /></div>
               </button>
-              <div className="absolute bottom-2.5 right-3 flex gap-1 opacity-100 transition-opacity focus-within:opacity-100 md:opacity-0 md:group-hover:opacity-100">
+              <div className="absolute bottom-3 right-3 flex gap-1 opacity-100 transition-opacity focus-within:opacity-100 md:opacity-0 md:group-hover:opacity-100">
                 <WatchlistButton packId={pack.packId} />
                 <CompareToggle
                   packId={pack.packId}

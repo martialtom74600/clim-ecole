@@ -3,18 +3,22 @@
 import { Mail, MailX, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { MarketplaceBuilding, MarketplacePack } from '@/lib/types';
+import type { TerritoryFreePreview } from '@/lib/freemium';
 import { COPY } from '@/lib/copy';
-import { formatEur } from '@/lib/format';
+import { formatEur, formatInt } from '@/lib/format';
+import { narrativeBudget } from '@/lib/narrative-copy';
 import { dpeBgClass, dpeLetter } from '@/lib/dpe-colors';
+import { GlossaryTerm } from '@/components/ui/glossary-term';
 import { cn } from '@/lib/utils';
+import { DossierInlinePaywall } from '@/components/marketplace/dossier-inline-paywall';
 import {
   BlacklistBuildingButton,
   MairieEmailButton,
 } from '@/components/marketplace/dossier-client-tools';
 import { useAccountPreferences } from '@/hooks/use-account-preferences';
 
-function sortByClosing(a: MarketplaceBuilding, b: MarketplaceBuilding) {
-  return (b.scoreEligibiliteClosing ?? 0) - (a.scoreEligibiliteClosing ?? 0);
+function sortByCapex(a: MarketplaceBuilding, b: MarketplaceBuilding) {
+  return b.capexTotal - a.capexTotal;
 }
 
 export function DossierSchoolListDense({
@@ -22,19 +26,28 @@ export function DossierSchoolListDense({
   pack,
   territoryName,
   blacklistUais: blacklistProp,
+  locked = false,
+  freePreview,
+  paywallPack,
+  paywallSoldOut,
 }: {
   buildings: MarketplaceBuilding[];
   pack?: MarketplacePack;
   territoryName?: string;
   blacklistUais?: string[];
+  locked?: boolean;
+  freePreview?: TerritoryFreePreview;
+  paywallPack?: MarketplacePack;
+  paywallSoldOut?: boolean;
 }) {
   const [query, setQuery] = useState('');
   const { prefs, toggleBlacklist } = useAccountPreferences();
   const blacklist = blacklistProp ?? prefs.blacklistUais;
 
-  const sorted = useMemo(() => [...buildings].sort(sortByClosing), [buildings]);
+  const sorted = useMemo(() => [...buildings].sort(sortByCapex), [buildings]);
 
   const filtered = useMemo(() => {
+    if (locked) return sorted;
     const q = query.trim().toLowerCase();
     if (!q) return sorted;
     return sorted.filter(
@@ -43,125 +56,171 @@ export function DossierSchoolListDense({
         b.publicCommune.toLowerCase().includes(q) ||
         b.codeUai?.toLowerCase().includes(q),
     );
-  }, [sorted, query]);
+  }, [sorted, query, locked]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="shrink-0 border-b border-line px-3 py-2">
-        <label className="relative block">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-subtle" />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher…"
-            className="w-full rounded-lg border border-line bg-surface-sunken py-1.5 pl-8 pr-2 text-xs outline-none transition-colors focus:border-ink focus:bg-white"
-          />
-        </label>
+    <div className="flex flex-col">
+      <div className="border-b border-slate-100 px-6 py-5">
+        <p className="text-sm font-semibold text-ink">Écoles du territoire</p>
+        <p className="text-xs text-ink-muted">
+          {formatInt(filtered.length)} établissement{filtered.length > 1 ? 's' : ''}
+          {territoryName ? ` · ${territoryName}` : ''}
+          {locked && freePreview && ` · ${freePreview.dpeProfile.label}`}
+        </p>
+        {!locked && (
+          <label className="relative mt-3 block">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-subtle" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Chercher une école ou une commune…"
+              className="w-full rounded-lg border border-line bg-surface-sunken py-2 pl-8 pr-2 text-sm outline-none transition-colors focus:border-ink focus:bg-white"
+            />
+          </label>
+        )}
+        {locked && (
+          <p className="mt-2 text-[11px] text-ink-muted">
+            Les <GlossaryTerm term="DPE">diagnostics énergétiques</GlossaryTerm> sont visibles.
+            Noms et contacts après déblocage.
+          </p>
+        )}
       </div>
 
-      <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        {filtered.length === 0 ? (
-          <li className="px-4 py-8 text-center text-xs text-ink-subtle">Aucun résultat</li>
-        ) : (
-          filtered.map((b, i) => (
-            <SchoolRow
-              key={b.buildingId}
-              building={b}
-              rank={i + 1}
-              pack={pack}
-              territoryName={territoryName}
-              blacklisted={Boolean(b.codeUai && blacklist.includes(b.codeUai))}
-              onToggleBlacklist={() => b.codeUai && toggleBlacklist(b.codeUai)}
-            />
-          ))
+      <div className="relative">
+        <ul className={cn('divide-y divide-slate-200', locked && 'blur-sm select-none')}>
+          {filtered.length === 0 ? (
+            <li className="px-4 py-8 text-center text-sm text-slate-400">Aucun résultat</li>
+          ) : (
+            filtered.map((b) => (
+              <SchoolCard
+                key={b.buildingId}
+                building={b}
+                pack={pack}
+                territoryName={territoryName}
+                blacklisted={Boolean(b.codeUai && blacklist.includes(b.codeUai))}
+                onToggleBlacklist={() => b.codeUai && toggleBlacklist(b.codeUai)}
+                locked={locked}
+              />
+            ))
+          )}
+        </ul>
+        {locked && paywallPack && (
+          <DossierInlinePaywall
+            pack={paywallPack}
+            soldOut={paywallSoldOut}
+            title="Débloquez les contacts directs et les montants financiers exacts pour 290 €"
+            subtitle="Emails mairies, noms des écoles et budgets précis — tout ce qu'il faut pour prospecter."
+          />
         )}
-      </ul>
+      </div>
     </div>
   );
 }
 
-function SchoolRow({
+function SchoolCard({
   building: b,
-  rank,
   pack,
   territoryName,
   blacklisted,
   onToggleBlacklist,
+  locked,
 }: {
   building: MarketplaceBuilding;
-  rank: number;
   pack?: MarketplacePack;
   territoryName?: string;
   blacklisted: boolean;
   onToggleBlacklist: () => void;
+  locked: boolean;
 }) {
   const letter = dpeLetter(b.classeDpe);
   const persona = pack?.personas?.[0] ?? 'btp';
 
-  if (b.detailsHidden) {
-    return (
-      <li className="flex items-center gap-2 border-b border-line px-3 py-2">
-        <span className="w-4 text-[10px] tabular-nums text-ink-faint">{rank}</span>
-        <span className="text-xs tracking-widest text-ink-faint">{b.publicName}</span>
-      </li>
-    );
-  }
+  const displayName = locked || b.detailsHidden ? '████████' : b.publicName;
+  const displayCommune = locked || b.detailsHidden ? 'Commune masquée' : b.publicCommune;
 
   return (
-    <li className="group flex items-center gap-2 border-b border-line px-3 py-2 text-sm hover:bg-surface-sunken">
-      <span className="w-4 shrink-0 text-[10px] tabular-nums text-ink-subtle">{rank}</span>
-
-      <div
-        className={cn(
-          'flex h-7 w-7 shrink-0 items-center justify-center rounded text-[11px] font-black text-white',
-          dpeBgClass(b.classeDpe),
-        )}
-        title={`DPE ${letter}`}
-      >
-        {letter}
+    <li
+      className={cn(
+        'flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start',
+        blacklisted && 'opacity-50',
+      )}
+    >
+      <div className="flex items-start gap-2.5">
+        <div
+          className={cn(
+            'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-black text-white',
+            dpeBgClass(b.classeDpe),
+          )}
+          title={`Diagnostic énergétique : ${letter}`}
+        >
+          {letter}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold leading-snug text-ink">{displayName}</p>
+          <p className="mt-0.5 text-xs text-ink-muted">{displayCommune}</p>
+        </div>
       </div>
 
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-xs font-medium text-ink">{b.publicName}</p>
-        <p className="truncate text-[10px] text-ink-muted">
-          {b.publicCommune}
-          {b.scoreEligibiliteClosing ? ` · Score ${b.scoreEligibiliteClosing}` : ''}
+      {!locked && !b.detailsHidden && (
+        <>
+          <dl className="mt-3 grid grid-cols-2 gap-x-2 gap-y-1 text-[11px]">
+            <div className="col-span-2">
+              <dt className="text-ink-subtle">Budget travaux estimé</dt>
+              <dd className="text-xs leading-relaxed text-ink">
+                {pack
+                  ? narrativeBudget(b.capexTotal, 1).replace('Les travaux sur 1 école représentent environ ', 'Environ ')
+                  : formatEur(b.capexTotal, true)}
+              </dd>
+            </div>
+            {b.surfaceM2 > 0 && (
+              <div>
+                <dt className="text-ink-subtle">Surface</dt>
+                <dd className="font-mono tabular-nums text-ink">{formatInt(b.surfaceM2)} m²</dd>
+              </div>
+            )}
+          </dl>
+
+          <div className="mt-3 flex items-center gap-1.5 border-t border-line pt-2.5">
+            {pack && territoryName ? (
+              <MairieEmailButton
+                building={b}
+                territoryName={territoryName}
+                packCapexTotal={pack.packCapexTotal}
+                gainNetMairieTotal={pack.gainNetMairieTotal}
+                persona={persona}
+              />
+            ) : b.emailMairie ? (
+              <a
+                href={`mailto:${b.emailMairie}`}
+                className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg border border-line bg-surface-sunken px-2 py-1.5 text-xs font-medium text-ink hover:bg-surface-muted"
+              >
+                <Mail className="h-3.5 w-3.5" />
+                Contacter la mairie
+              </a>
+            ) : (
+              <span
+                className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg border border-dashed border-line px-2 py-1.5 text-xs text-ink-subtle"
+                title={COPY.emailMissing}
+              >
+                <MailX className="h-3.5 w-3.5" />
+                Email non trouvé
+              </span>
+            )}
+            <BlacklistBuildingButton
+              codeUai={b.codeUai}
+              blacklisted={blacklisted}
+              onToggle={onToggleBlacklist}
+            />
+          </div>
+        </>
+      )}
+
+      {locked && (
+        <p className="mt-3 text-[10px] text-ink-subtle">
+          Budget et contact mairie — après déblocage
         </p>
-      </div>
-
-      <p className="hidden shrink-0 font-mono text-xs font-semibold tabular-nums text-ink-soft sm:block">
-        {formatEur(b.capexTotal, true)}
-      </p>
-
-      <div className="flex shrink-0 items-center gap-1">
-        {pack && territoryName ? (
-          <MairieEmailButton
-            building={b}
-            territoryName={territoryName}
-            packCapexTotal={pack.packCapexTotal}
-            gainNetMairieTotal={pack.gainNetMairieTotal}
-            persona={persona}
-          />
-        ) : b.emailMairie ? (
-          <a
-            href={`mailto:${b.emailMairie}`}
-            className="inline-flex shrink-0 items-center gap-1 rounded-md border border-line bg-white px-2 py-1 text-[11px] font-medium text-ink-soft hover:bg-surface-muted"
-          >
-            <Mail className="h-3 w-3" />
-            <span className="hidden md:inline">Email</span>
-          </a>
-        ) : (
-          <span className="inline-flex shrink-0 items-center gap-0.5 text-[10px] text-ink-subtle" title={COPY.emailMissing}>
-            <MailX className="h-3 w-3" />
-          </span>
-        )}
-        <BlacklistBuildingButton
-          codeUai={b.codeUai}
-          blacklisted={blacklisted}
-          onToggle={onToggleBlacklist}
-        />
-      </div>
+      )}
     </li>
   );
 }

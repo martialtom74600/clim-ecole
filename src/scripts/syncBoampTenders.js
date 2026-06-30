@@ -3,7 +3,7 @@
  * Usage: node src/scripts/syncBoampTenders.js
  */
 import dotenv from 'dotenv';
-import { createClient } from '@supabase/supabase-js';
+import { requireSupabaseFromEnv } from '../lib/supabaseNode.js';
 
 dotenv.config();
 
@@ -22,10 +22,7 @@ const KEYWORDS = [
 ];
 
 function supabase() {
-  const url = process.env.SUPABASE_URL?.trim();
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  if (!url || !key) throw new Error('SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY requis');
-  return createClient(url, key);
+  return requireSupabaseFromEnv();
 }
 
 function matchesKeywords(text) {

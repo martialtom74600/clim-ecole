@@ -3,7 +3,7 @@
  * Usage: node src/scripts/sendTerritoryAlerts.js [--digest]
  */
 import dotenv from 'dotenv';
-import { createClient } from '@supabase/supabase-js';
+import { requireSupabaseFromEnv } from '../lib/supabaseNode.js';
 
 dotenv.config();
 
@@ -11,13 +11,6 @@ const PREFIX = 'clim-pack:';
 
 function encodePackId(codeEpci) {
   return Buffer.from(`${PREFIX}${codeEpci}`, 'utf8').toString('base64url');
-}
-
-function supabase() {
-  const url = process.env.SUPABASE_URL?.trim();
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  if (!url || !key) throw new Error('SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY requis');
-  return createClient(url, key);
 }
 
 async function sendEmail(to, subject, html) {
@@ -92,7 +85,7 @@ async function logSent(sb, subscriptionId, packId, type) {
 
 async function main() {
   const digest = process.argv.includes('--digest');
-  const sb = supabase();
+  const sb = requireSupabaseFromEnv();
   const base = process.env.NEXT_PUBLIC_APP_URL?.trim() || 'http://localhost:3000';
 
   const { data: subs } = await sb.from('alert_subscriptions').select('*');

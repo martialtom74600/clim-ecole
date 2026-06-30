@@ -11,6 +11,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Block tracked premium CSV files
         run: |
           TRACKED=$(git ls-files 'data/departments/*.csv' 'apps/web/data/output_prospection.csv' 2>/dev/null || true)
@@ -22,12 +26,22 @@ jobs:
 
       - name: Block NEXT_PUBLIC service role leak
         run: |
-          if rg -l 'NEXT_PUBLIC.*SERVICE_ROLE|NEXT_PUBLIC.*SECRET' apps/web --glob '!node_modules' 2>/dev/null; then
+          FOUND=$(grep -rE --include='*.ts' --include='*.tsx' --include='*.js' --include='*.mjs' \
+            'NEXT_PUBLIC.*(SERVICE_ROLE|SECRET)' apps/web \
+            --exclude-dir=node_modules --exclude-dir=.next 2>/dev/null || true)
+          if [ -n "$FOUND" ]; then
             echo "::error::Clé secrète exposée en NEXT_PUBLIC"
+            echo "$FOUND"
             exit 1
           fi
           echo "OK"
 
       - name: Dev unlock must be disabled in production route
         run: |
-          rg 'NODE_ENV === .production' apps/web/app/api/dev/unlock/route.ts
+          if ! grep -q "NODE_ENV === 'production'" apps/web/app/api/dev/unlock/route.ts; then
+            echo "::error::apps/web/app/api/dev/unlock/route.ts doit vérifier NODE_ENV === 'production'"
+            exit 1
+          fi
+
+      - name: Security invariants (node --test)
+        run: npm run test:security --prefix apps/web

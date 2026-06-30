@@ -35,7 +35,7 @@ export function PostPurchaseChecklist({
   onDismiss?: () => void;
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+    <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card animate-slide-up">
       <div className="flex items-center gap-2 border-b border-line px-5 py-3 md:px-6">
         <CheckCircle2 className="h-4 w-4 text-positive" />
         <span className="text-sm font-semibold text-ink">{COPY.unlocked} — playbook commercial</span>

@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Search, X } from 'lucide-react';
-import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+import { CornerDownLeft, Search, SlidersHorizontal, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import type { MarketplacePack } from '@/lib/types';
+import { DURATION, EASE } from '@/lib/motion';
+import { cn } from '@/lib/utils';
 
 type SearchHit = {
   packId: string;
@@ -20,9 +23,30 @@ export function ExplorerSearchBar({
   onSelect?: (packId: string) => void;
   className?: string;
 }) {
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
   const [hits, setHits] = useState<SearchHit[]>([]);
   const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+  const [isMac, setIsMac] = useState(true);
+
+  useEffect(() => {
+    setIsMac(/Mac|iPhone|iPad/.test(navigator.platform));
+  }, []);
+
+  /* ⌘K / Ctrl+K — focus instantané sur la recherche (façon Spotlight). */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        inputRef.current?.focus();
+        setOpen(true);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   useEffect(() => {
     if (query.trim().length < 2) {
@@ -31,15 +55,45 @@ export function ExplorerSearchBar({
     }
     const t = setTimeout(async () => {
       const res = await fetch(`/api/explorer/search?q=${encodeURIComponent(query.trim())}`);
-      if (res.ok) setHits(await res.json());
+      if (res.ok) {
+        setHits(await res.json());
+        setActive(0);
+      }
     }, 200);
     return () => clearTimeout(t);
   }, [query]);
 
+  function go(hit: SearchHit) {
+    onSelect?.(hit.packId);
+    setOpen(false);
+    setQuery('');
+    router.push(`/explorer/${hit.packId}`);
+  }
+
+  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Escape') {
+      setOpen(false);
+      inputRef.current?.blur();
+      return;
+    }
+    if (!hits.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActive((i) => (i + 1) % hits.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActive((i) => (i - 1 + hits.length) % hits.length);
+    } else if (e.key === 'Enter' && hits[active]) {
+      e.preventDefault();
+      go(hits[active]);
+    }
+  }
+
   return (
-    <div className={`relative ${className ?? ''}`}>
-      <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-radar-muted" />
+    <div className={cn('relative', className)}>
+      <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-subtle" />
       <input
+        ref={inputRef}
         type="search"
         value={query}
         onChange={(e) => {
@@ -47,32 +101,128 @@ export function ExplorerSearchBar({
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
+        onBlur={() => window.setTimeout(() => setOpen(false), 120)}
+        onKeyDown={onKeyDown}
         placeholder="Rechercher un territoire…"
-        className="w-full rounded-lg border border-radar-border bg-white py-2 pl-8 pr-3 text-sm outline-none focus:border-radar-text"
+        className="w-full rounded-lg border border-line bg-white py-2 pl-8 pr-12 text-sm text-ink outline-none transition-shadow placeholder:text-ink-subtle focus:border-ink focus:shadow-focus"
       />
-      {open && hits.length > 0 && (
-        <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-radar-border bg-white py-1 shadow-lg">
-          {hits.map((h) => (
-            <li key={h.packId}>
-              <Link
-                href={`/explorer/${h.packId}`}
-                onClick={() => {
-                  onSelect?.(h.packId);
-                  setOpen(false);
-                  setQuery('');
-                }}
-                className="block px-3 py-2 text-sm hover:bg-radar-canvas"
-              >
-                <span className="font-medium">{h.name}</span>
-                <span className="ml-2 text-xs text-radar-muted">
-                  {h.department} · {h.budgetRange} · {h.radarGrade}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+      {!query && (
+        <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-line bg-surface-muted px-1.5 py-0.5 font-mono text-[10px] font-medium text-ink-subtle">
+          {isMac ? '⌘' : 'Ctrl'} K
+        </kbd>
       )}
+      <AnimatePresence>
+        {open && hits.length > 0 && (
+          <motion.ul
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+            transition={{ duration: DURATION.fast, ease: EASE.out }}
+            className="absolute z-50 mt-1.5 max-h-60 w-full overflow-y-auto rounded-xl border border-line bg-white/95 p-1 shadow-overlay backdrop-blur-md backdrop-saturate-150"
+          >
+            {hits.map((h, i) => (
+              <li key={h.packId}>
+                <button
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    go(h);
+                  }}
+                  onMouseEnter={() => setActive(i)}
+                  className={cn(
+                    'flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors',
+                    i === active ? 'bg-surface-muted' : 'hover:bg-surface-muted',
+                  )}
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium text-ink">{h.name}</span>
+                    <span className="block truncate text-xs text-ink-muted">
+                      {h.department} · {h.budgetRange} · {h.radarGrade}
+                    </span>
+                  </span>
+                  {i === active && (
+                    <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-ink-subtle" />
+                  )}
+                </button>
+              </li>
+            ))}
+          </motion.ul>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+/**
+ * Panneau coulissant des filtres avancés — glisse depuis la droite,
+ * réduisant la charge visuelle du panneau principal de l'explorateur.
+ */
+export function ExplorerFilterSheet({
+  open,
+  onClose,
+  activeCount = 0,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  activeCount?: number;
+  children: React.ReactNode;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: DURATION.fast, ease: EASE.out }}
+            onClick={onClose}
+            className="fixed inset-0 z-[60] bg-ink/30 backdrop-blur-sm"
+          />
+          <motion.aside
+            role="dialog"
+            aria-modal="true"
+            aria-label="Filtres avancés"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ duration: DURATION.base, ease: EASE.out }}
+            className="fixed right-0 top-0 z-[70] flex h-full w-full max-w-sm flex-col border-l border-line bg-white shadow-overlay"
+          >
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line px-5 py-4">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4 text-ink" />
+                <h2 className="text-sm font-semibold text-ink">Filtres avancés</h2>
+                {activeCount > 0 && (
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1.5 text-[11px] font-bold text-white">
+                    {activeCount}
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Fermer"
+                className="rounded-lg p-1.5 text-ink-subtle transition-colors hover:bg-surface-muted hover:text-ink"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">{children}</div>
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
 

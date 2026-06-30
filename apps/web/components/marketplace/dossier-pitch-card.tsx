@@ -5,6 +5,7 @@ import { Check, Copy, MessageSquareQuote } from 'lucide-react';
 import type { MarketplaceMgpeSummary } from '@/lib/types';
 import { simplifyPitchForMayor } from '@/lib/narrative-copy';
 import { DOSSIER_BLOCK } from '@/lib/dossier-ui';
+import { useToast } from '@/components/ui/toast';
 
 export function DossierPitchCard({
   mgpe,
@@ -36,14 +37,16 @@ export function DossierPitchCard({
   );
 
   const [copied, setCopied] = useState(false);
+  const toast = useToast();
 
   async function copy() {
     try {
       await navigator.clipboard.writeText(pitch);
       setCopied(true);
+      toast('Pitch copié — prêt à coller dans votre email', 'success');
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* ignore */
+      toast('Copie impossible — sélectionnez le texte manuellement', 'error');
     }
   }
 
@@ -51,17 +54,17 @@ export function DossierPitchCard({
     <div className={DOSSIER_BLOCK}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-2">
-          <MessageSquareQuote className="h-4 w-4 text-slate-400" />
-          <p className="text-sm font-medium text-slate-900">Pitch prêt-à-l&apos;emploi</p>
+          <MessageSquareQuote className="h-4 w-4 text-ink-subtle" />
+          <p className="text-sm font-medium text-ink">Pitch prêt-à-l&apos;emploi</p>
         </div>
         <button
           type="button"
           onClick={() => void copy()}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-900 underline-offset-2 hover:underline"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink underline-offset-2 hover:underline"
         >
           {copied ? (
             <>
-              <Check className="h-4 w-4 text-emerald-600" />
+              <Check className="h-4 w-4 text-positive" />
               Copié
             </>
           ) : (
@@ -72,7 +75,7 @@ export function DossierPitchCard({
           )}
         </button>
       </div>
-      <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-slate-600 transition-all duration-300">
+      <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-ink-muted transition-all duration-300">
         {pitch}
       </p>
     </div>

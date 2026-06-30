@@ -31,18 +31,18 @@ function FinanceBreakdown({
 
   return (
     <Card className="mb-8 overflow-hidden">
-      <CardHeader className="border-b border-white/5 pb-3">
-        <CardTitle className="normal-case tracking-normal text-sm text-zinc-300">
+      <CardHeader className="border-b border-line pb-3">
+        <CardTitle className="normal-case tracking-normal text-sm text-ink-soft">
           Qui paie quoi ?
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-4">
-        <p className="mb-3 text-xs text-zinc-500">
+        <p className="mb-3 text-xs text-ink-muted">
           Barre bleue = aides de l’État · Barre verte = part restant à la collectivité
         </p>
         <div className="mb-3 flex h-3 overflow-hidden rounded-full bg-zen-bg">
           <div
-            className="bg-sky-500/80 transition-all duration-500"
+            className="bg-info transition-all duration-500"
             style={{ width: `${subPct}%` }}
             title="Subventions"
           />
@@ -52,9 +52,9 @@ function FinanceBreakdown({
             title="Reste à charge"
           />
         </div>
-        <div className="flex flex-wrap gap-6 text-xs text-zinc-500">
+        <div className="flex flex-wrap gap-6 text-xs text-ink-muted">
           <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-sky-500/80" />
+            <span className="h-2 w-2 rounded-full bg-info" />
             Subventions (aides État) {formatEur(subventions, true)}
           </span>
           <span className="flex items-center gap-2">
@@ -97,7 +97,7 @@ export async function EpciDetailView({ code }: { code: string }) {
           <StatutProjetBadge statut={epci.statutProjetEpci} />
           <Link
             href={`/admin/carte?epci=${epci.codeEpci}`}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 text-xs text-zinc-400 transition-all duration-200 hover:border-white/[0.14] hover:text-zinc-200"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 text-xs text-ink-muted transition-all duration-200 hover:border-line-strong hover:text-ink"
           >
             <Map className="h-3.5 w-3.5" />
             Voir sur la carte
@@ -115,11 +115,11 @@ export async function EpciDetailView({ code }: { code: string }) {
       <EpciDetailKpis items={kpis} />
 
       <Card className="overflow-hidden">
-        <CardHeader className="border-b border-white/5 pb-4">
-          <CardTitle className="normal-case tracking-normal text-sm text-zinc-300">
+        <CardHeader className="border-b border-line pb-4">
+          <CardTitle className="normal-case tracking-normal text-sm text-ink-soft">
             Écoles de ce territoire ({formatInt(epci.batimentCount)})
           </CardTitle>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-ink-muted">
             DPE = note énergétique (F/G = passoire · priorité rénovation)
           </p>
         </CardHeader>
@@ -138,15 +138,15 @@ export async function EpciDetailView({ code }: { code: string }) {
             <TableBody>
               {epci.batiments.map((b) => (
                 <TableRow key={b.codeUai}>
-                  <TableCell className="font-medium text-zinc-100">{b.nomEcole}</TableCell>
-                  <TableCell className="text-zinc-500">{b.commune}</TableCell>
+                  <TableCell className="font-medium text-ink">{b.nomEcole}</TableCell>
+                  <TableCell className="text-ink-muted">{b.commune}</TableCell>
                   <TableCell>
                     <DpeBadge classe={b.classeDpe} />
                   </TableCell>
-                  <TableCell className="text-right tabular-nums text-zinc-400">
+                  <TableCell className="text-right tabular-nums text-ink-muted">
                     {formatInt(b.surfaceM2)} m²
                   </TableCell>
-                  <TableCell className="text-right font-medium tabular-nums text-zinc-100">
+                  <TableCell className="text-right font-medium tabular-nums text-ink">
                     {formatEur(b.capexTotal, true)}
                   </TableCell>
                   <TableCell>

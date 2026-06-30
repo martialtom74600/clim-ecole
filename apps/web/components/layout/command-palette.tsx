@@ -102,21 +102,21 @@ export function CommandPalette() {
         role="dialog"
         aria-modal="true"
         aria-label="Recherche"
-        className="panel relative w-full max-w-xl overflow-hidden shadow-2xl animate-fade-in sm:rounded-2xl rounded-t-2xl"
+        className="panel relative w-full max-w-xl overflow-hidden shadow-pop animate-fade-in sm:rounded-2xl rounded-t-2xl"
       >
-        <div className="flex items-center gap-3 border-b border-white/[0.08] px-5">
-          <Search className="h-5 w-5 shrink-0 text-zen-muted" />
+        <div className="flex items-center gap-3 border-b border-line px-5">
+          <Search className="h-5 w-5 shrink-0 text-ink-muted" />
           <input
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Rechercher une école, une commune, un territoire…"
-            className="flex-1 bg-transparent py-4 text-[15px] text-zinc-100 outline-none placeholder:text-zinc-600"
+            className="flex-1 bg-transparent py-4 text-[15px] text-ink outline-none placeholder:text-ink-subtle"
           />
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="rounded-md p-1.5 text-zinc-500 hover:text-zinc-300"
+            className="rounded-md p-1.5 text-ink-subtle hover:text-ink"
             aria-label="Fermer"
           >
             <X className="h-4 w-4" />
@@ -125,15 +125,15 @@ export function CommandPalette() {
 
         <div className="max-h-72 overflow-y-auto p-2">
           {query.length < 2 && (
-            <p className="px-4 py-8 text-center text-sm text-zinc-600">
+            <p className="px-4 py-8 text-center text-sm text-ink-muted">
               Tapez au moins 2 caractères · ↑↓ pour naviguer · Entrée pour ouvrir
             </p>
           )}
           {loading && query.length >= 2 && (
-            <p className="px-3 py-4 text-center text-xs text-zinc-500">Recherche…</p>
+            <p className="px-3 py-4 text-center text-xs text-ink-subtle">Recherche…</p>
           )}
           {!loading && query.length >= 2 && results.length === 0 && (
-            <p className="px-3 py-4 text-center text-xs text-zinc-500">Aucun résultat</p>
+            <p className="px-3 py-4 text-center text-xs text-ink-subtle">Aucun résultat</p>
           )}
           {results.map((r, i) => (
             <button
@@ -142,27 +142,27 @@ export function CommandPalette() {
               onClick={() => go(r.href)}
               className={cn(
                 'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors duration-150',
-                i === active ? 'bg-zen-teal/10 text-zinc-50' : 'text-zen-muted hover:bg-white/[0.04]',
+                i === active ? 'bg-ink/5 text-ink' : 'text-ink-muted hover:bg-surface-sunken',
               )}
             >
               {r.type === 'epci' ? (
-                <Building2 className="h-4 w-4 shrink-0 text-zen-teal-dim" />
+                <Building2 className="h-4 w-4 shrink-0 text-ink-soft" />
               ) : (
-                <GraduationCap className="h-4 w-4 shrink-0 text-zinc-500" />
+                <GraduationCap className="h-4 w-4 shrink-0 text-ink-subtle" />
               )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[15px] font-medium">{r.title}</p>
-                <p className="truncate text-sm text-zinc-600">{r.subtitle}</p>
+                <p className="truncate text-sm text-ink-muted">{r.subtitle}</p>
               </div>
               {r.meta && (
-                <span className="shrink-0 text-[10px] text-zinc-600">{r.meta}</span>
+                <span className="shrink-0 text-[10px] text-ink-subtle">{r.meta}</span>
               )}
             </button>
           ))}
         </div>
 
-        <div className="hidden border-t border-white/[0.08] px-4 py-2 text-[10px] text-zinc-600 sm:block">
-          <kbd className="rounded border border-white/10 bg-zen-bg px-1.5 py-0.5">⌘K</kbd>
+        <div className="hidden border-t border-line px-4 py-2 text-[10px] text-ink-muted sm:block">
+          <kbd className="rounded border border-line bg-surface-muted px-1.5 py-0.5">⌘K</kbd>
           {' '}pour ouvrir · Esc pour fermer
         </div>
       </div>
@@ -176,7 +176,7 @@ export function SearchTrigger() {
       <button
         type="button"
         onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
-        className="flex items-center gap-2 rounded-xl border border-white/[0.08] bg-zen-panel p-2.5 text-zen-muted transition-all duration-200 hover:border-white/[0.14] hover:text-zinc-200 sm:hidden"
+        className="flex items-center gap-2 rounded-xl border border-line bg-surface p-2.5 text-ink-muted transition-all duration-200 hover:border-line-strong hover:text-ink sm:hidden"
         aria-label="Rechercher"
       >
         <Search className="h-4 w-4" />
@@ -184,11 +184,11 @@ export function SearchTrigger() {
       <button
         type="button"
         onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
-        className="hidden items-center gap-2 rounded-xl border border-white/[0.08] bg-zen-panel px-4 py-2.5 text-sm text-zen-muted transition-all duration-200 hover:border-white/[0.14] hover:text-zinc-200 sm:flex"
+        className="hidden items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm text-ink-muted transition-all duration-200 hover:border-line-strong hover:text-ink sm:flex"
       >
         <Search className="h-3.5 w-3.5" />
         Rechercher
-        <kbd className="rounded border border-white/10 bg-zen-bg px-1 py-0.5 text-[10px]">⌘K</kbd>
+        <kbd className="rounded border border-line bg-surface-muted px-1 py-0.5 text-[10px]">⌘K</kbd>
       </button>
     </>
   );

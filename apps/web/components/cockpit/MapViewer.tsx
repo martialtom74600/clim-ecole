@@ -210,7 +210,7 @@ export default function MapViewer({ markers, initialEpci }: MapViewerProps) {
 
       {!selected && filtered.length > 0 && (
         <div className="absolute bottom-3 left-3 z-[1000] hidden panel px-4 py-3 backdrop-blur-md sm:block md:bottom-4 md:left-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-600">Légende DPE</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-subtle">Légende DPE</p>
           <div className="flex flex-wrap gap-3">
             {['F', 'E', 'D', 'G'].map((l) => (
               <div key={l} className="flex items-center gap-1.5 text-xs text-zen-muted">
@@ -219,7 +219,7 @@ export default function MapViewer({ markers, initialEpci }: MapViewerProps) {
               </div>
             ))}
           </div>
-          <p className="mt-2 text-xs text-zinc-600">Cliquez un point pour ouvrir la fiche</p>
+          <p className="mt-2 text-xs text-ink-subtle">Cliquez un point pour ouvrir la fiche</p>
         </div>
       )}
 
@@ -242,7 +242,7 @@ export default function MapViewer({ markers, initialEpci }: MapViewerProps) {
         <div
           ref={containerRef}
           className={cn(
-            'map-shell w-full rounded-2xl border border-white/[0.08] bg-zen-panel transition-[margin] duration-300',
+            'map-shell w-full rounded-2xl border border-line bg-zen-panel transition-[margin] duration-300',
             selected && 'lg:mr-[400px]',
           )}
         />

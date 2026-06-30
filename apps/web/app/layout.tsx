@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { IBM_Plex_Mono, Inter } from 'next/font/google';
+import { MotionConfig } from 'framer-motion';
 import { ToastProvider } from '@/components/ui/toast';
 import { AccountPreferencesProvider } from '@/hooks/use-account-preferences';
 import { AnalyticsScripts } from '@/components/analytics/analytics-scripts';
@@ -30,9 +31,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="font-sans antialiased">
         <AnalyticsScripts />
         <TestModeBanner />
-        <AccountPreferencesProvider>
-          <ToastProvider>{children}</ToastProvider>
-        </AccountPreferencesProvider>
+        <MotionConfig reducedMotion="user">
+          <AccountPreferencesProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </AccountPreferencesProvider>
+        </MotionConfig>
       </body>
     </html>
   );

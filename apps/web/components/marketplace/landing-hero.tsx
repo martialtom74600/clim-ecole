@@ -7,6 +7,7 @@ import { getCoverageBadge } from '@/lib/coverage';
 import { formatInt, formatEur } from '@/lib/format';
 import { ClientPersonasSection } from '@/components/brand/personas';
 import { RadarScoreBadge } from '@/components/marketplace/radar-score-badge';
+import { Spotlight } from '@/components/ui/spotlight';
 
 export async function LandingHero() {
   const [stats, packs, coverageBadge] = await Promise.all([
@@ -29,7 +30,7 @@ export async function LandingHero() {
             backgroundSize: '28px 28px',
           }}
         />
-        <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 md:py-28">
+        <div className="mx-auto max-w-7xl px-5 py-20 md:px-8 md:py-28">
           <p className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1 text-xs font-medium text-ink-muted shadow-sm">
             <Radar className="h-3.5 w-3.5" />
             Écoles primaires · Rénovation thermique · {coverageBadge}
@@ -64,7 +65,7 @@ export async function LandingHero() {
 
       {/* Pression réglementaire */}
       <section className="border-b border-line bg-ink text-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-10 md:flex-row md:items-center md:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-10 md:flex-row md:items-center md:px-8">
           <div className="flex items-center gap-3 md:w-1/3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
               <ShieldAlert className="h-5 w-5" />
@@ -84,8 +85,8 @@ export async function LandingHero() {
       </section>
 
       {/* Comment ça marche */}
-      <section className="border-b border-line py-16 md:py-24">
-        <div className="mx-auto max-w-6xl px-5 md:px-8">
+      <section className="border-b border-line py-16 md:py-20">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
           <h2 className="text-2xl font-semibold tracking-tight">Comment ça marche</h2>
           <p className="mt-2 max-w-2xl text-sm text-ink-muted">
             Nous regroupons les écoles par intercommunalité, estimons le budget de rénovation
@@ -107,8 +108,8 @@ export async function LandingHero() {
       </section>
 
       {/* Gratuit vs payant */}
-      <section className="border-b border-line bg-surface-sunken py-16 md:py-24">
-        <div className="mx-auto max-w-6xl px-5 md:px-8">
+      <section className="border-b border-line bg-surface-sunken py-16 md:py-20">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
           <h2 className="text-2xl font-semibold tracking-tight">Gratuit vs débloqué</h2>
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             <div className="card p-6">
@@ -148,7 +149,7 @@ export async function LandingHero() {
 
       {/* Chiffres */}
       <section className="border-b border-line py-16">
-        <div className="mx-auto max-w-6xl px-5 md:px-8">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
           <h2 className="label-caps">Périmètre actuel · données consolidées</h2>
           <dl className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <StatBlock label="Écoles recensées" hint="Primaires très énergivores (DPE F ou G)" value={formatInt(stats.totalBatiments)} />
@@ -163,8 +164,8 @@ export async function LandingHero() {
 
       {/* Exemples */}
       {topDeals.length > 0 && (
-        <section className="border-b border-line py-16 md:py-24">
-          <div className="mx-auto max-w-6xl px-5 md:px-8">
+        <section className="border-b border-line py-16 md:py-20">
+          <div className="mx-auto max-w-7xl px-5 md:px-8">
             <h2 className="text-2xl font-semibold tracking-tight">Exemples de {COPY.qualified.toLowerCase()}s</h2>
             <p className="mt-2 max-w-2xl text-sm text-ink-muted">
               Aperçu anonymisé — tranches et priorité visibles. Montants exacts et contacts après achat.
@@ -172,7 +173,7 @@ export async function LandingHero() {
 
             <div className="mt-8 grid gap-4 md:grid-cols-3">
               {topDeals.map((deal) => (
-                <Link key={deal.packId} href={`/explorer/${deal.packId}`} className="card panel-hover p-5">
+                <Spotlight key={deal.packId} href={`/explorer/${deal.packId}`} className="card panel-hover block p-5">
                   <div className="flex flex-wrap items-center gap-2">
                     <RadarScoreBadge score={deal.radarScore} grade={deal.radarGrade} size="sm" previewOnly />
                     {deal.isHot && (
@@ -192,7 +193,7 @@ export async function LandingHero() {
                     <DealRow label={COPY.subventions} value={deal.subventionLevelLabel} />
                     <DealRow label="Écoles concernées" value={String(deal.batimentCount)} mono />
                   </dl>
-                </Link>
+                </Spotlight>
               ))}
             </div>
 
@@ -207,8 +208,8 @@ export async function LandingHero() {
       <ClientPersonasSection />
 
       {/* CTA final */}
-      <section className="py-16 md:py-24">
-        <div className="mx-auto max-w-6xl px-5 md:px-8">
+      <section className="py-16 md:py-20">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
           <div className="relative overflow-hidden rounded-2xl border border-line bg-ink p-8 text-center text-white shadow-overlay md:p-14">
             <div
               className="pointer-events-none absolute inset-0 opacity-[0.15]"

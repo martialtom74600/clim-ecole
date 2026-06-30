@@ -49,7 +49,7 @@ export function Dialog({ open, onClose, children, className, labelledBy }: Dialo
         aria-labelledby={labelledBy}
         tabIndex={-1}
         className={cn(
-          'panel relative w-full max-w-md shadow-2xl animate-fade-in sm:rounded-2xl',
+          'panel relative w-full max-w-md shadow-pop animate-fade-in sm:rounded-2xl',
           'max-h-[90vh] overflow-y-auto rounded-t-2xl sm:max-h-none',
           className,
         )}

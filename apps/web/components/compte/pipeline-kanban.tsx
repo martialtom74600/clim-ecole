@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { TRANSITION } from '@/lib/motion';
 import { formatEur } from '@/lib/format';
 import {
   PACK_PIPELINE_COLUMNS,
@@ -114,17 +116,20 @@ export function PipelineKanbanBoard() {
       <PipelineKpiBar stats={stats} />
 
       {error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <p className="rounded-lg border border-heat-border bg-heat-soft px-4 py-3 text-sm text-heat-text">
           {error}
         </p>
       )}
 
       <div className="grid gap-4 xl:grid-cols-5">
-        {PACK_PIPELINE_COLUMNS.map((column) => {
+        {PACK_PIPELINE_COLUMNS.map((column, i) => {
           const cards = data.territories.filter((t) => t.pipelineStatus === column.id);
           return (
-            <div
+            <motion.div
               key={column.id}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...TRANSITION.base, delay: i * 0.05 }}
               className={cn('rounded-xl border-2 p-3', column.headerClass)}
             >
               <div className="mb-3 flex items-center justify-between gap-2">
@@ -138,9 +143,13 @@ export function PipelineKanbanBoard() {
               </div>
 
               <div className="space-y-2">
-                {cards.map((card) => (
-                  <article
+                {cards.map((card, ci) => (
+                  <motion.article
                     key={card.packId}
+                    layout
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ ...TRANSITION.base, delay: Math.min(ci, 6) * 0.03 }}
                     className="rounded-lg border border-radar-border bg-white p-3 shadow-sm"
                   >
                     <div className="flex flex-wrap items-start gap-1.5">
@@ -221,14 +230,14 @@ export function PipelineKanbanBoard() {
                         </Link>
                       </div>
                     </div>
-                  </article>
+                  </motion.article>
                 ))}
 
                 {cards.length === 0 && (
                   <p className="py-6 text-center text-[11px] text-radar-subtle">Vide</p>
                 )}
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>

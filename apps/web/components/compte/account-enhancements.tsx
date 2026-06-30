@@ -55,9 +55,9 @@ function StatCard({
 }) {
   return (
     <div className="card p-4">
-      <p className="text-[10px] font-medium uppercase tracking-wide text-radar-subtle">{label}</p>
-      <p className={`mt-1 text-xl font-bold tabular-nums ${accent ? 'text-emerald-600' : ''}`}>{value}</p>
-      {hint && <p className="mt-0.5 text-[10px] text-radar-muted">{hint}</p>}
+      <p className="text-[10px] font-medium uppercase tracking-wide text-ink-subtle">{label}</p>
+      <p className={`mt-1 text-xl font-bold tabular-nums ${accent ? 'text-positive-text' : 'text-ink'}`}>{value}</p>
+      {hint && <p className="mt-0.5 text-[10px] text-ink-muted">{hint}</p>}
     </div>
   );
 }

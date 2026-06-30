@@ -42,27 +42,27 @@ export function PaywallOverlay({
       </div>
 
       <div className="absolute inset-0 flex items-center justify-center bg-white/75 p-4 backdrop-blur-md">
-        <div className="w-full max-w-lg rounded-xl border border-slate-200/80 bg-white/90 p-8 text-center shadow-lg backdrop-blur-sm md:p-10">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl border border-slate-200 bg-slate-50">
-            <Lock className="h-6 w-6 text-slate-700" strokeWidth={1.5} />
+        <div className="w-full max-w-lg rounded-xl border border-line bg-white/90 p-8 text-center shadow-overlay backdrop-blur-sm md:p-10">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl border border-line bg-surface-sunken">
+            <Lock className="h-6 w-6 text-ink-soft" strokeWidth={1.5} />
           </div>
 
           {capex && (
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-subtle">
               {COPY.budgetTravaux} · {capex}
             </p>
           )}
 
           {typeof slotsRemaining === 'number' && !soldOut && slotsRemaining <= 2 && (
-            <p className="mb-3 text-sm font-medium text-amber-700">
+            <p className="mb-3 text-sm font-medium text-warning-text">
               Plus que {slotsRemaining} achat{slotsRemaining > 1 ? 's' : ''} à l&apos;unité sur ce territoire
             </p>
           )}
 
-          <h3 className="text-xl font-semibold tracking-tight text-slate-900 md:text-2xl">
+          <h3 className="text-xl font-semibold tracking-tight text-ink md:text-2xl">
             {soldOut ? COPY.soldOut : title}
           </h3>
-          <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-slate-600">
+          <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-ink-muted">
             {soldOut
               ? `Limite d'achats à l'unité atteinte. L'${COPY.subscription.toLowerCase()} débloque tous les territoires.`
               : desc}
@@ -90,7 +90,7 @@ export function PaywallOverlay({
             </CheckoutButton>
           </div>
 
-          <p className="mt-6 text-xs leading-relaxed text-slate-400">
+          <p className="mt-6 text-xs leading-relaxed text-ink-subtle">
             {COPY.estimatesNote}
           </p>
         </div>

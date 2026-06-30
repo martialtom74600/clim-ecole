@@ -17,7 +17,7 @@ export default async function CockpitLayout({ children }: { children: React.Reac
       <div className="flex min-h-screen flex-col pb-16 md:pb-0 md:pl-14 lg:pl-16">
         <Suspense
           fallback={
-            <header className="sticky top-0 z-30 h-14 border-b border-white/[0.08] bg-zen-bg/90 backdrop-blur-xl" />
+            <header className="sticky top-0 z-30 h-14 border-b border-line bg-zen-bg/90 backdrop-blur-xl" />
           }
         >
           <AppChrome />

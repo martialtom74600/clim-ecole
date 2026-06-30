@@ -1,10 +1,11 @@
 import { cn } from '@/lib/utils';
 import type { ClosingLevel } from '@/lib/types';
+import { dpeBgClass, dpeTextClass, dpeLetter } from '@/lib/dpe-colors';
 
 const STYLES: Record<ClosingLevel, string> = {
   chaud: 'bg-zen-teal/15 text-zen-teal',
-  tiede: 'bg-amber-500/15 text-amber-300',
-  froid: 'bg-sky-500/15 text-sky-300',
+  tiede: 'bg-warning-soft text-warning-text',
+  froid: 'bg-info-soft text-info-text',
 };
 
 export function TemperatureBadge({
@@ -16,7 +17,7 @@ export function TemperatureBadge({
   level?: ClosingLevel;
   className?: string;
 }) {
-  const style = level ? STYLES[level] : 'bg-white/5 text-zen-muted';
+  const style = level ? STYLES[level] : 'bg-surface-muted text-zen-muted';
 
   return (
     <span
@@ -45,7 +46,7 @@ export function StatutProjetBadge({ statut }: { statut: string }) {
   if (statut === 'SOUS_SEUIL_A_CREUSER') {
     return (
       <span
-        className="rounded-lg bg-amber-500/15 px-2.5 py-1 text-xs font-semibold text-amber-300"
+        className="rounded-lg bg-warning-soft px-2.5 py-1 text-xs font-semibold text-warning-text"
         title="Il faut peut-être regrouper plus d’écoles"
       >
         À grouper
@@ -53,29 +54,21 @@ export function StatutProjetBadge({ statut }: { statut: string }) {
     );
   }
   return (
-    <span className="rounded-lg bg-white/5 px-2.5 py-1 text-xs font-medium text-zen-muted">
+    <span className="rounded-lg bg-surface-muted px-2.5 py-1 text-xs font-medium text-zen-muted">
       {statut.replace(/_/g, ' ')}
     </span>
   );
 }
 
 export function DpeBadge({ classe }: { classe: string }) {
-  const letter = classe?.charAt(0)?.toUpperCase() ?? '?';
-  const colors: Record<string, string> = {
-    A: 'text-emerald-400',
-    B: 'text-lime-400',
-    C: 'text-yellow-400',
-    D: 'text-amber-400',
-    E: 'text-orange-400',
-    F: 'text-red-400',
-    G: 'text-rose-400',
-  };
+  const letter = dpeLetter(classe);
 
   return (
     <span
       className={cn(
-        'inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.08] bg-zen-bg text-sm font-bold',
-        colors[letter] ?? 'text-zen-muted',
+        'inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line text-sm font-bold',
+        dpeBgClass(classe),
+        dpeTextClass(classe),
       )}
     >
       {letter}

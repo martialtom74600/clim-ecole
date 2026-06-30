@@ -103,7 +103,7 @@ export function KanbanBoard({ initialCards }: { initialCards: PipelineCard[] }) 
             <div
               key={col.id}
               className={cn(
-                'flex w-[min(85vw,20rem)] shrink-0 snap-start flex-col rounded-2xl border border-white/[0.08] bg-zen-panel/80 border-t-[3px] md:w-80',
+                'flex w-[min(85vw,20rem)] shrink-0 snap-start flex-col rounded-2xl border border-line bg-zen-panel/80 border-t-[3px] md:w-80',
                 col.color,
               )}
               onDragOver={(e) => e.preventDefault()}
@@ -114,11 +114,11 @@ export function KanbanBoard({ initialCards }: { initialCards: PipelineCard[] }) 
                 setDragging(null);
               }}
             >
-              <header className="border-b border-white/[0.08] px-4 py-4 md:px-5">
+              <header className="border-b border-line px-4 py-4 md:px-5">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h3 className="text-[15px] font-semibold text-zinc-200">{col.label}</h3>
-                    <p className="mt-1 text-sm leading-snug text-zinc-600">{col.hint}</p>
+                    <h3 className="text-[15px] font-semibold text-ink">{col.label}</h3>
+                    <p className="mt-1 text-sm leading-snug text-ink-muted">{col.hint}</p>
                   </div>
                   <span className="rounded-lg bg-zen-elevated px-2.5 py-1 text-sm tabular-nums text-zen-muted">
                     {colCards.length}
@@ -137,16 +137,16 @@ export function KanbanBoard({ initialCards }: { initialCards: PipelineCard[] }) 
                     }}
                     onDragEnd={() => setDragging(null)}
                     className={cn(
-                      'group rounded-xl border border-white/[0.08] bg-zen-elevated p-4 transition-all duration-200 hover:border-white/[0.14] hover:bg-zen-hover',
+                      'group rounded-xl border border-line bg-zen-elevated p-4 transition-all duration-200 hover:border-line-strong hover:bg-zen-hover',
                       dragging === card.id && 'opacity-50',
                       saving === card.id && 'opacity-70',
                     )}
                   >
                     <div className="mb-3 flex items-start gap-2">
-                      <GripVertical className="mt-1 hidden h-4 w-4 shrink-0 cursor-grab text-zinc-700 active:cursor-grabbing md:block" />
+                      <GripVertical className="mt-1 hidden h-4 w-4 shrink-0 cursor-grab text-ink-subtle active:cursor-grabbing md:block" />
                       <div className="min-w-0 flex-1">
                         <Link href={card.href} className="block">
-                          <p className="truncate text-[15px] font-medium text-zinc-100 group-hover:text-zen-teal">
+                          <p className="truncate text-[15px] font-medium text-ink group-hover:text-zen-teal">
                             {card.title}
                           </p>
                           <p className="mt-0.5 truncate text-sm text-zen-muted">{card.subtitle}</p>
@@ -155,7 +155,7 @@ export function KanbanBoard({ initialCards }: { initialCards: PipelineCard[] }) 
                       <button
                         type="button"
                         onClick={() => setEditing(card)}
-                        className="touch-visible shrink-0 rounded-lg p-1.5 text-zinc-600 opacity-70 transition-all hover:bg-white/5 hover:text-zen-teal md:opacity-0 md:group-hover:opacity-100"
+                        className="touch-visible shrink-0 rounded-lg p-1.5 text-ink-muted opacity-70 transition-all hover:bg-surface-sunken hover:text-zen-teal md:opacity-0 md:group-hover:opacity-100"
                         title="Note et relance"
                         aria-label="Modifier note et relance"
                       >
@@ -164,14 +164,14 @@ export function KanbanBoard({ initialCards }: { initialCards: PipelineCard[] }) 
                       {card.type === 'epci' ? (
                         <Building2 className="h-4 w-4 shrink-0 text-zen-teal/70" />
                       ) : (
-                        <GraduationCap className="h-4 w-4 shrink-0 text-zinc-600" />
+                        <GraduationCap className="h-4 w-4 shrink-0 text-ink-subtle" />
                       )}
                     </div>
 
                     {(card.note || card.followUpDate) && (
-                      <div className="mb-3 space-y-1.5 border-t border-white/[0.06] pt-3">
+                      <div className="mb-3 space-y-1.5 border-t border-line pt-3">
                         {card.note && (
-                          <p className="line-clamp-2 text-xs leading-relaxed text-zinc-500">
+                          <p className="line-clamp-2 text-xs leading-relaxed text-ink-muted">
                             {card.note}
                           </p>
                         )}
@@ -180,7 +180,7 @@ export function KanbanBoard({ initialCards }: { initialCards: PipelineCard[] }) 
                     )}
 
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-base font-semibold tabular-nums text-zinc-100">
+                      <p className="text-base font-semibold tabular-nums text-ink">
                         {formatEur(card.capex, true)}
                       </p>
                       <TemperatureBadge
@@ -191,12 +191,12 @@ export function KanbanBoard({ initialCards }: { initialCards: PipelineCard[] }) 
                     </div>
 
                     <label className="mt-3 flex items-center gap-2 md:hidden">
-                      <span className="text-xs text-zinc-600">Étape</span>
+                      <span className="text-xs text-ink-muted">Étape</span>
                       <div className="relative min-w-0 flex-1">
                         <select
                           value={card.stage}
                           onChange={(e) => moveCard(card.id, e.target.value as PipelineStage)}
-                          className="w-full appearance-none rounded-lg border border-white/[0.08] bg-zen-bg py-1.5 pl-2 pr-7 text-xs text-zinc-300 outline-none focus:border-zen-teal/40"
+                          className="w-full appearance-none rounded-lg border border-line bg-zen-bg py-1.5 pl-2 pr-7 text-xs text-ink-soft outline-none focus:border-zen-teal/40"
                         >
                           {PIPELINE_STAGES.map((s) => (
                             <option key={s.id} value={s.id}>
@@ -204,7 +204,7 @@ export function KanbanBoard({ initialCards }: { initialCards: PipelineCard[] }) 
                             </option>
                           ))}
                         </select>
-                        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-zinc-600" />
+                        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-ink-subtle" />
                       </div>
                     </label>
                   </div>

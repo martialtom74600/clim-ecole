@@ -4,6 +4,8 @@ import { formatEur } from '@/lib/format';
 import { narrativeRac } from '@/lib/narrative-copy';
 import { DOSSIER_BLOCK } from '@/lib/dossier-ui';
 import { GlossaryTerm } from '@/components/ui/glossary-term';
+import { AnimatedNumber } from '@/components/ui/animated-number';
+import { RangeSlider } from '@/components/ui/range-slider';
 
 export function RacSimulator({
   capex,
@@ -23,30 +25,33 @@ export function RacSimulator({
   return (
     <div className={DOSSIER_BLOCK}>
       <div className="flex items-center justify-between gap-4">
-        <span className="text-sm text-slate-600">
+        <span className="text-sm text-ink-muted">
           <GlossaryTerm term="Subventions">Aides publiques</GlossaryTerm>
         </span>
-        <span className="font-mono text-lg font-semibold tabular-nums text-slate-900 transition-all duration-300">
+        <span className="font-mono text-lg font-semibold tabular-nums text-ink transition-all duration-300">
           {subRatePct} %
         </span>
       </div>
-      <input
-        type="range"
+      <RangeSlider
         min={10}
         max={70}
         value={subRatePct}
-        onChange={(e) => onSubRateChange(Number(e.target.value))}
-        className="mt-3 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-slate-900"
-        aria-label="Taux d'aides publiques"
+        onChange={onSubRateChange}
+        ariaLabel="Taux d'aides publiques"
+        className="mt-3"
       />
 
-      <div className="mt-5 space-y-2 border-t border-slate-200 pt-5 text-sm">
-        <p className="text-slate-600">
+      <div className="mt-5 space-y-2 border-t border-line pt-5 text-sm">
+        <p className="text-ink-muted">
           Aides estimées :{' '}
-          <strong className="font-semibold text-slate-900">{formatEur(subventions, true)}</strong>
+          <AnimatedNumber
+            value={subventions}
+            format={(v) => formatEur(v, true)}
+            className="font-semibold text-ink"
+          />
           {' '}sur {formatEur(capex, true)}
         </p>
-        <p className="font-medium text-amber-800 transition-all duration-300">
+        <p className="font-medium text-warning-text transition-all duration-300">
           {narrativeRac(rac, subventionRatio)}
         </p>
       </div>

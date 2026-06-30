@@ -35,7 +35,7 @@ export function PipelineCardEditor({ card, onClose, onSave }: PipelineCardEditor
       <div className="p-6">
         <div className="mb-5 flex items-start justify-between gap-3">
           <div>
-            <h2 id="pipeline-editor-title" className="text-lg font-semibold text-zinc-50">
+            <h2 id="pipeline-editor-title" className="text-lg font-semibold text-ink">
               {card.title}
             </h2>
             <p className="text-sm text-zen-muted">{card.subtitle}</p>
@@ -43,7 +43,7 @@ export function PipelineCardEditor({ card, onClose, onSave }: PipelineCardEditor
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1 text-zinc-500 hover:bg-white/5 hover:text-zinc-300"
+            className="rounded-lg p-1 text-ink-muted hover:bg-surface-sunken hover:text-ink"
             aria-label="Fermer"
           >
             <X className="h-5 w-5" />
@@ -51,7 +51,7 @@ export function PipelineCardEditor({ card, onClose, onSave }: PipelineCardEditor
         </div>
 
         <label className="mb-4 block">
-          <span className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-300">
+          <span className="mb-2 flex items-center gap-2 text-sm font-medium text-ink-soft">
             <StickyNote className="h-4 w-4 text-zen-teal" />
             Note de suivi
           </span>
@@ -65,7 +65,7 @@ export function PipelineCardEditor({ card, onClose, onSave }: PipelineCardEditor
         </label>
 
         <label className="mb-6 block">
-          <span className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-300">
+          <span className="mb-2 flex items-center gap-2 text-sm font-medium text-ink-soft">
             <Calendar className="h-4 w-4 text-zen-teal" />
             Date de relance
           </span>
@@ -81,7 +81,7 @@ export function PipelineCardEditor({ card, onClose, onSave }: PipelineCardEditor
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-xl border border-white/[0.08] py-2.5 text-sm text-zen-muted transition-colors hover:text-zinc-200"
+            className="flex-1 rounded-xl border border-line py-2.5 text-sm text-zen-muted transition-colors hover:text-ink"
           >
             Annuler
           </button>
@@ -128,9 +128,9 @@ export function FollowUpBadge({
     <span
       className={cn(
         'inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-medium',
-        overdue && 'bg-red-500/15 text-red-400',
-        isToday && !overdue && 'bg-amber-500/15 text-amber-300',
-        !overdue && !isToday && 'bg-white/5 text-zen-muted',
+        overdue && 'bg-heat-soft text-heat-text',
+        isToday && !overdue && 'bg-warning-soft text-warning-text',
+        !overdue && !isToday && 'bg-surface-muted text-zen-muted',
         className,
       )}
     >

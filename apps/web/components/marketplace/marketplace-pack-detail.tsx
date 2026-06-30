@@ -12,11 +12,9 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
     communesLabel,
     nomEpci,
     mgpe,
-    resteAChargeAfterSubsTotal,
     dataLoadedAt,
   } = data;
 
-  const racTotal = resteAChargeAfterSubsTotal ?? pack.packCapexTotal - pack.subventionsTotal;
   const soldOut = pack.soldOut && !unlocked;
 
   return (
@@ -25,7 +23,6 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
         pack={pack}
         buildings={buildings}
         unlocked={unlocked}
-        racTotal={racTotal}
         communesLabel={communesLabel}
         nomEpci={nomEpci}
         mgpe={mgpe}
@@ -39,8 +36,8 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
 
 function DossierAppLoading() {
   return (
-    <div className="flex min-h-[50vh] items-center justify-center bg-slate-50/50">
-      <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+    <div className="flex min-h-[50vh] items-center justify-center bg-surface-sunken">
+      <Loader2 className="h-6 w-6 animate-spin text-ink-subtle" />
     </div>
   );
 }

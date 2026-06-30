@@ -36,10 +36,10 @@ export function AppChrome() {
   return (
     <>
       <CommandPalette />
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-white/[0.08] bg-zen-bg/90 px-4 backdrop-blur-xl md:px-6 lg:px-8">
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-line bg-surface/90 px-4 backdrop-blur-xl md:px-6 lg:px-8">
         <div className="min-w-0 flex-1 md:hidden">
           {!isAdminHome && (
-            <p className="truncate text-sm font-medium text-zinc-400">
+            <p className="truncate text-sm font-medium text-ink-muted">
               {pathname.startsWith('/admin/epci/') ? 'Fiche territoire' : 'Cockpit admin'}
             </p>
           )}
@@ -48,7 +48,7 @@ export function AppChrome() {
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <SearchTrigger />
           <div
-            className="flex max-w-[min(100%,280px)] items-center gap-2 rounded-xl border border-white/[0.08] bg-zen-panel px-2.5 py-2 sm:max-w-none sm:px-3.5"
+            className="flex max-w-[min(100%,280px)] items-center gap-2 rounded-xl border border-line bg-surface px-2.5 py-2 sm:max-w-none sm:px-3.5"
             title={metaError ? 'Impossible de lire le fichier CSV' : undefined}
           >
             <span
@@ -56,15 +56,15 @@ export function AppChrome() {
             >
               <span
                 className={`relative inline-flex h-2.5 w-2.5 rounded-full ${
-                  metaError ? 'bg-zinc-600' : 'bg-emerald-400'
+                  metaError ? 'bg-ink-subtle' : 'bg-positive'
                 }`}
               />
             </span>
-            <span className="hidden text-sm text-zen-muted sm:inline">
+            <span className="hidden text-sm text-ink-muted sm:inline">
               {metaError ? 'CSV indisponible' : 'CSV à jour'}
             </span>
             {meta && !metaError && (
-              <span className="truncate tabular-nums text-xs text-zinc-600 sm:text-sm">
+              <span className="truncate tabular-nums text-xs text-ink-muted sm:text-sm">
                 {meta.rowCount} lignes · {formatSyncTime(meta.fileMtimeMs)}
               </span>
             )}

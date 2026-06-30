@@ -53,7 +53,7 @@ export function PackExportActions({
       <div className="flex flex-wrap gap-1.5">
         {EXPORTS.map(({ href, icon: Icon, shortLabel, label, download }) => {
           const className =
-            'inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50';
+            'inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1.5 text-xs font-medium text-ink-soft shadow-sm transition-colors hover:bg-surface-muted';
           const content = (
             <>
               <Icon className="h-3.5 w-3.5" />

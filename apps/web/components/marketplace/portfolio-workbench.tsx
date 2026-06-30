@@ -231,8 +231,8 @@ function PortfolioFigure({
       <p
         className={cn(
           'mt-1 font-mono text-2xl font-semibold tabular-nums',
-          tone === 'positive' && 'text-emerald-300',
-          tone === 'warning' && 'text-amber-300',
+          tone === 'positive' && 'text-positive',
+          tone === 'warning' && 'text-warning',
           !tone && 'text-white',
         )}
       >

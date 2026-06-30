@@ -15,7 +15,7 @@ export function ActiveTenderBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-md border border-amber-400/80 bg-amber-50 font-semibold text-amber-900',
+        'inline-flex items-center gap-1 rounded-md border border-warning-border bg-warning-soft font-semibold text-warning-text',
         'animate-pulse',
         size === 'sm' ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-1 text-xs',
         className,

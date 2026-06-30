@@ -20,7 +20,7 @@ export function EpciDetailKpis({
       {items.map(({ label, value, accent }) => (
         <Card
           key={label}
-          className="transition-all duration-200 hover:border-white/[0.12] hover:bg-zen-elevated"
+          className="transition-all duration-200 hover:border-line-strong hover:bg-zen-elevated"
         >
           <CardHeader>
             <CardTitle>
@@ -30,7 +30,7 @@ export function EpciDetailKpis({
           <CardContent>
             <p
               className={`text-2xl font-semibold tabular-nums tracking-tight ${
-                accent ? 'text-zen-teal-dim' : 'text-zinc-50'
+                accent ? 'text-zen-teal-dim' : 'text-ink'
               }`}
             >
               {value}

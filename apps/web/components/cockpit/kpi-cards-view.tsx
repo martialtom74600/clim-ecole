@@ -45,20 +45,20 @@ export function KpiCardsView({ kpis }: { kpis: DashboardKpis }) {
   return (
     <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
       {cards.map(({ title, tip, value, sub, icon: Icon, accent }) => (
-        <Card key={title} className={accent ? 'border-zen-teal/20 shadow-glow' : undefined}>
+        <Card key={title} className={accent ? 'border-zen-teal/20' : undefined}>
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle>
               <InfoTip label={tip}>{title}</InfoTip>
             </CardTitle>
             <Icon
-              className={`h-5 w-5 ${accent ? 'text-zen-teal' : 'text-zinc-600'}`}
+              className={`h-5 w-5 ${accent ? 'text-zen-teal' : 'text-ink-subtle'}`}
               strokeWidth={1.75}
             />
           </CardHeader>
           <CardContent>
             <p
               className={`text-3xl font-semibold tabular-nums tracking-tight ${
-                accent ? 'text-zen-teal' : 'text-zinc-50'
+                accent ? 'text-zen-teal' : 'text-ink'
               }`}
             >
               {value}

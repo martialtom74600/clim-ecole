@@ -5,6 +5,7 @@ import { Mail } from 'lucide-react';
 import type { MarketplaceBuilding } from '@/lib/types';
 import type { ClientPersona } from '@/lib/brand';
 import { buildMairieEmail } from '@/lib/mairie-email';
+import { useToast } from '@/components/ui/toast';
 
 export function MairieEmailButton({
   building,
@@ -64,6 +65,7 @@ export function BlacklistBuildingButton({
 export function DossierShareButton({ packId }: { packId: string }) {
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const toast = useToast();
 
   async function createShare() {
     setLoading(true);
@@ -73,7 +75,12 @@ export function DossierShareButton({ packId }: { packId: string }) {
       if (data.url) {
         setUrl(data.url);
         await navigator.clipboard.writeText(data.url);
+        toast('Lien de partage copié — valable 7 jours', 'success');
+      } else {
+        toast(data.error ?? 'Impossible de générer le lien de partage', 'error');
       }
+    } catch {
+      toast('Impossible de générer le lien de partage', 'error');
     } finally {
       setLoading(false);
     }

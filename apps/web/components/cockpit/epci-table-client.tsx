@@ -60,7 +60,7 @@ export function EpciTableClient({ rows }: { rows: EpciSummaryRow[] }) {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-600" />
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -82,7 +82,7 @@ export function EpciTableClient({ rows }: { rows: EpciSummaryRow[] }) {
         </div>
       </div>
 
-      <p className="text-sm tabular-nums text-zinc-600">
+      <p className="text-sm tabular-nums text-ink-muted">
         {filtered.length} territoire{filtered.length > 1 ? 's' : ''} sur {rows.length}
       </p>
 
@@ -107,12 +107,12 @@ export function EpciTableClient({ rows }: { rows: EpciSummaryRow[] }) {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-medium text-zinc-100">{row.displayName}</p>
+                    <p className="font-medium text-ink">{row.displayName}</p>
                     {row.communesLabel && (
-                      <p className="mt-0.5 text-xs text-zinc-500">{row.communesLabel}</p>
+                      <p className="mt-0.5 text-xs text-ink-muted">{row.communesLabel}</p>
                     )}
                   </div>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-zinc-600" />
+                  <ChevronRight className="h-4 w-4 shrink-0 text-ink-subtle" />
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <TemperatureBadge label={row.temperatureGlobale} level={row.temperatureLevel} />
@@ -120,14 +120,14 @@ export function EpciTableClient({ rows }: { rows: EpciSummaryRow[] }) {
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <p className="text-xs text-zinc-600">Budget travaux</p>
-                    <p className="font-semibold tabular-nums text-zinc-100">
+                    <p className="text-xs text-ink-muted">Budget travaux</p>
+                    <p className="font-semibold tabular-nums text-ink">
                       {formatEur(row.packCapexTotal, true)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-zinc-600">Écoles</p>
-                    <p className="font-semibold tabular-nums text-zinc-100">
+                    <p className="text-xs text-ink-muted">Écoles</p>
+                    <p className="font-semibold tabular-nums text-ink">
                       {formatInt(row.batimentCount)}
                     </p>
                   </div>
@@ -136,7 +136,7 @@ export function EpciTableClient({ rows }: { rows: EpciSummaryRow[] }) {
             ))}
           </div>
 
-          <Card className="hidden overflow-hidden transition-all duration-200 hover:border-white/[0.12] md:block">
+          <Card className="hidden overflow-hidden transition-all duration-200 hover:border-line-strong md:block">
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
@@ -181,20 +181,20 @@ export function EpciTableClient({ rows }: { rows: EpciSummaryRow[] }) {
                     onClick={() => router.push(`/admin/epci/${row.codeEpci}`)}
                   >
                     <TableCell>
-                      <p className="font-medium text-zinc-100 transition-colors group-hover:text-zen-teal-dim">
+                      <p className="font-medium text-ink transition-colors group-hover:text-zen-teal-dim">
                         {row.displayName}
                       </p>
                       {row.communesLabel && (
-                        <p className="mt-0.5 text-[11px] text-zinc-500">{row.communesLabel}</p>
+                        <p className="mt-0.5 text-[11px] text-ink-muted">{row.communesLabel}</p>
                       )}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {formatInt(row.batimentCount)}
                     </TableCell>
-                    <TableCell className="text-right font-medium tabular-nums text-zinc-100">
+                    <TableCell className="text-right font-medium tabular-nums text-ink">
                       {formatEur(row.packCapexTotal, true)}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums text-zinc-400">
+                    <TableCell className="text-right tabular-nums text-ink-muted">
                       {formatEur(row.gainNetMairieTotal, true)}/an
                     </TableCell>
                     <TableCell>
@@ -207,7 +207,7 @@ export function EpciTableClient({ rows }: { rows: EpciSummaryRow[] }) {
                       <StatutProjetBadge statut={row.statutProjetEpci} />
                     </TableCell>
                     <TableCell>
-                      <ChevronRight className="h-4 w-4 text-zinc-600 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-zen-teal-dim" />
+                      <ChevronRight className="h-4 w-4 text-ink-subtle transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-zen-teal-dim" />
                     </TableCell>
                   </TableRow>
                 ))}

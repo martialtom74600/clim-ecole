@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import type { MarketplaceMgpeSummary, MarketplacePack } from '@/lib/types';
 import type { ClientPersona } from '@/lib/brand';
 import type { TerritoryFreePreview } from '@/lib/freemium';
@@ -17,12 +18,16 @@ import { computeFinanceSimulation } from '@/lib/finance-simulator';
 import {
   DOSSIER_CONTENT,
   DOSSIER_KPI,
+  DOSSIER_KPI_LABEL,
   DOSSIER_SECTION,
   DOSSIER_SECTION_DESC,
   DOSSIER_SECTION_TITLE,
   DOSSIER_STACK,
 } from '@/lib/dossier-ui';
 import { GlossaryTerm } from '@/components/ui/glossary-term';
+import { AnimatedNumber } from '@/components/ui/animated-number';
+import { Disclosure } from '@/components/ui/disclosure';
+import { EASE } from '@/lib/motion';
 import { DossierFundingWaterfall } from '@/components/marketplace/dossier-funding-waterfall';
 import { RacSimulator } from '@/components/marketplace/rac-simulator';
 import { DossierPitchCard } from '@/components/marketplace/dossier-pitch-card';
@@ -69,6 +74,19 @@ export function DossierTabFinance({
   const [dureeAns, setDureeAns] = useState(mgpe?.dureeContratAns || 15);
   const [loyerFactor, setLoyerFactor] = useState(1);
 
+  /* Dissolution one-time du paywall : la 1re fois qu'on voit le dossier débloqué,
+     les chiffres émergent du flou pendant qu'ils comptent jusqu'à leur valeur. */
+  const reduceMotion = useReducedMotion();
+  const [celebrate, setCelebrate] = useState(false);
+  useEffect(() => {
+    if (!unlocked || reduceMotion) return;
+    const key = `clim-finance-reveal-${pack.packId}`;
+    if (!localStorage.getItem(key)) {
+      setCelebrate(true);
+      localStorage.setItem(key, '1');
+    }
+  }, [unlocked, reduceMotion, pack.packId]);
+
   const sim = useMemo(
     () =>
       computeFinanceSimulation({
@@ -106,10 +124,16 @@ export function DossierTabFinance({
   const racLabel = unlocked ? formatEur(sim.rac, true) : '••••• €';
 
   const heroStrip = (
-    <div className="grid divide-y border border-slate-200 md:grid-cols-3 md:divide-x md:divide-y-0">
+    <div className="grid divide-y rounded-xl border border-line bg-surface-sunken shadow-card md:grid-cols-3 md:divide-x md:divide-y-0">
       <KpiCell
         label="Budget travaux estimé"
-        value={budgetLabel}
+        value={
+          unlocked ? (
+            <AnimatedNumber value={packCapexTotal} format={(v) => formatEur(v, true)} />
+          ) : (
+            budgetLabel
+          )
+        }
         hint={
           unlocked
             ? narrativeBudget(packCapexTotal, pack.batimentCount)
@@ -118,7 +142,13 @@ export function DossierTabFinance({
       />
       <KpiCell
         label="Reste à financer (pour la mairie)"
-        value={racLabel}
+        value={
+          unlocked ? (
+            <AnimatedNumber value={sim.rac} format={(v) => formatEur(v, true)} />
+          ) : (
+            racLabel
+          )
+        }
         hint={
           unlocked
             ? narrativeRac(sim.rac, sim.subventionRatio)
@@ -129,7 +159,13 @@ export function DossierTabFinance({
       />
       <KpiCell
         label="Économies estimées"
-        value={unlocked ? formatEur(sim.gainNet, true) + '/an' : '—'}
+        value={
+          unlocked ? (
+            <AnimatedNumber value={sim.gainNet} format={(v) => `${formatEur(v, true)}/an`} />
+          ) : (
+            '—'
+          )
+        }
         hint={unlocked ? narrativeGain(sim.gainNet) : narrativeRoi(roiAnnees)}
         accent="emerald"
         blurred={!unlocked}
@@ -137,7 +173,8 @@ export function DossierTabFinance({
     </div>
   );
 
-  const simulatorBlock = (
+  /* Essentiel — la décision se prend ici : répartition + curseur d'aides. */
+  const essentialSimulator = (
     <div className="space-y-8">
       <DossierFundingWaterfall
         capex={packCapexTotal}
@@ -154,15 +191,18 @@ export function DossierTabFinance({
         rac={sim.rac}
         subventionRatio={sim.subventionRatio}
       />
-      <FinanceScenariosCompare
-        capex={packCapexTotal}
-        subventionsPess={sim.subventionsPess}
-        subventionsOpt={sim.subventionsOpt}
-        racPess={sim.racPess}
-        racOpt={sim.racOpt}
-        activeSubRate={subRate}
-      />
     </div>
+  );
+
+  const scenariosBlock = (
+    <FinanceScenariosCompare
+      capex={packCapexTotal}
+      subventionsPess={sim.subventionsPess}
+      subventionsOpt={sim.subventionsOpt}
+      racPess={sim.racPess}
+      racOpt={sim.racOpt}
+      activeSubRate={subRate}
+    />
   );
 
   const mgpeBlock = mgpe ? (
@@ -186,19 +226,105 @@ export function DossierTabFinance({
       />
     </div>
   ) : (
-    <p className="text-sm text-slate-500">
+    <p className="text-sm text-ink-muted">
       Montage en{' '}
       <GlossaryTerm term="Montage en tiers-financement">tiers-financement</GlossaryTerm>{' '}
       non disponible pour ce territoire.
     </p>
   );
 
+  const communeGagneBlock = (
+    <dl className="space-y-5 text-sm">
+      <Row
+        label={
+          <>
+            Aide <GlossaryTerm term="Fonds Vert">Fonds Vert</GlossaryTerm> (prudente)
+          </>
+        }
+        value={`Environ ${formatEur(resteAChargeTotal, true)} couverts par les aides de l'État`}
+      />
+      <Row label="Économies annuelles estimées" value={narrativeGain(sim.gainNet)} positive />
+      <Row
+        label="Loyer tiers-financement / an"
+        value={
+          sim.loyer > 0 ? `${formatEur(sim.loyer, true)} — lié au curseur d'aides` : '—'
+        }
+      />
+      <Row
+        label="Potentiel total d'aides"
+        value={`Jusqu'à ${formatEur(fondsVertPotential, true)} mobilisables`}
+      />
+    </dl>
+  );
+
+  const escoCeePanels = (
+    <div className="space-y-8">
+      <EscoMutualizationPanel
+        batimentCount={pack.batimentCount}
+        packCapexTotal={packCapexTotal}
+        isMutualizable={pack.isMutualizable ?? false}
+        gainNetMairieTotal={sim.gainNet}
+        unlocked={unlocked}
+      />
+      <CeeTerritoryPanel
+        ceeEurosTotal={pack.ceeEurosTotal ?? 0}
+        cumacKwhTotal={pack.cumacKwhTotal ?? 0}
+        batimentCount={pack.batimentCount}
+        unlocked={unlocked}
+      />
+    </div>
+  );
+
   return (
     <div className={DOSSIER_CONTENT}>
       <div className={DOSSIER_STACK}>
-        {/* Synthèse chiffres — une seule bande, pas de tuiles */}
+
+        {/* Synthèse chiffres — données libres EN PREMIER, puis les zones bloquées */}
         <section>
-          {unlocked ? heroStrip : (
+          {/* Aperçu gratuit : affiché avant les zones floutées pour construire le désir */}
+          {!unlocked && (
+            <div className="mb-5 rounded-xl border border-line bg-surface-sunken p-4">
+              <p className="label-caps mb-3">Aperçu gratuit</p>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[
+                  {
+                    label: 'Budget estimé',
+                    value: freePreview?.budgetRange ?? pack.budgetRange,
+                  },
+                  {
+                    label: "Niveau d'aides",
+                    value: freePreview?.subventionLevel ?? pack.subventionLevelLabel,
+                  },
+                  {
+                    label: 'Profil DPE',
+                    value: freePreview?.dpeProfile.worstClass ?? '—',
+                    hint: freePreview?.dpeProfile.label,
+                  },
+                  {
+                    label: COPY.scorePriorite,
+                    value: `${pack.radarGrade} · ${pack.radarScore}/100`,
+                    hint: SCORE_GRADES[pack.radarGrade],
+                  },
+                ].map(({ label, value, hint }) => (
+                  <div key={label} className="flex flex-col gap-0.5">
+                    <span className="text-[11px] text-ink-subtle">{label}</span>
+                    <span className="text-sm font-semibold text-ink">{value}</span>
+                    {hint && <span className="text-[11px] text-ink-subtle">{hint}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {unlocked ? (
+            <motion.div
+              initial={celebrate ? { opacity: 0, scale: 0.97, filter: 'blur(10px)' } : false}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              transition={{ duration: 0.7, ease: EASE.out }}
+            >
+              {heroStrip}
+            </motion.div>
+          ) : (
             <DossierBlurredPaywallZone
               pack={pack}
               soldOut={soldOut}
@@ -209,7 +335,7 @@ export function DossierTabFinance({
             </DossierBlurredPaywallZone>
           )}
           {unlocked && (
-            <p className="mt-4 text-sm text-slate-500">
+            <p className="mt-4 text-sm text-ink-muted">
               {narrativeSubventions(sim.subventions, sim.subventionRatio)}
               {' · '}
               {narrativeRoi(sim.roiAnnees)}
@@ -217,146 +343,98 @@ export function DossierTabFinance({
           )}
         </section>
 
-        {/* Simulateur — flux vertical */}
+        {/* Simulateur essentiel — la décision se prend ici */}
         <section className={DOSSIER_SECTION}>
           <h2 className={DOSSIER_SECTION_TITLE}>Simulateur de financement</h2>
           <p className={DOSSIER_SECTION_DESC}>
-            Ajustez le taux d&apos;aides : le reste à financer, le loyer et le gain net se mettent à jour.
+            Ajustez le taux d&apos;aides : le reste à financer se recalcule en temps réel.
           </p>
           <div className="mt-6">
-            {unlocked ? simulatorBlock : (
+            {unlocked ? essentialSimulator : (
               <DossierBlurredPaywallZone pack={pack} soldOut={soldOut}>
-                {simulatorBlock}
+                {essentialSimulator}
               </DossierBlurredPaywallZone>
             )}
           </div>
         </section>
 
-        {/* Montage & pitch */}
-        <section className={DOSSIER_SECTION}>
-          <h2 className={DOSSIER_SECTION_TITLE}>Montage & pitch mairie</h2>
-          <p className={DOSSIER_SECTION_DESC}>
-            Paramètres du contrat et texte prêt à envoyer au maire.
-          </p>
-          <div className="mt-6">
-            {unlocked ? mgpeBlock : (
-              <DossierBlurredPaywallZone
-                pack={pack}
-                soldOut={soldOut}
-                title="Pitch prêt-à-l'emploi inclus dans le déblocage"
-              >
-                {mgpeBlock}
-              </DossierBlurredPaywallZone>
-            )}
-          </div>
-        </section>
+        {/* Montage avancé & financements — progressive disclosure pour les débloqués */}
+        {unlocked ? (
+          <section className={DOSSIER_SECTION}>
+            <Disclosure
+              title="Montage avancé & financements"
+              hint="Scénarios d'aides, tiers-financement & pitch mairie, ESCO et CEE"
+            >
+              <div className="space-y-12">
+                <div>
+                  <h3 className={DOSSIER_SECTION_TITLE}>Scénarios d&apos;aides</h3>
+                  <p className={DOSSIER_SECTION_DESC}>
+                    Fourchette prudente / optimiste autour de votre réglage.
+                  </p>
+                  <div className="mt-6">{scenariosBlock}</div>
+                </div>
+                <div>
+                  <h3 className={DOSSIER_SECTION_TITLE}>Montage & pitch mairie</h3>
+                  <p className={DOSSIER_SECTION_DESC}>
+                    Paramètres du contrat et texte prêt à envoyer au maire.
+                  </p>
+                  <div className="mt-6">{mgpeBlock}</div>
+                </div>
+                <div>
+                  <h3 className={DOSSIER_SECTION_TITLE}>Ce que la commune y gagne</h3>
+                  <div className="mt-6">{communeGagneBlock}</div>
+                </div>
+                <div>
+                  <h3 className={DOSSIER_SECTION_TITLE}>Financements additionnels</h3>
+                  <p className={DOSSIER_SECTION_DESC}>
+                    Tiers-financement ESCO et Certificats d&apos;Économies d&apos;Énergie.
+                  </p>
+                  <div className="mt-6">{escoCeePanels}</div>
+                </div>
+              </div>
+            </Disclosure>
+          </section>
+        ) : (
+          <>
+            {/* Montage & pitch — teaser flouté */}
+            <section className={DOSSIER_SECTION}>
+              <h2 className={DOSSIER_SECTION_TITLE}>Montage & pitch mairie</h2>
+              <p className={DOSSIER_SECTION_DESC}>
+                Paramètres du contrat et texte prêt à envoyer au maire.
+              </p>
+              <div className="mt-6">
+                <DossierBlurredPaywallZone
+                  pack={pack}
+                  soldOut={soldOut}
+                  title="Pitch prêt-à-l'emploi inclus dans le déblocage"
+                >
+                  {mgpeBlock}
+                </DossierBlurredPaywallZone>
+              </div>
+            </section>
 
-        {/* Indicateurs */}
-        <section className={DOSSIER_SECTION}>
-          <h2 className={DOSSIER_SECTION_TITLE}>Ce que la commune y gagne</h2>
-          <dl className="mt-6 space-y-5 text-sm">
-            <Row
-              label={
-                <>
-                  Aide <GlossaryTerm term="Fonds Vert">Fonds Vert</GlossaryTerm> (prudente)
-                </>
-              }
-              value={
-                unlocked
-                  ? `Environ ${formatEur(resteAChargeTotal, true)} couverts par les aides de l'État`
-                  : freePreview?.subventionLevel ?? pack.subventionLevelLabel
-              }
-            />
-            <Row
-              label="Économies annuelles estimées"
-              value={unlocked ? narrativeGain(sim.gainNet) : 'Après déblocage'}
-              positive={unlocked}
-            />
-            <Row
-              label="Loyer tiers-financement / an"
-              value={
-                unlocked && sim.loyer > 0
-                  ? `${formatEur(sim.loyer, true)} — lié au curseur d'aides`
-                  : unlocked
-                    ? '—'
-                    : 'Après déblocage'
-              }
-            />
-            <Row
-              label="Potentiel total d'aides"
-              value={
-                unlocked
-                  ? `Jusqu'à ${formatEur(fondsVertPotential, true)} mobilisables`
-                  : 'Après déblocage'
-              }
-            />
-          </dl>
-        </section>
-
-        {/* Modules complémentaires — empilés, pas en grille */}
-        <section className={DOSSIER_SECTION}>
-          <h2 className={DOSSIER_SECTION_TITLE}>Modules territoire</h2>
-          <div className="mt-6 space-y-8">
-            <EscoMutualizationPanel
-              batimentCount={pack.batimentCount}
-              packCapexTotal={packCapexTotal}
-              isMutualizable={pack.isMutualizable ?? false}
-              gainNetMairieTotal={sim.gainNet}
-              unlocked={unlocked}
-            />
-            <CeeTerritoryPanel
-              ceeEurosTotal={pack.ceeEurosTotal ?? 0}
-              cumacKwhTotal={pack.cumacKwhTotal ?? 0}
-              batimentCount={pack.batimentCount}
-              unlocked={unlocked}
-            />
-          </div>
-        </section>
+            {/* Financements additionnels — teaser */}
+            <section className={DOSSIER_SECTION}>
+              <h2 className={DOSSIER_SECTION_TITLE}>Financements additionnels</h2>
+              <p className={DOSSIER_SECTION_DESC}>
+                Tiers-financement ESCO et Certificats d&apos;Économies d&apos;Énergie mobilisables sur ce territoire.
+              </p>
+              <div className="mt-6">{escoCeePanels}</div>
+            </section>
+          </>
+        )}
 
         <PersonaDossierTips personas={personas} />
 
-        {/* Freemium : aperçu + paywall en bas de page */}
+        {/* CTA unique en bas de page — un seul point de conversion */}
         {!unlocked && (
           <section className={DOSSIER_SECTION}>
-            <h2 className={DOSSIER_SECTION_TITLE}>Aperçu gratuit</h2>
-            <dl className="mt-4 space-y-3 text-sm">
-              {[
-                { label: 'Fourchette de budget', value: freePreview?.budgetRange ?? pack.budgetRange },
-                {
-                  label: "Niveau d'aides publiques",
-                  value: freePreview?.subventionLevel ?? pack.subventionLevelLabel,
-                },
-                {
-                  label: 'Profil énergétique',
-                  value: freePreview?.dpeProfile.worstClass ?? '—',
-                  hint: freePreview?.dpeProfile.label,
-                },
-                {
-                  label: COPY.scorePriorite,
-                  value: `${pack.radarGrade} · ${pack.radarScore}/100`,
-                  hint: SCORE_GRADES[pack.radarGrade],
-                },
-              ].map(({ label, value, hint }) => (
-                <div
-                  key={label}
-                  className="flex justify-between gap-4 border-b border-slate-100 pb-3 last:border-0"
-                >
-                  <dt className="text-slate-500">{label}</dt>
-                  <dd className="text-right">
-                    <span className="font-medium text-slate-900">{value}</span>
-                    {hint && <span className="mt-0.5 block text-xs text-slate-400">{hint}</span>}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            <div className="mt-8">
-              <DossierPaywallCard
-                pack={pack}
-                freePreview={freePreview}
-                soldOut={soldOut ?? false}
-                embedded
-              />
-            </div>
+            <DossierPaywallCard
+              pack={pack}
+              freePreview={freePreview}
+              soldOut={soldOut ?? false}
+              embedded
+            />
           </section>
         )}
       </div>
@@ -372,26 +450,33 @@ function KpiCell({
   blurred,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   hint: string;
   accent?: 'amber' | 'emerald';
   blurred?: boolean;
 }) {
   return (
-    <div className="px-5 py-6 md:px-6">
-      <p className="text-sm text-slate-500">{label}</p>
+    <div
+      className={cn(
+        'px-6 py-7 transition-all duration-300 ease-out md:px-8',
+        accent === 'amber' && 'border-l-2 border-warning',
+        accent === 'emerald' && 'border-l-2 border-positive',
+      )}
+    >
+      {/* Label — discret, uppercase, contraste maximal avec la donnée massive */}
+      <p className={DOSSIER_KPI_LABEL}>{label}</p>
       <p
         className={cn(
           DOSSIER_KPI,
-          'mt-2 transition-all duration-300',
-          accent === 'amber' && 'text-amber-800',
-          accent === 'emerald' && 'text-emerald-800',
-          blurred && 'blur-sm select-none',
+          'mt-2 transition-all duration-300 ease-out',
+          accent === 'amber' && 'text-warning-text',
+          accent === 'emerald' && 'text-positive-text',
+          blurred && 'blur-[3px] select-none',
         )}
       >
         {value}
       </p>
-      <p className={cn('mt-2 text-sm leading-relaxed text-slate-500', blurred && 'blur-[2px]')}>
+      <p className={cn('mt-2 text-sm leading-relaxed text-ink-muted', blurred && 'blur-[3px]')}>
         {hint}
       </p>
     </div>
@@ -408,9 +493,9 @@ function Row({
   positive?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className={cn('sm:text-right', positive ? 'text-emerald-700' : 'text-slate-800')}>
+    <div className="flex flex-col gap-1 rounded-lg px-3 py-2 transition-colors duration-200 ease-out hover:bg-surface-sunken sm:flex-row sm:justify-between sm:gap-4">
+      <dt className="text-ink-muted">{label}</dt>
+      <dd className={cn('font-medium sm:text-right', positive ? 'text-positive-text' : 'text-ink-soft')}>
         {value}
       </dd>
     </div>

@@ -11,7 +11,10 @@ import {
   Leaf,
   List,
   Map,
+  MapPinOff,
+  RotateCcw,
   Ruler,
+  SlidersHorizontal,
   Sparkles,
   Star,
   X,
@@ -37,6 +40,8 @@ import {
 } from '@/lib/radar-client-storage';
 import { EXPLORER_GUIDE } from '@/lib/site-guide';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { TRANSITION } from '@/lib/motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useAccountPreferences } from '@/hooks/use-account-preferences';
 import { isClientPersona } from '@/lib/brand';
@@ -44,6 +49,7 @@ import { filterExplorerPacks, type ExplorerFilterState } from '@/lib/explorer-fi
 import {
   ExplorerAdvancedFilters,
   ExplorerCoveragePanel,
+  ExplorerFilterSheet,
   ExplorerSearchBar,
   OnboardingModal,
 } from '@/components/marketplace/explorer-enhancements';
@@ -89,6 +95,24 @@ export function ExplorerSplitView({
   const [mutualizableOnly, setMutualizableOnly] = useState(defaultFilter === 'esco');
   const [minCeeEuros, setMinCeeEuros] = useState(defaultFilter === 'cee' ? 25_000 : 0);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const activeFilterCount =
+    (minCapex > 0 ? 1 : 0) +
+    (minGrade !== 'all' ? 1 : 0) +
+    (aoOnly ? 1 : 0) +
+    (mutualizableOnly ? 1 : 0) +
+    (minCeeEuros > 0 ? 1 : 0);
+
+  function resetAllFilters() {
+    setMinCapex(0);
+    setMinGrade('all');
+    setAoOnly(false);
+    setMutualizableOnly(false);
+    setMinCeeEuros(0);
+    setSelectedDept(null);
+    changeFilter('all');
+  }
 
   const { prefs, loaded, toggleCompare, completeOnboarding } = useAccountPreferences();
 
@@ -191,13 +215,13 @@ export function ExplorerSplitView({
 
       {/* Badge région */}
       <div className="pointer-events-none absolute left-4 top-4 z-10 hidden md:block">
-        <span className="rounded-md bg-white/90 px-2.5 py-1 text-xs font-medium text-radar-muted shadow-sm backdrop-blur-sm">
+        <span className="rounded-md border border-line/60 bg-white/80 px-2.5 py-1 text-xs font-medium text-ink-muted shadow-raised backdrop-blur-md backdrop-saturate-150">
           {coverageBadge} · {filtered.length} {COPY.territoryPlural}
         </span>
       </div>
 
       {/* Légende carte */}
-      <div className="pointer-events-none absolute bottom-4 left-4 z-10 hidden rounded-lg border border-radar-border bg-white/90 px-4 py-3 shadow-sm backdrop-blur-sm md:block">
+      <div className="pointer-events-none absolute bottom-4 left-4 z-10 hidden rounded-xl border border-line/60 bg-white/80 px-4 py-3 shadow-raised backdrop-blur-md backdrop-saturate-150 md:block">
         <p className="text-[10px] font-medium uppercase tracking-wide text-radar-subtle">
           Vue par département · localisation précise après achat
         </p>
@@ -206,14 +230,14 @@ export function ExplorerSplitView({
             <span className="h-2.5 w-2.5 rounded-full bg-radar-heat" /> {COPY.hot}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-zinc-800" /> Score A/B
+            <span className="h-2.5 w-2.5 rounded-full bg-ink" /> Score A/B
           </span>
         </div>
       </div>
 
       {/* Panneau gauche : titre + filtres */}
       <div className="absolute left-4 top-4 z-20 flex max-w-[calc(100%-2rem)] flex-col gap-3 md:max-w-xs">
-        <div className="rounded-2xl border border-line bg-white/95 p-4 shadow-overlay backdrop-blur-md">
+        <div className="rounded-2xl border border-line/70 bg-white/85 p-4 shadow-overlay ring-1 ring-ink/[0.02] backdrop-blur-xl backdrop-saturate-150">
           <h1 className="text-lg font-semibold md:text-xl">{COPY.explorer}</h1>
           <p className="mt-1 text-sm text-radar-muted">
             Carte par département — tranches et priorité visibles, chiffres exacts et contacts après achat.
@@ -247,20 +271,32 @@ export function ExplorerSplitView({
             ))}
           </div>
 
-          <ExplorerAdvancedFilters
-            minCapex={minCapex}
-            minGrade={minGrade}
-            aoOnly={aoOnly}
-            mutualizableOnly={mutualizableOnly}
-            minCeeEuros={minCeeEuros}
-            onMinCapexChange={setMinCapex}
-            onMinGradeChange={setMinGrade}
-            onAoOnlyChange={setAoOnly}
-            onMutualizableOnlyChange={setMutualizableOnly}
-            onMinCeeEurosChange={setMinCeeEuros}
-          />
-
-          <ExplorerCoveragePanel packs={packs} />
+          <div className="mt-3 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(true)}
+              className="btn-secondary flex-1 !py-1.5 !text-xs"
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              Filtres
+              {activeFilterCount > 0 && (
+                <span className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-ink px-1 text-[10px] font-bold text-white">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+            {activeFilterCount > 0 && (
+              <button
+                type="button"
+                onClick={resetAllFilters}
+                title="Réinitialiser les filtres"
+                aria-label="Réinitialiser les filtres"
+                className="btn-ghost !px-2 !py-1.5 !text-xs"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
 
           {compareIds.length > 0 && (
             <Link
@@ -271,30 +307,63 @@ export function ExplorerSplitView({
               {COPY.compare} ({compareIds.length})
             </Link>
           )}
-
-          <details className="mt-3 rounded-lg border border-radar-border bg-radar-canvas/80">
-            <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-radar-muted">
-              Comment lire cette carte · {EXPLORER_GUIDE.length} étapes
-            </summary>
-            <ol className="space-y-2 border-t border-radar-border px-3 py-3">
-              {EXPLORER_GUIDE.map(({ step, title, description }) => (
-                <li key={step} className="text-xs text-radar-muted">
-                  <span className="font-semibold text-radar-text">
-                    {step}. {title}
-                  </span>
-                  <span className="mt-0.5 block leading-relaxed">{description}</span>
-                </li>
-              ))}
-            </ol>
-          </details>
         </div>
       </div>
+
+      {/* Panneau coulissant des filtres avancés */}
+      <ExplorerFilterSheet
+        open={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        activeCount={activeFilterCount}
+      >
+        <ExplorerAdvancedFilters
+          minCapex={minCapex}
+          minGrade={minGrade}
+          aoOnly={aoOnly}
+          mutualizableOnly={mutualizableOnly}
+          minCeeEuros={minCeeEuros}
+          onMinCapexChange={setMinCapex}
+          onMinGradeChange={setMinGrade}
+          onAoOnlyChange={setAoOnly}
+          onMutualizableOnlyChange={setMutualizableOnly}
+          onMinCeeEurosChange={setMinCeeEuros}
+        />
+
+        {activeFilterCount > 0 && (
+          <button
+            type="button"
+            onClick={resetAllFilters}
+            className="btn-ghost w-full !justify-start !px-3 !py-2 !text-xs"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Réinitialiser tous les filtres
+          </button>
+        )}
+
+        <ExplorerCoveragePanel packs={packs} />
+
+        <details className="rounded-lg border border-line bg-surface-sunken">
+          <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-ink-muted">
+            Comment lire cette carte · {EXPLORER_GUIDE.length} étapes
+          </summary>
+          <ol className="space-y-2 border-t border-line px-3 py-3">
+            {EXPLORER_GUIDE.map(({ step, title, description }) => (
+              <li key={step} className="text-xs text-ink-muted">
+                <span className="font-semibold text-ink">
+                  {step}. {title}
+                </span>
+                <span className="mt-0.5 block leading-relaxed">{description}</span>
+              </li>
+            ))}
+          </ol>
+        </details>
+      </ExplorerFilterSheet>
 
       {/* Toggle liste mobile */}
       <button
         type="button"
         onClick={() => setListOpen((o) => !o)}
-        className="absolute bottom-4 right-4 z-30 flex items-center gap-2 rounded-full border border-radar-border bg-white px-4 py-2.5 text-sm font-medium shadow-md md:hidden"
+        className="absolute bottom-4 right-4 z-30 flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2.5 text-sm font-medium shadow-raised md:hidden"
       >
         {listOpen ? <Map className="h-4 w-4" /> : <List className="h-4 w-4" />}
         {listOpen ? 'Carte' : 'Liste'}
@@ -356,9 +425,12 @@ export function ExplorerSplitView({
 
         {/* Liste scrollable — cartes territoire */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
-          {filtered.map((pack) => (
-            <div
+          {filtered.map((pack, i) => (
+            <motion.div
               key={pack.packId}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...TRANSITION.base, delay: Math.min(i, 7) * 0.04 }}
               className={cn(
                 'group relative mb-2 last:mb-0',
                 selectedId === pack.packId && 'ring-2 ring-ink ring-offset-2 rounded-xl',
@@ -407,16 +479,28 @@ export function ExplorerSplitView({
                   onToggle={() => setCompareIds(toggleCompare(pack.packId))}
                 />
               </div>
-            </div>
+            </motion.div>
           ))}
 
           {filtered.length === 0 && (
-            <div className="px-4 py-12 text-center">
-              <p className="text-sm text-radar-muted">Aucun territoire pour ce filtre.</p>
-              <button type="button" onClick={() => changeFilter('all')} className="btn-ghost mt-2 !text-sm">
-                Tout afficher
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 24 }}
+              className="flex flex-col items-center px-6 py-14 text-center"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-muted text-ink-subtle">
+                <MapPinOff className="h-6 w-6" />
+              </span>
+              <p className="mt-4 text-sm font-medium text-ink">Aucun territoire pour ces filtres</p>
+              <p className="mt-1 text-xs text-ink-muted">
+                Élargissez vos critères pour révéler plus d&apos;opportunités.
+              </p>
+              <button type="button" onClick={resetAllFilters} className="btn-secondary mt-5 !py-1.5 !text-xs">
+                <RotateCcw className="h-3.5 w-3.5" />
+                Réinitialiser les filtres
               </button>
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

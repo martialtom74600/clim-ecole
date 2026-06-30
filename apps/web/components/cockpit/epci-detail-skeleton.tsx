@@ -19,7 +19,7 @@ export function EpciDetailSkeleton() {
       </div>
       <Card className="p-0">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="flex gap-4 border-b border-white/[0.04] px-4 py-4">
+          <div key={i} className="flex gap-4 border-b border-line px-4 py-4">
             <Skeleton className="h-4 w-40" />
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-6 w-6" />

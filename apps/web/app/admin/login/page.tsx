@@ -37,11 +37,11 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-5">
+    <div className="flex min-h-screen items-center justify-center bg-surface-sunken px-5">
       <div className="card w-full max-w-md p-8">
         <BrandLogo className="mb-8" />
-        <h1 className="text-xl font-semibold text-slate-900">Cockpit interne</h1>
-        <p className="mt-2 text-sm text-slate-500">Accès réservé Strate Studio</p>
+        <h1 className="text-xl font-semibold text-ink">Cockpit interne</h1>
+        <p className="mt-2 text-sm text-ink-muted">Accès réservé Strate Studio</p>
         <form onSubmit={onSubmit} className="mt-8 space-y-4">
           <input
             type="password"
@@ -51,7 +51,7 @@ function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             autoFocus
           />
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-heat-text">{error}</p>}
           <button type="submit" className="btn-primary w-full" disabled={loading}>
             {loading ? 'Connexion…' : 'Se connecter'}
           </button>

@@ -1,43 +1,84 @@
-import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-interface PageHeaderProps {
-  title: string;
-  description?: string;
-  count?: number;
+/**
+ * Structure spatiale standardisée des en-têtes — saas & cockpit.
+ *
+ * Saas (compte, dossier, explorateur) :
+ *   — Zone H1 gauche (titre + sous-titre)
+ *   — Zone actions droite (boutons)
+ *   — Zone onglets/filtres en dessous (slot optionnel)
+ *
+ * Cockpit (admin) : compatibilité assurée via les props `description`,
+ * `breadcrumb` et `count` (ancienne interface).
+ *
+ * Rythme : mb-8 sépare l'en-tête du contenu (multiple de 8pt).
+ */
+export function PageHeader({
+  title,
+  subtitle,
+  description,
+  meta,
+  actions,
+  tabs,
+  className,
+  breadcrumb,
+  count,
+}: {
+  title: React.ReactNode;
+  /** Description principale sous le titre */
+  subtitle?: React.ReactNode;
+  /** Alias rétrocompat de subtitle (ancienne interface cockpit) */
+  description?: React.ReactNode;
+  /** Zone méta au-dessus du titre — fil d'Ariane, retour, badge */
+  meta?: React.ReactNode;
+  /** Boutons et actions — zone droite */
+  actions?: React.ReactNode;
+  /** Onglets ou filtres — zone sous le titre */
+  tabs?: React.ReactNode;
+  className?: string;
+  /** Rétrocompat cockpit — fil d'Ariane */
   breadcrumb?: { label: string; href?: string }[];
-}
+  /** Rétrocompat cockpit — compteur affiché à côté du titre */
+  count?: number;
+}) {
+  const effectiveSubtitle = subtitle ?? description;
 
-export function PageHeader({ title, description, count, breadcrumb }: PageHeaderProps) {
   return (
-    <div className="mb-6 md:mb-8">
+    <div className={cn('mb-8 space-y-4', className)}>
+      {/* Fil d'Ariane cockpit */}
       {breadcrumb && breadcrumb.length > 0 && (
-        <nav className="mb-3 flex items-center gap-1.5 text-sm text-zen-muted">
-          {breadcrumb.map((item, i) => (
-            <span key={item.label} className="flex items-center gap-1.5">
-              {i > 0 && <ChevronRight className="h-3.5 w-3.5 text-zinc-600" />}
-              {item.href ? (
-                <Link href={item.href} className="transition-colors hover:text-zen-teal">
-                  {item.label}
-                </Link>
+        <nav className="flex items-center gap-1.5 text-xs text-ink-subtle">
+          {breadcrumb.map((crumb, i) => (
+            <span key={i} className="flex items-center gap-1.5">
+              {i > 0 && <span>/</span>}
+              {crumb.href ? (
+                <a href={crumb.href} className="hover:text-ink">{crumb.label}</a>
               ) : (
-                <span className="text-zinc-300">{item.label}</span>
+                <span className="text-ink-muted">{crumb.label}</span>
               )}
             </span>
           ))}
         </nav>
       )}
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-50 lg:text-3xl">{title}</h1>
-          {description && <p className="mt-2 text-base text-zen-muted">{description}</p>}
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          {meta && <div className="mb-2">{meta}</div>}
+          <div className="flex items-baseline gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">{title}</h1>
+            {count !== undefined && (
+              <span className="font-mono text-sm tabular-nums text-ink-subtle">{count}</span>
+            )}
+          </div>
+          {effectiveSubtitle && (
+            <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{effectiveSubtitle}</p>
+          )}
         </div>
-        {count != null && (
-          <span className="shrink-0 rounded-xl border border-white/[0.08] bg-zen-panel px-4 py-2 text-sm tabular-nums text-zen-muted">
-            {count} entrées
-          </span>
+        {actions && (
+          <div className="flex shrink-0 flex-wrap items-center gap-3">{actions}</div>
         )}
       </div>
+      {tabs && <div>{tabs}</div>}
     </div>
   );
 }

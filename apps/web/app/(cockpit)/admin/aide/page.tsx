@@ -15,11 +15,11 @@ export default function AdminAidePage() {
         <CardContent className="flex gap-4 p-6">
           <BookOpen className="mt-0.5 h-6 w-6 shrink-0 text-zen-teal" strokeWidth={1.75} />
           <div>
-            <p className="text-[15px] font-medium text-zinc-100">Pas de formation préalable nécessaire</p>
+            <p className="text-[15px] font-medium text-ink">Pas de formation préalable nécessaire</p>
             <p className="mt-2 text-base leading-relaxed text-zen-muted">
               Clim École t’aide à repérer des projets de rénovation d’écoles pour les
               collectivités. Survole les petites icônes{' '}
-              <span className="text-zinc-500">(?)</span> dans l’app pour des rappels rapides.
+              <span className="text-ink-muted">(?)</span> dans l’app pour des rappels rapides.
             </p>
           </div>
         </CardContent>
@@ -33,7 +33,7 @@ export default function AdminAidePage() {
                 <h2 className="text-[15px] font-semibold text-zen-teal">{entry.term}</h2>
                 <span className="text-sm text-zen-muted">= {entry.short}</span>
               </div>
-              <p className="text-[15px] leading-relaxed text-zinc-400">{entry.plain}</p>
+              <p className="text-[15px] leading-relaxed text-ink-soft">{entry.plain}</p>
             </CardContent>
           </Card>
         ))}

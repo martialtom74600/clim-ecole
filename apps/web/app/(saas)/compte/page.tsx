@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, Kanban, LogOut } from 'lucide-react';
+import { CheckCircle2, ExternalLink, Kanban, LogOut } from 'lucide-react';
 import { COPY } from '@/lib/copy';
 import { AlertPreferencesPanel } from '@/components/marketplace/alert-preferences';
 import { GuidedSteps } from '@/components/marketplace/guided-steps';
@@ -12,6 +12,7 @@ import {
   MagicLinkLoginForm,
   PipelineStatsLoader,
 } from '@/components/compte/account-enhancements';
+import { PageHeader } from '@/components/layout/page-header';
 
 interface AccountState {
   authenticated: boolean;
@@ -38,18 +39,38 @@ export default function ComptePage() {
 
   return (
     <div className="page-content">
-      <h1 className="text-3xl font-semibold">Mon compte</h1>
-      <p className="mt-2 text-sm text-radar-muted">
-        Pipeline de prospection, territoires débloqués et abonnement.
-      </p>
+      {/* En-tête — structure spatiale standardisée */}
+      <PageHeader
+        title="Mon compte"
+        subtitle="Pipeline de prospection, territoires débloqués et abonnement."
+        actions={
+          account?.authenticated ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href="/explorer" className="btn-secondary">
+                <ExternalLink className="h-4 w-4" />
+                {COPY.openExplorer}
+              </Link>
+              <Link href="/parrainage" className="btn-ghost text-sm">
+                Parrainage
+              </Link>
+              <button type="button" onClick={logout} className="btn-ghost text-sm">
+                <LogOut className="h-4 w-4" />
+                Réinitialiser cet appareil
+              </button>
+            </div>
+          ) : undefined
+        }
+      />
 
-      {!account && <p className="mt-8 text-radar-muted">Chargement…</p>}
+      {!account && (
+        <p className="text-ink-muted">Chargement…</p>
+      )}
 
       {account && !account.authenticated && (
-        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-2">
           <div className="card p-8 text-center">
-            <p className="text-radar-muted">{COPY.accountNoAccess}</p>
-            <p className="mt-2 text-sm text-radar-subtle">{COPY.accountAccessHint}</p>
+            <p className="text-ink-muted">{COPY.accountNoAccess}</p>
+            <p className="mt-2 text-sm text-ink-subtle">{COPY.accountAccessHint}</p>
             <Link href="/explorer" className="btn-secondary mt-6">
               {COPY.openExplorer}
             </Link>
@@ -62,59 +83,53 @@ export default function ComptePage() {
       )}
 
       {account?.authenticated && (
-        <div className="mt-8 space-y-8">
-          <div className="card flex flex-wrap items-center justify-between gap-4 p-6">
-            <div>
-              {account.pro && (
-                <div className="mb-2 flex items-center gap-2 text-radar-signal">
-                  <CheckCircle2 className="h-5 w-5" />
-                  <span className="font-semibold">{COPY.subscription} actif</span>
-                </div>
-              )}
-              {account.email && (
-                <p className="text-sm text-radar-muted">
-                  Email : <span className="font-medium text-radar-text">{account.email}</span>
-                </p>
-              )}
-              {account.proUntil && (
-                <p className="text-sm text-radar-muted">
-                  Abonnement valide jusqu&apos;au{' '}
-                  {new Date(account.proUntil).toLocaleDateString('fr-FR')}
-                </p>
-              )}
+        <div className="space-y-12">
+          {/* Statut de l'abonnement */}
+          {(account.pro || account.email) && (
+            <div className="card flex flex-wrap items-center gap-4 p-6 transition-all duration-300 ease-out hover:shadow-raised">
+              <div className="flex-1">
+                {account.pro && (
+                  <div className="mb-2 inline-flex items-center gap-2 text-positive-text">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span className="font-semibold">{COPY.subscription} actif</span>
+                  </div>
+                )}
+                {account.email && (
+                  <p className="text-sm text-ink-muted">
+                    Email :{' '}
+                    <span className="font-medium text-ink">{account.email}</span>
+                  </p>
+                )}
+                {account.proUntil && (
+                  <p className="mt-1 text-sm text-ink-muted">
+                    Abonnement valide jusqu&apos;au{' '}
+                    <span className="font-medium text-ink">
+                      {new Date(account.proUntil).toLocaleDateString('fr-FR')}
+                    </span>
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/explorer" className="btn-secondary">
-                {COPY.openExplorer}
-              </Link>
-              <Link href="/parrainage" className="btn-ghost text-sm">
-                Parrainage
-              </Link>
-              <button type="button" onClick={logout} className="btn-ghost text-sm">
-                <LogOut className="h-4 w-4" />
-                Réinitialiser cet appareil
-              </button>
-            </div>
-          </div>
+          )}
 
-          <section>
+          {/* Pipeline commercial */}
+          <section className="space-y-6">
+            <div className="border-b border-line pb-6">
+              <div className="flex items-center gap-2">
+                <Kanban className="h-5 w-5 text-ink" />
+                <h2 className="text-xl font-semibold tracking-tight text-ink">Pipeline commercial</h2>
+              </div>
+              <p className="mt-1.5 text-sm text-ink-muted">
+                Faites avancer vos territoires débloqués dans votre tunnel de vente. Un clic pour
+                mettre à jour le statut — synchronisé en temps réel.
+              </p>
+            </div>
             <GuidedSteps
               title="Comment utiliser le pipeline"
               steps={COMPTE_PIPELINE_GUIDE}
-              className="mb-6"
             />
-            <div className="mb-4 flex items-center gap-2">
-              <Kanban className="h-5 w-5 text-radar-signal" />
-              <h2 className="text-xl font-semibold">Pipeline commercial</h2>
-            </div>
-            <p className="mb-6 text-sm text-radar-muted">
-              Faites avancer vos territoires débloqués dans votre tunnel de vente. Un clic pour
-              mettre à jour le statut — synchronisé en temps réel.
-            </p>
             <PipelineStatsLoader />
-            <div className="mt-6">
-              <PipelineKanbanBoard />
-            </div>
+            <PipelineKanbanBoard />
           </section>
 
           <AlertPreferencesPanel />

@@ -143,7 +143,7 @@ export function AlertPreferencesPanel() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </label>
-        {error && <p className="text-sm text-amber-700">{error}</p>}
+        {error && <p className="text-sm text-warning-text">{error}</p>}
         <button type="button" onClick={save} disabled={loading} className="btn-secondary text-sm">
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />

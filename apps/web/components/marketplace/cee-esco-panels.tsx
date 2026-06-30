@@ -18,30 +18,30 @@ export function CeeTerritoryPanel({
 }) {
   return (
     <div className={DOSSIER_BLOCK}>
-      <p className="text-sm font-medium text-slate-900">
+      <p className="text-sm font-medium text-ink">
         <GlossaryTerm term="CEE">Primes énergie</GlossaryTerm>
       </p>
       <dl className="mt-4 space-y-3 text-sm">
         <div className="flex justify-between gap-4">
-          <dt className="text-slate-500">Montant estimé</dt>
-          <dd className="text-slate-800">
+          <dt className="text-ink-muted">Montant estimé</dt>
+          <dd className="text-ink-soft">
             {unlocked ? formatEur(ceeEurosTotal, true) : 'Après déblocage'}
           </dd>
         </div>
         <div className="flex justify-between gap-4">
-          <dt className="text-slate-500">Cumac kWh</dt>
+          <dt className="text-ink-muted">Cumac kWh</dt>
           <dd>{unlocked ? formatInt(cumacKwhTotal) : '—'}</dd>
         </div>
         <div className="flex justify-between gap-4">
-          <dt className="text-slate-500">Écoles</dt>
+          <dt className="text-ink-muted">Écoles</dt>
           <dd>{batimentCount}</dd>
         </div>
       </dl>
-      <ul className="mt-4 space-y-1 border-t border-slate-200 pt-4 text-xs text-slate-600">
+      <ul className="mt-4 space-y-1 border-t border-line pt-4 text-xs text-ink-muted">
         {CEE_FICHES.map((f) => (
           <li key={f.code} className="flex justify-between">
             <span>{f.label}</span>
-            <span className="text-emerald-700">{f.gainPct}</span>
+            <span className="text-positive-text">{f.gainPct}</span>
           </li>
         ))}
       </ul>
@@ -64,21 +64,21 @@ export function EscoMutualizationPanel({
 }) {
   return (
     <div className={DOSSIER_BLOCK}>
-      <p className="text-sm font-medium text-slate-900">Regroupement multi-écoles</p>
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="text-sm font-medium text-ink">Regroupement multi-écoles</p>
+      <p className="mt-1 text-xs text-ink-muted">
         {isMutualizable ? 'Volume suffisant pour un contrat global' : 'Volume à consolider'}
         {' · '}
         {batimentCount} écoles
       </p>
       <dl className="mt-4 space-y-2 text-sm">
         <div className="flex justify-between gap-4">
-          <dt className="text-slate-500">Budget travaux</dt>
+          <dt className="text-ink-muted">Budget travaux</dt>
           <dd>{unlocked ? formatEur(packCapexTotal, true) : 'Après déblocage'}</dd>
         </div>
         {unlocked && gainNetMairieTotal > 0 && (
           <div className="flex justify-between gap-4">
-            <dt className="text-slate-500">Gain commune / an</dt>
-            <dd className="text-emerald-700">{formatEur(gainNetMairieTotal, true)}</dd>
+            <dt className="text-ink-muted">Gain commune / an</dt>
+            <dd className="text-positive-text">{formatEur(gainNetMairieTotal, true)}</dd>
           </div>
         )}
       </dl>

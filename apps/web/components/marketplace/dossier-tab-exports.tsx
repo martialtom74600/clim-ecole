@@ -5,7 +5,6 @@ import Link from 'next/link';
 import type { MarketplacePack } from '@/lib/types';
 import type { TerritoryFreePreview } from '@/lib/freemium';
 import { DossierShareButton } from '@/components/marketplace/dossier-client-tools';
-import { DossierPaywallCard } from '@/components/marketplace/dossier-paywall-card';
 import { DossierInlinePaywall } from '@/components/marketplace/dossier-inline-paywall';
 import { GlossaryTerm } from '@/components/ui/glossary-term';
 import { DOSSIER_CONTENT, DOSSIER_SECTION, DOSSIER_SECTION_DESC, DOSSIER_SECTION_TITLE } from '@/lib/dossier-ui';
@@ -72,22 +71,33 @@ export function DossierTabExports({
           <GlossaryTerm term="Pipeline">suivi commercial</GlossaryTerm>
         </p>
 
+        {/* Liste d'exports + un seul overlay paywall si verrouillé */}
         <div className="relative mt-6">
-          <ul className="divide-y divide-slate-200 border border-slate-200">
+          <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line">
             {EXPORTS.map(({ href, icon: Icon, label, desc, download, ...rest }) => {
               const primary = 'primary' in rest && rest.primary;
               const rowClass = cn(
                 'flex items-start gap-4 px-4 py-4 transition-colors',
-                primary ? 'bg-slate-900 text-white' : 'bg-white hover:bg-slate-50',
+                primary ? 'bg-ink text-white' : 'bg-white hover:bg-surface-sunken',
                 !unlocked && 'pointer-events-none blur-[2px] select-none opacity-60',
               );
 
               const content = (
                 <>
-                  <Icon className={cn('mt-0.5 h-5 w-5 shrink-0', primary ? 'text-white/80' : 'text-slate-400')} />
+                  <Icon
+                    className={cn(
+                      'mt-0.5 h-5 w-5 shrink-0',
+                      primary ? 'text-white/80' : 'text-ink-subtle',
+                    )}
+                  />
                   <span>
                     <span className="block text-sm font-medium">{label}</span>
-                    <span className={cn('mt-0.5 block text-sm', primary ? 'text-white/70' : 'text-slate-500')}>
+                    <span
+                      className={cn(
+                        'mt-0.5 block text-sm',
+                        primary ? 'text-white/70' : 'text-ink-muted',
+                      )}
+                    >
                       {desc}
                     </span>
                   </span>
@@ -122,13 +132,12 @@ export function DossierTabExports({
           )}
         </div>
 
-        <div className="mt-8">
-          {unlocked ? (
+        {/* Lien de partage — uniquement après déblocage */}
+        {unlocked && (
+          <div className="mt-8">
             <DossierShareButton packId={packId} />
-          ) : (
-            <DossierPaywallCard pack={pack} freePreview={freePreview} soldOut={soldOut ?? false} embedded />
-          )}
-        </div>
+          </div>
+        )}
       </section>
     </div>
   );

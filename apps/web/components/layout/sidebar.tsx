@@ -26,12 +26,12 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="group fixed inset-y-0 left-0 z-40 hidden w-14 flex-col border-r border-white/[0.08] bg-zen-bg/95 backdrop-blur-xl transition-all duration-200 md:flex lg:w-16 lg:hover:w-56">
-      <div className="flex h-14 items-center gap-3 border-b border-white/[0.08] px-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zen-teal/15 text-base font-bold text-zen-teal shadow-glow">
+    <aside className="group fixed inset-y-0 left-0 z-40 hidden w-14 flex-col border-r border-line bg-surface/95 backdrop-blur-xl transition-all duration-200 md:flex lg:w-16 lg:hover:w-56">
+      <div className="flex h-14 items-center gap-3 border-b border-line px-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ink text-base font-bold text-white">
           C
         </div>
-        <span className="truncate text-[15px] font-semibold text-zinc-100 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        <span className="truncate text-[15px] font-semibold text-ink opacity-0 transition-opacity duration-200 group-hover:opacity-100">
           Cockpit Admin
         </span>
       </div>
@@ -49,8 +49,8 @@ export function Sidebar() {
               href={href}
               title={label}
               className={cn(
-                'flex items-center gap-3 rounded-xl px-3 py-3 text-zen-muted transition-all duration-200 hover:bg-white/[0.04] hover:text-zinc-100',
-                active && 'bg-zen-teal/10 text-zen-teal shadow-[inset_0_0_0_1px_rgba(45,212,191,0.15)]',
+                'flex items-center gap-3 rounded-xl px-3 py-3 text-ink-muted transition-all duration-200 hover:bg-surface-sunken hover:text-ink',
+                active && 'bg-ink/5 text-ink ring-1 ring-inset ring-line',
               )}
             >
               <Icon className="h-[19px] w-[19px] shrink-0" strokeWidth={1.75} />
@@ -62,15 +62,15 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="space-y-2 border-t border-white/[0.08] p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+      <div className="space-y-2 border-t border-line p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         <Link
           href="/"
-          className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-zinc-600 hover:text-zen-teal"
+          className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-ink-muted hover:text-ink"
         >
           <ExternalLink className="h-3.5 w-3.5" />
           Vitrine SaaS
         </Link>
-        <p className="truncate px-2 text-xs text-zinc-600">Strate Studio</p>
+        <p className="truncate px-2 text-xs text-ink-muted">Strate Studio</p>
       </div>
     </aside>
   );

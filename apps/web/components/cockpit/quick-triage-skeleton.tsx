@@ -3,11 +3,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 export function QuickTriageSkeleton() {
   return (
     <div className="panel overflow-hidden">
-      <div className="border-b border-white/[0.08] p-5">
+      <div className="border-b border-line p-5">
         <Skeleton className="mb-2 h-3 w-28" />
         <Skeleton className="h-3 w-56" />
       </div>
-      <div className="divide-y divide-white/[0.06]">
+      <div className="divide-y divide-line">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex items-center gap-4 px-5 py-4">
             <Skeleton className="h-8 w-8 rounded-lg" />

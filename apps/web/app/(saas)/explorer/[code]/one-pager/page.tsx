@@ -25,7 +25,7 @@ export default async function OnePagerPage({
       </Link>
       <div className="mb-6 print:hidden">
         <h1 className="text-xl font-semibold">One-pager mairie</h1>
-        <p className="mt-1 text-sm text-radar-muted">
+        <p className="mt-1 text-sm text-ink-muted">
           Synthèse A4 pour vos rendez-vous élus — imprimez ou exportez en PDF depuis le navigateur.
         </p>
       </div>

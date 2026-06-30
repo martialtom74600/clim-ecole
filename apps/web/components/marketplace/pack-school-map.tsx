@@ -101,8 +101,8 @@ export function PackSchoolMap({
     return (
       <div
         className={cn(
-          'flex items-center justify-center p-6 text-sm text-slate-500',
-          variant === 'card' ? 'card h-64' : 'h-full min-h-[12rem] rounded-2xl bg-slate-100',
+          'flex items-center justify-center p-6 text-sm text-ink-muted',
+          variant === 'card' ? 'card h-64' : 'h-full min-h-[12rem] rounded-xl bg-surface-muted',
           className,
         )}
       >
@@ -131,9 +131,9 @@ export function PackSchoolMap({
         )}
       >
         {showHeader && (
-          <div className="shrink-0 border-b border-slate-200/80 px-4 py-3">
-            <p className="text-xs font-semibold text-slate-700">Carte · DPE</p>
-            <p className="text-[11px] text-slate-500">
+          <div className="shrink-0 border-b border-line px-4 py-3">
+            <p className="text-xs font-semibold text-ink-soft">Carte · DPE</p>
+            <p className="text-[11px] text-ink-muted">
               {geo.length} établissement{geo.length > 1 ? 's' : ''} géolocalisé
               {geo.length > 1 ? 's' : ''}
             </p>
@@ -149,9 +149,9 @@ export function PackSchoolMap({
   return (
     <div className="card overflow-hidden">
       {showHeader && (
-        <div className="border-b border-radar-border px-6 py-4">
-          <h2 className="font-semibold text-radar-text">Carte des écoles</h2>
-          <p className="mt-1 text-xs text-radar-muted">
+        <div className="border-b border-line px-6 py-4">
+          <h2 className="font-semibold text-ink">Carte des écoles</h2>
+          <p className="mt-1 text-xs text-ink-muted">
             {geo.length} établissement{geo.length > 1 ? 's' : ''} géolocalisé
             {geo.length > 1 ? 's' : ''} · couleur = classe DPE
           </p>

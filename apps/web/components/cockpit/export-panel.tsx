@@ -33,11 +33,11 @@ export async function ExportPanel() {
       {EXPORTS.map(({ id, title, desc, filter, icon: Icon }) => (
         <Card key={id}>
           <CardHeader>
-            <Icon className="mb-2 h-5 w-5 text-slate-500" strokeWidth={1.75} />
+            <Icon className="mb-2 h-5 w-5 text-ink-muted" strokeWidth={1.75} />
             <CardTitle className="text-base">{title}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-slate-500">{desc}</p>
+            <p className="text-sm text-ink-muted">{desc}</p>
             <a
               href={`/api/export${filter ? `?filter=${filter}` : ''}`}
               className="btn-secondary mt-4 inline-flex text-sm"

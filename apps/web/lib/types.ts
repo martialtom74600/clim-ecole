@@ -232,10 +232,10 @@ export interface SearchResult {
 }
 
 export const PIPELINE_STAGES: { id: PipelineStage; label: string; hint: string; color: string }[] = [
-  { id: 'identifie', label: 'Repéré', hint: 'Tu as repéré l’opportunité, pas encore contacté.', color: 'border-zinc-600' },
-  { id: 'qualifie', label: 'Intéressant', hint: 'La collectivité est réceptive ou le dossier tient la route.', color: 'border-sky-500/50' },
-  { id: 'dossier', label: 'Dossier monté', hint: 'Chiffrage, subventions et montage financier en cours.', color: 'border-amber-500/50' },
-  { id: 'proposition', label: 'Proposition', hint: 'Offre ou contrat MGPE-PD envoyé au décideur.', color: 'border-violet-500/50' },
+  { id: 'identifie', label: 'Repéré', hint: 'Tu as repéré l’opportunité, pas encore contacté.', color: 'border-line-strong' },
+  { id: 'qualifie', label: 'Intéressant', hint: 'La collectivité est réceptive ou le dossier tient la route.', color: 'border-info-border' },
+  { id: 'dossier', label: 'Dossier monté', hint: 'Chiffrage, subventions et montage financier en cours.', color: 'border-warning-border' },
+  { id: 'proposition', label: 'Proposition', hint: 'Offre ou contrat MGPE-PD envoyé au décideur.', color: 'border-positive-border' },
   { id: 'signe', label: 'Signé', hint: 'Contrat validé — chantier à lancer.', color: 'border-zen-teal-dim/50' },
 ];
 

@@ -2,10 +2,10 @@ import { cn } from '@/lib/utils';
 import { SCORE_GRADES } from '@/lib/copy';
 
 const GRADE: Record<string, string> = {
-  A: 'bg-green-50 text-green-700',
-  B: 'bg-zinc-100 text-zinc-800',
-  C: 'bg-orange-50 text-orange-700',
-  D: 'bg-zinc-50 text-zinc-400',
+  A: 'bg-positive-soft text-positive-text',
+  B: 'bg-surface-muted text-ink-soft',
+  C: 'bg-warning-soft text-warning-text',
+  D: 'bg-surface-sunken text-ink-muted',
 };
 
 export function RadarScoreBadge({

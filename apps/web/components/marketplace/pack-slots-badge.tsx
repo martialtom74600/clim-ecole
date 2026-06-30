@@ -21,7 +21,7 @@ export function PackSlotsBadge({
       <span
         title={title}
         className={cn(
-          'inline-flex cursor-help items-center gap-1 rounded border border-amber-200 bg-amber-50 font-semibold text-amber-800',
+          'inline-flex cursor-help items-center gap-1 rounded border border-warning-border bg-warning-soft font-semibold text-warning-text',
           size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-0.5 text-[11px]',
         )}
       >
@@ -36,7 +36,7 @@ export function PackSlotsBadge({
       <span
         title={title}
         className={cn(
-          'inline-flex cursor-help items-center gap-1 rounded border border-amber-200 bg-amber-50 font-semibold text-amber-800',
+          'inline-flex cursor-help items-center gap-1 rounded border border-warning-border bg-warning-soft font-semibold text-warning-text',
           size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-0.5 text-[11px]',
         )}
       >
@@ -50,7 +50,7 @@ export function PackSlotsBadge({
     <span
       title={title}
       className={cn(
-        'inline-flex cursor-help items-center gap-1 rounded border border-slate-200 bg-slate-50 font-medium text-slate-600',
+        'inline-flex cursor-help items-center gap-1 rounded border border-line bg-surface-sunken font-medium text-ink-muted',
         size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-0.5 text-[11px]',
       )}
     >

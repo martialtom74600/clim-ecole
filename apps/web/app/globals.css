@@ -41,8 +41,13 @@
 }
 
 @layer components {
+  /*
+   * Master container — gabarit horizontal unique.
+   * max-w-7xl + px-5 md:px-8 s'alignent parfaitement avec topbar et footer.
+   * Rythme vertical : py-10 md:py-14 (multiple de 8pt).
+   */
   .page-content {
-    @apply mx-auto w-full max-w-6xl px-5 py-12 md:px-8 md:py-16;
+    @apply mx-auto w-full max-w-7xl px-5 py-10 md:px-8 md:py-14;
   }
 
   .saas-shell {
@@ -112,6 +117,105 @@
 
   .chip-active {
     @apply border-ink bg-ink text-white shadow-sm;
+  }
+
+  /*
+   * Curseur premium — piste qui se remplit + thumb réactif à la pression.
+   * Piloté par --fill (pourcentage) défini en inline-style par <RangeSlider/>.
+   */
+  .range-premium {
+    @apply h-1.5 w-full cursor-pointer appearance-none rounded-full bg-transparent;
+    background-image: linear-gradient(
+      to right,
+      #18181B 0%,
+      #18181B var(--fill, 0%),
+      #E8E8EB var(--fill, 0%),
+      #E8E8EB 100%
+    );
+    background-repeat: no-repeat;
+  }
+
+  .range-premium:focus-visible {
+    outline: none;
+  }
+
+  .range-premium::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 18px;
+    width: 18px;
+    border-radius: 9999px;
+    background: #ffffff;
+    border: 1.5px solid #18181B;
+    box-shadow: 0 1px 3px rgba(24, 24, 27, 0.22);
+    transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.16s ease;
+  }
+
+  .range-premium::-moz-range-thumb {
+    height: 18px;
+    width: 18px;
+    border-radius: 9999px;
+    background: #ffffff;
+    border: 1.5px solid #18181B;
+    box-shadow: 0 1px 3px rgba(24, 24, 27, 0.22);
+    transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.16s ease;
+  }
+
+  .range-premium:hover::-webkit-slider-thumb {
+    box-shadow: 0 0 0 6px rgba(24, 24, 27, 0.06);
+  }
+  .range-premium:hover::-moz-range-thumb {
+    box-shadow: 0 0 0 6px rgba(24, 24, 27, 0.06);
+  }
+
+  .range-premium:active::-webkit-slider-thumb {
+    transform: scale(1.28);
+    box-shadow: 0 0 0 8px rgba(24, 24, 27, 0.10), 0 2px 6px rgba(24, 24, 27, 0.28);
+  }
+  .range-premium:active::-moz-range-thumb {
+    transform: scale(1.28);
+    box-shadow: 0 0 0 8px rgba(24, 24, 27, 0.10), 0 2px 6px rgba(24, 24, 27, 0.28);
+  }
+
+  .range-premium:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 4px rgba(24, 24, 27, 0.16);
+  }
+  .range-premium:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 4px rgba(24, 24, 27, 0.16);
+  }
+
+  /*
+   * Spotlight — halo radial qui suit le curseur (depth + delight).
+   * Le halo est peint sous le contenu (entre le fond et le texte).
+   */
+  .spotlight {
+    @apply relative;
+  }
+
+  .spotlight-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    background: radial-gradient(
+      240px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(24, 24, 27, 0.06),
+      transparent 68%
+    );
+  }
+
+  .spotlight-glow-light {
+    background: radial-gradient(
+      240px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 255, 255, 0.10),
+      transparent 68%
+    );
+  }
+
+  .spotlight:hover .spotlight-glow {
+    opacity: 1;
   }
 
   /* Shimmering skeleton background */

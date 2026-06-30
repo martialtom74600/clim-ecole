@@ -1,6 +1,7 @@
 'use client';
 
 import { Star } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { COPY } from '@/lib/copy';
 import { useEffect, useState } from 'react';
@@ -17,10 +18,11 @@ export function WatchlistButton({ packId }: { packId: string }) {
   }, [packId, prefs.watchlist]);
 
   return (
-    <button
+    <motion.button
       type="button"
       title={active ? COPY.removeFromFavorites : COPY.addToFavorites}
       aria-label={active ? COPY.removeFromFavorites : COPY.addToFavorites}
+      whileTap={{ scale: 0.82 }}
       onClick={(e) => {
         e.stopPropagation();
         const next = syncToggle(packId);
@@ -30,11 +32,19 @@ export function WatchlistButton({ packId }: { packId: string }) {
       className={cn(
         'rounded-lg border p-2 transition-colors',
         active
-          ? 'border-amber-300 bg-amber-50 text-amber-600'
-          : 'border-slate-200 text-slate-400 hover:text-slate-600',
+          ? 'border-warning-border bg-warning-soft text-warning-text'
+          : 'border-line text-ink-subtle hover:text-ink-muted',
       )}
     >
-      <Star className={cn('h-4 w-4', active && 'fill-current')} />
-    </button>
+      <motion.span
+        key={active ? 'on' : 'off'}
+        initial={{ scale: 0.5 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+        className="inline-flex"
+      >
+        <Star className={cn('h-4 w-4', active && 'fill-current')} />
+      </motion.span>
+    </motion.button>
   );
 }

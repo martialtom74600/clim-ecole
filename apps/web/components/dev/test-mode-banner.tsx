@@ -6,7 +6,7 @@ export function TestModeBanner() {
 
   return (
     <div
-      className="border-b border-emerald-600/30 bg-emerald-500/10 px-4 py-2.5 text-center text-sm text-emerald-950"
+      className="border-b border-positive-border bg-positive-soft px-4 py-2.5 text-center text-sm text-positive-text"
       role="status"
     >
       <strong>Accès complet sans paiement</strong> — même vue qu&apos;un client qui a acheté.{' '}
@@ -14,8 +14,8 @@ export function TestModeBanner() {
         Ouvrir l&apos;explorateur
       </Link>
       {' · '}
-      <span className="text-emerald-900/80">
-        (pas l&apos;admin — c&apos;est <code className="rounded bg-emerald-500/15 px-1">/explorer</code>)
+      <span className="text-positive-text/80">
+        (pas l&apos;admin — c&apos;est <code className="rounded bg-positive-soft px-1">/explorer</code>)
       </span>
     </div>
   );

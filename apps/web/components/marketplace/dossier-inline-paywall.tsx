@@ -26,7 +26,7 @@ export function DossierInlinePaywall({
         className,
       )}
     >
-      <div className="w-full max-w-sm rounded-2xl border border-line bg-white p-5 text-center shadow-raised">
+      <div className="w-full max-w-sm rounded-xl border border-line bg-white p-5 text-center shadow-raised">
         <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-surface-sunken">
           <Lock className="h-4 w-4 text-ink-muted" strokeWidth={1.5} />
         </div>
@@ -54,7 +54,10 @@ export function DossierInlinePaywall({
   );
 }
 
-/** Enveloppe une zone : contenu flouté + overlay paywall par-dessus */
+/**
+ * Enveloppe une zone : contenu flouté + overlay paywall par-dessus.
+ * Utilise rounded-xl pour rester cohérent avec le border-radius des blocs de contenu.
+ */
 export function DossierBlurredPaywallZone({
   pack,
   soldOut,
@@ -71,8 +74,8 @@ export function DossierBlurredPaywallZone({
   className?: string;
 }) {
   return (
-    <div className={cn('relative overflow-hidden rounded-2xl', className)}>
-      <div className="pointer-events-none select-none blur-sm">{children}</div>
+    <div className={cn('relative overflow-hidden rounded-xl', className)}>
+      <div className="pointer-events-none select-none blur-[3px]">{children}</div>
       <DossierInlinePaywall pack={pack} soldOut={soldOut} title={title} subtitle={subtitle} />
     </div>
   );

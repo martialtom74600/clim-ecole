@@ -4,6 +4,7 @@ import { Check, Lock, Sparkles, Zap } from 'lucide-react';
 import type { MarketplacePack } from '@/lib/types';
 import type { TerritoryFreePreview } from '@/lib/freemium';
 import { COPY } from '@/lib/copy';
+import { PRICING, priceLabel } from '@/lib/pricing';
 import { PAYWALL_INCLUDES } from '@/lib/site-guide';
 import { CheckoutButton } from '@/components/marketplace/checkout-button';
 import { PackSlotsBadge } from '@/components/marketplace/pack-slots-badge';
@@ -46,7 +47,7 @@ export function DossierPaywallCard({
       )}
 
       <div className="mt-4 flex items-baseline gap-2">
-        <span className="font-mono text-3xl font-bold tracking-tight text-ink">290 €</span>
+        <span className="font-mono text-3xl font-bold tracking-tight text-ink">{priceLabel(PRICING.dossier)}</span>
         <span className="text-sm text-ink-muted">HT · un territoire · 30 jours</span>
       </div>
 
@@ -89,7 +90,7 @@ export function DossierPaywallCard({
         </p>
         <CheckoutButton plan="pro" className="btn-secondary w-full py-3">
           <Zap className="h-4 w-4" />
-          Tous les territoires — 990 € HT/mois
+          Tous les territoires — {priceLabel(PRICING.pro)} HT/mois
         </CheckoutButton>
       </div>
 

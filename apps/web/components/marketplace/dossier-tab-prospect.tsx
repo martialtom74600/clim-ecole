@@ -2,12 +2,13 @@
 
 import type { MarketplaceBuilding, MarketplacePack } from '@/lib/types';
 import type { TerritoryFreePreview } from '@/lib/freemium';
-import { COPY, SCORE_GRADES } from '@/lib/copy';
-import { DOSSIER_CONTENT, DOSSIER_MAP_STICKY } from '@/lib/dossier-ui';
+import { DOSSIER_CONTENT, DOSSIER_MAP_STICKY, DOSSIER_SECTION } from '@/lib/dossier-ui';
 import { DossierSchoolListDense } from '@/components/marketplace/dossier-school-list-dense';
 import { PackSchoolMap } from '@/components/marketplace/pack-school-map';
+import { DossierSchoolMapMobile } from '@/components/marketplace/dossier-school-map-mobile';
 import { DossierArtisansStrip } from '@/components/marketplace/dossier-artisans-strip';
-import { DossierInlinePaywall } from '@/components/marketplace/dossier-inline-paywall';
+import { DossierLockHint } from '@/components/marketplace/dossier-inline-paywall';
+import { DossierPaywallCard } from '@/components/marketplace/dossier-paywall-card';
 import { useAccountPreferences } from '@/hooks/use-account-preferences';
 
 export function DossierTabProspect({
@@ -31,12 +32,13 @@ export function DossierTabProspect({
   );
 
   /**
-   * Contenu de la carte — partagé entre mobile et desktop.
-   * Ce composant n'a pas de hauteur propre : c'est le wrapper parent
-   * (h-[400px] mobile / DOSSIER_MAP_STICKY desktop) qui la définit.
-   * Le h-full ici se propage jusqu'à Leaflet via la chaîne flex de PackSchoolMap.
+   * Carte desktop uniquement — interactive et sticky.
+   * Sur mobile, on utilise DossierSchoolMapMobile (aperçu non bloquant + modale)
+   * pour ne jamais piéger le scroll tactile.
+   * Ce composant n'a pas de hauteur propre : le wrapper parent (DOSSIER_MAP_STICKY)
+   * la définit, et h-full se propage jusqu'à Leaflet via la chaîne flex.
    */
-  const mapContent = (
+  const desktopMap = (
     <div className="relative h-full w-full overflow-hidden rounded-xl border border-line shadow-card">
       {unlocked ? (
         <PackSchoolMap buildings={filtered} variant="embedded" fill showHeader={false} />
@@ -49,11 +51,9 @@ export function DossierTabProspect({
           <div className="pointer-events-none h-full select-none blur-sm">
             <PackSchoolMap buildings={filtered} variant="embedded" fill showHeader={false} />
           </div>
-          <DossierInlinePaywall
-            pack={pack}
-            soldOut={soldOut}
+          <DossierLockHint
             title="Carte GPS des écoles"
-            subtitle="Débloquez pour voir la localisation exacte."
+            subtitle="Localisation exacte visible après déblocage."
           />
         </>
       )}
@@ -62,49 +62,18 @@ export function DossierTabProspect({
 
   return (
     <div className={DOSSIER_CONTENT}>
-      {!unlocked && (
-        <div className="mb-6 rounded-xl border border-line bg-surface-sunken p-4">
-          <p className="label-caps mb-3">Aperçu gratuit de ce territoire</p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              {
-                label: 'Écoles concernées',
-                value: String(pack.batimentCount),
-              },
-              {
-                label: 'Budget estimé',
-                value: freePreview?.budgetRange ?? pack.budgetRange,
-              },
-              {
-                label: 'Profil DPE',
-                value: freePreview?.dpeProfile.worstClass ?? '—',
-                hint: freePreview?.dpeProfile.label,
-              },
-              {
-                label: COPY.scorePriorite,
-                value: `${pack.radarGrade} · ${pack.radarScore}/100`,
-                hint: SCORE_GRADES[pack.radarGrade],
-              },
-            ].map(({ label, value, hint }) => (
-              <div key={label} className="flex flex-col gap-0.5">
-                <span className="text-[11px] text-ink-subtle">{label}</span>
-                <span className="text-sm font-semibold text-ink">{value}</span>
-                {hint && <span className="text-[11px] text-ink-subtle">{hint}</span>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
 
         {/*
-         * MOBILE — carte avec hauteur fixe en haut, liste scrollable en dessous.
-         * h-[400px] : hauteur explicite indispensable pour que Leaflet s'initialise.
-         * mb-8 : respiration avant la liste.
-         * Pas de sticky sur mobile.
+         * MOBILE — aperçu carte non interactif + bouton « Voir sur la carte »
+         * qui ouvre une modale plein écran. Le scroll de la page n'est jamais
+         * capté par Leaflet.
          */}
-        <div className="h-[400px] w-full lg:hidden">
-          {mapContent}
+        <div className="w-full lg:hidden">
+          <DossierSchoolMapMobile
+            buildings={filtered}
+            locked={!unlocked}
+          />
         </div>
 
         {/* Liste des écoles — col 7/12 sur desktop */}
@@ -118,7 +87,6 @@ export function DossierTabProspect({
               locked={!unlocked}
               freePreview={freePreview}
               paywallPack={!unlocked ? pack : undefined}
-              paywallSoldOut={soldOut}
             />
             {unlocked && <DossierArtisansStrip buildings={filtered} />}
           </div>
@@ -127,16 +95,28 @@ export function DossierTabProspect({
         {/*
          * DESKTOP — carte sticky col 5/12.
          * DOSSIER_MAP_STICKY fournit sticky + top + h-[calc(100vh-200px)].
-         * mapContent s'y adapte via h-full.
-         * lg:block masqué sur mobile (la carte mobile est déjà rendue au-dessus).
+         * desktopMap s'y adapte via h-full.
+         * lg:block masqué sur mobile (l'aperçu mobile est déjà rendu au-dessus).
          */}
         <div className="hidden lg:col-span-5 lg:block">
           <div className={DOSSIER_MAP_STICKY}>
-            {mapContent}
+            {desktopMap}
           </div>
         </div>
 
       </div>
+
+      {/* CTA unique en bas de l'onglet — un seul point de conversion */}
+      {!unlocked && (
+        <section className={DOSSIER_SECTION}>
+          <DossierPaywallCard
+            pack={pack}
+            freePreview={freePreview}
+            soldOut={soldOut ?? false}
+            embedded
+          />
+        </section>
+      )}
     </div>
   );
 }

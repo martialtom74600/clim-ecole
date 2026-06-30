@@ -1,4 +1,5 @@
 import type { ClientPersona } from './brand';
+import { PRICING, formatAmount } from './pricing';
 
 export interface PersonaLandingContent {
   id: ClientPersona | 'finance';
@@ -172,7 +173,7 @@ export const PRICING_TIERS = [
   {
     id: 'dossier',
     name: 'Un territoire',
-    price: '290',
+    price: formatAmount(PRICING.dossier),
     period: '€ HT',
     desc: 'War Room complète — 1 EPCI, 30 jours.',
     features: ['CAPEX, RAC, MGPE-PD', 'Contacts mairies', 'Exports CSV / PDF', 'Email mairie pré-rempli'],
@@ -182,7 +183,7 @@ export const PRICING_TIERS = [
   {
     id: 'pro',
     name: 'Radar Pro',
-    price: '990',
+    price: formatAmount(PRICING.pro),
     period: '€ HT / mois',
     desc: 'Illimité France progressive — équipe commerciale.',
     features: ['Tous territoires', 'Alertes email', 'Pipeline CRM', '3 utilisateurs'],
@@ -192,7 +193,7 @@ export const PRICING_TIERS = [
   {
     id: 'team',
     name: 'Radar Équipe',
-    price: '1 990',
+    price: formatAmount(PRICING.team),
     period: '€ HT / mois',
     desc: 'Agence BET 5–10 commerciaux — pipeline partagé.',
     features: ['10 sièges', 'Watchlist équipe', 'Exports bulk', 'Support prioritaire'],
@@ -203,7 +204,7 @@ export const PRICING_TIERS = [
   {
     id: 'cee',
     name: 'Origination CEE',
-    price: '2 990',
+    price: formatAmount(PRICING.cee),
     period: '€ HT / mois',
     desc: 'Délégataires — cumac, fiches BAT, campagnes.',
     features: ['Filtres F/G + cumac', 'Estimation kWh cumac', 'Export campagne', 'Alertes passoires'],
@@ -214,7 +215,7 @@ export const PRICING_TIERS = [
   {
     id: 'dataroom',
     name: 'Data Room National',
-    price: '5 000',
+    price: formatAmount(PRICING.dataroom),
     period: '€ HT / mois',
     desc: 'SPL, fonds infra, majors — API & bundling.',
     features: ['Accès API', 'Bundling multi-EPCI', 'SLA fraîcheur', 'Account manager'],

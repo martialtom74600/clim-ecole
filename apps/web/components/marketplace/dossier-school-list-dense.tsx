@@ -10,7 +10,7 @@ import { narrativeBudget } from '@/lib/narrative-copy';
 import { dpeBgClass, dpeLetter, dpeTextClass } from '@/lib/dpe-colors';
 import { GlossaryTerm } from '@/components/ui/glossary-term';
 import { cn } from '@/lib/utils';
-import { DossierInlinePaywall } from '@/components/marketplace/dossier-inline-paywall';
+import { DossierLockHint } from '@/components/marketplace/dossier-inline-paywall';
 import {
   BlacklistBuildingButton,
   MairieEmailButton,
@@ -31,7 +31,6 @@ export function DossierSchoolListDense({
   locked = false,
   freePreview,
   paywallPack,
-  paywallSoldOut,
 }: {
   buildings: MarketplaceBuilding[];
   pack?: MarketplacePack;
@@ -40,7 +39,6 @@ export function DossierSchoolListDense({
   locked?: boolean;
   freePreview?: TerritoryFreePreview;
   paywallPack?: MarketplacePack;
-  paywallSoldOut?: boolean;
 }) {
   const [query, setQuery] = useState('');
   const { prefs, toggleBlacklist } = useAccountPreferences();
@@ -131,11 +129,9 @@ export function DossierSchoolListDense({
           {/* Dégradé masquant les écoles floutées */}
           <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-transparent to-white/90" />
           {paywallPack && (
-            <DossierInlinePaywall
-              pack={paywallPack}
-              soldOut={paywallSoldOut}
-              title={`Débloquez les ${filtered.length} contacts directs pour 290 €`}
-              subtitle="Emails mairies, noms des écoles et budgets précis — tout ce qu'il faut pour prospecter."
+            <DossierLockHint
+              title={`${filtered.length} contacts directs`}
+              subtitle="Noms des écoles et emails mairies après déblocage."
             />
           )}
         </div>
@@ -144,11 +140,9 @@ export function DossierSchoolListDense({
       {/* Cas particulier : territoire avec seulement 1-2 écoles, toutes déjà visibles */}
       {locked && hiddenSchools.length === 0 && paywallPack && filtered.length > 0 && (
         <div className="relative min-h-[8rem]">
-          <DossierInlinePaywall
-            pack={paywallPack}
-            soldOut={paywallSoldOut}
-            title="Débloquez les contacts directs pour 290 €"
-            subtitle="Emails mairies, noms des écoles et budgets précis — tout ce qu'il faut pour prospecter."
+          <DossierLockHint
+            title="Contacts directs verrouillés"
+            subtitle="Noms des écoles et emails mairies après déblocage."
           />
         </div>
       )}

@@ -11,6 +11,7 @@ import type {
   MarketplacePack,
 } from '@/lib/types';
 import type { TerritoryFreePreview } from '@/lib/freemium';
+import { PRICING, priceLabel } from '@/lib/pricing';
 import {
   DOSSIER_CONTENT,
   DOSSIER_PAGE,
@@ -26,6 +27,7 @@ import {
 import { DossierTabFinance } from '@/components/marketplace/dossier-tab-finance';
 import { DossierTabProspect } from '@/components/marketplace/dossier-tab-prospect';
 import { DossierTabExports } from '@/components/marketplace/dossier-tab-exports';
+import { DossierFreePreviewStrip } from '@/components/marketplace/dossier-free-preview-strip';
 import { PostPurchaseChecklist } from '@/components/marketplace/post-purchase-checklist';
 import { PresentationModeToggle } from '@/components/marketplace/dossier-client-tools';
 import { tabContent } from '@/lib/motion';
@@ -222,6 +224,13 @@ export function DossierApp({
         </div>
       )}
 
+      {/* Aperçu gratuit — affiché une seule fois ici (et non par onglet) quand verrouillé */}
+      {!unlocked && (
+        <div className="mx-auto w-full max-w-7xl px-5 pt-8 md:px-8 md:pt-10">
+          <DossierFreePreviewStrip pack={pack} freePreview={freePreview} />
+        </div>
+      )}
+
       {/* Un seul <main> dans toute la page — le layout (saas)/layout.tsx en contient déjà un */}
       <div>{animatedPanels}</div>
     </div>
@@ -242,7 +251,7 @@ function DemoBanner() {
             <strong className="font-semibold">Démonstration</strong>
             <span className="text-white/70">
               {' '}
-              — dossier réel entièrement débloqué. Votre territoire dès 290 € HT.
+              — dossier réel entièrement débloqué. Votre territoire dès {priceLabel(PRICING.dossier)} HT.
             </span>
           </span>
         </p>

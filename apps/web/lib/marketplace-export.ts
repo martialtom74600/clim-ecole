@@ -1,4 +1,5 @@
 import type { MarketplaceBuilding, MarketplacePack } from './types';
+import { resteACharge, subventionsFromRatio } from './finance-math';
 
 function csvCell(value: string | number | boolean | null | undefined): string {
   if (value == null || value === '') return '';
@@ -56,7 +57,7 @@ function buildingRow(pack: MarketplacePack, b: MarketplaceBuilding, full: boolea
     b.surfaceM2,
     b.capexTotal,
     b.partFondsVert ?? b.resteACharge,
-    b.resteAChargeAfterSubs ?? Math.max(0, b.capexTotal - (b.capexTotal * pack.subventionRatio)),
+    b.resteAChargeAfterSubs ?? resteACharge(b.capexTotal, subventionsFromRatio(b.capexTotal, pack.subventionRatio)),
     b.gainNetMairie,
     b.roiAnnees,
     csvCell(b.closingTemperature),

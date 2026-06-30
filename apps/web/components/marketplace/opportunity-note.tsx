@@ -3,6 +3,7 @@
 import { Printer } from 'lucide-react';
 import type { MarketplacePackDetail } from '@/lib/types';
 import { formatEur, formatInt, formatPct } from '@/lib/format';
+import { resteACharge } from '@/lib/finance-math';
 import { COPY } from '@/lib/copy';
 import { ALGORITHM_DISCLAIMER } from '@/lib/legal';
 import { cn } from '@/lib/utils';
@@ -56,7 +57,7 @@ export function OpportunityNote({
   className?: string;
 }) {
   const { pack, buildings, mgpe, resteAChargeAfterSubsTotal, nomEpci, communesLabel } = data;
-  const racTotal = resteAChargeAfterSubsTotal ?? pack.packCapexTotal - pack.subventionsTotal;
+  const racTotal = resteAChargeAfterSubsTotal ?? resteACharge(pack.packCapexTotal, pack.subventionsTotal);
   const date = new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
     month: 'long',

@@ -5,7 +5,8 @@ import Link from 'next/link';
 import type { MarketplacePack } from '@/lib/types';
 import type { TerritoryFreePreview } from '@/lib/freemium';
 import { DossierShareButton } from '@/components/marketplace/dossier-client-tools';
-import { DossierInlinePaywall } from '@/components/marketplace/dossier-inline-paywall';
+import { DossierLockHint } from '@/components/marketplace/dossier-inline-paywall';
+import { DossierPaywallCard } from '@/components/marketplace/dossier-paywall-card';
 import { GlossaryTerm } from '@/components/ui/glossary-term';
 import { DOSSIER_CONTENT, DOSSIER_SECTION, DOSSIER_SECTION_DESC, DOSSIER_SECTION_TITLE } from '@/lib/dossier-ui';
 import { cn } from '@/lib/utils';
@@ -123,14 +124,24 @@ export function DossierTabExports({
           </ul>
 
           {!unlocked && (
-            <DossierInlinePaywall
-              pack={pack}
-              soldOut={soldOut}
+            <DossierLockHint
               title="Exports inclus dans le déblocage"
               subtitle="Tableurs, synthèse maire et dossier tiers-financement."
             />
           )}
         </div>
+
+        {/* CTA unique en bas de l'onglet — un seul point de conversion */}
+        {!unlocked && (
+          <div className="mt-8">
+            <DossierPaywallCard
+              pack={pack}
+              freePreview={freePreview}
+              soldOut={soldOut ?? false}
+              embedded
+            />
+          </div>
+        )}
 
         {/* Lien de partage — uniquement après déblocage */}
         {unlocked && (

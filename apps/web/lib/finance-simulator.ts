@@ -1,5 +1,7 @@
 /** Calculs financiers synchronisés (curseurs → KPIs en temps réel) */
 
+import { resteACharge, subventionsFromRatio } from './finance-math';
+
 export interface FinanceSimInput {
   capex: number;
   baseSubventionRatio: number;
@@ -33,8 +35,8 @@ export interface FinanceSimResult {
 
 function racFromRate(capex: number, ratePct: number): { subventions: number; rac: number; ratio: number } {
   const ratio = ratePct / 100;
-  const subventions = capex * ratio;
-  return { subventions, rac: Math.max(0, capex - subventions), ratio };
+  const subventions = subventionsFromRatio(capex, ratio);
+  return { subventions, rac: resteACharge(capex, subventions), ratio };
 }
 
 export function computeFinanceSimulation(input: FinanceSimInput): FinanceSimResult {

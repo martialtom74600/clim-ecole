@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { BrandLogo } from '@/components/brand/logo';
 import { PERSONA_LIST } from '@/lib/brand';
+import { PRICING, priceLabel } from '@/lib/pricing';
 import { useAccountPreferences } from '@/hooks/use-account-preferences';
 
 const NAV = [
@@ -82,7 +83,7 @@ export function PublicTopbar() {
 
         <div className="hidden items-center gap-3 md:flex">
           <Link href="/compte" className="btn-ghost"><User className="h-4 w-4" />{accountLabel}</Link>
-          <Link href="/tarifs?plan=pro" className="btn-primary !py-2 !text-sm">990 €/mois · tout débloquer</Link>
+          <Link href="/tarifs?plan=pro" className="btn-primary !py-2 !text-sm">{priceLabel(PRICING.pro)}/mois · tout débloquer</Link>
         </div>
 
         <button type="button" className="p-2 md:hidden" onClick={() => setOpen(!open)} aria-label="Menu">

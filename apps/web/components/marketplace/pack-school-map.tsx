@@ -12,15 +12,22 @@ export function PackSchoolMap({
   className,
   showHeader = true,
   fill,
+  interactive = true,
 }: {
   buildings: MarketplaceBuilding[];
   variant?: 'card' | 'embedded';
   className?: string;
   showHeader?: boolean;
   fill?: boolean;
+  /**
+   * false = carte purement visuelle (aperçu) : tous les gestes Leaflet sont
+   * désactivés pour que le scroll vertical de la page passe au travers sur mobile.
+   */
+  interactive?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import('leaflet').Map | null>(null);
+  const resizeRef = useRef<ResizeObserver | null>(null);
 
   const geo = buildings.filter(
     (b) => b.latitude != null && b.longitude != null && !b.detailsHidden,
@@ -44,8 +51,13 @@ export function PackSchoolMap({
       }
 
       const map = L.map(containerRef.current, {
-        zoomControl: true,
+        zoomControl: interactive,
         scrollWheelZoom: false,
+        dragging: interactive,
+        touchZoom: interactive,
+        doubleClickZoom: interactive,
+        boxZoom: interactive,
+        keyboard: interactive,
       });
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -84,18 +96,28 @@ export function PackSchoolMap({
       }
 
       mapRef.current = map;
+
+      /* Leaflet calcule mal sa taille s'il s'initialise dans un conteneur qui
+         vient d'apparaître (modale, onglet, sticky) → on force le recalcul au
+         montage puis à chaque redimensionnement du conteneur. */
+      requestAnimationFrame(() => mapRef.current?.invalidateSize());
+      const ro = new ResizeObserver(() => mapRef.current?.invalidateSize());
+      ro.observe(containerRef.current);
+      resizeRef.current = ro;
     }
 
     void init();
 
     return () => {
       cancelled = true;
+      resizeRef.current?.disconnect();
+      resizeRef.current = null;
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
     };
-  }, [buildings]);
+  }, [buildings, interactive]);
 
   if (geo.length === 0) {
     return (

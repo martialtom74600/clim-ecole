@@ -5,6 +5,7 @@ import { COPY } from '@/lib/copy';
 import { CheckoutButton } from '@/components/marketplace/checkout-button';
 import { GlossaryTerm } from '@/components/ui/glossary-term';
 import { Spotlight } from '@/components/ui/spotlight';
+import { PageHeader } from '@/components/layout/page-header';
 import { PRICING_TIERS } from '@/lib/gtm';
 
 /**
@@ -27,10 +28,10 @@ export function PricingPage({
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold tracking-tight text-ink">Tarifs</h1>
-      <p className="mt-2 text-ink-muted">
-        Priorisez gratuitement. Payez pour chiffrer, contacter et exporter — ou contactez-nous pour les offres équipe et institutionnelles.
-      </p>
+      <PageHeader
+        title="Tarifs"
+        subtitle="Priorisez gratuitement. Payez pour chiffrer, contacter et exporter — ou contactez-nous pour les offres équipe et institutionnelles."
+      />
 
       <div className="card mt-10 p-6">
         <h2 className="font-semibold text-ink">Gratuit — sans carte bancaire</h2>

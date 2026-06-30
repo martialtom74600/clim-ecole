@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, Flame, Lock, Radar, Search, ShieldAlert, Unlock } from 'lucide-react';
 import { BRAND, HOW_IT_WORKS } from '@/lib/brand';
 import { COPY } from '@/lib/copy';
+import { PRICING, priceLabel } from '@/lib/pricing';
 import { getMarketplaceGlobalStats, getMarketplacePacks } from '@/lib/marketplace';
 import { getCoverageBadge } from '@/lib/coverage';
 import { formatInt, formatEur } from '@/lib/format';
@@ -139,7 +140,7 @@ export async function LandingHero() {
             </div>
             <div className="card relative overflow-hidden border-ink/15 p-6 shadow-raised ring-1 ring-ink/5">
               <span className="absolute right-4 top-4 rounded-full bg-ink px-2.5 py-0.5 text-[11px] font-semibold text-white">
-                dès 290 € HT
+                dès {priceLabel(PRICING.dossier)} HT
               </span>
               <div className="flex items-center gap-2">
                 <Unlock className="h-5 w-5 text-ink" />

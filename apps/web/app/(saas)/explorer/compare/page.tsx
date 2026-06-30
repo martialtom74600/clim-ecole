@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getMarketplacePacks } from '@/lib/marketplace';
 import { COPY } from '@/lib/copy';
+import { PageHeader } from '@/components/layout/page-header';
 import { TerritoryScorecardCompare } from '@/components/marketplace/territory-scorecard-compare';
 
 export default async function ComparePage({
@@ -17,18 +18,18 @@ export default async function ComparePage({
 
   return (
     <div className="page-content">
-      <Link href="/explorer" className="btn-ghost mb-6 -ml-2">
-        ← {COPY.backToExplorer}
-      </Link>
-      <h1 className="text-2xl font-semibold">Scorecard comparatif</h1>
-      <p className="mt-2 max-w-2xl text-radar-muted">
-        Comparez jusqu&apos;à 3 territoires sur 5 dimensions métier (Radar, CAPEX, subventions,
-        urgence AO, ROI). Classement algorithmique transparent — pour choisir où prospecter en
-        premier.
-      </p>
+      <PageHeader
+        meta={
+          <Link href="/explorer" className="btn-ghost -ml-2">
+            ← {COPY.backToExplorer}
+          </Link>
+        }
+        title="Scorecard comparatif"
+        subtitle="Comparez jusqu'à 3 territoires sur 5 dimensions métier (Radar, CAPEX, subventions, urgence AO, ROI). Classement algorithmique transparent — pour choisir où prospecter en premier."
+      />
 
       {packs.length === 0 ? (
-        <div className="card mt-8 p-8 text-center text-radar-muted">
+        <div className="card mt-8 p-8 text-center text-ink-muted">
           <p>Aucun territoire sélectionné.</p>
           <p className="mt-2 text-sm">
             Depuis l&apos;explorateur, cliquez sur l&apos;icône {COPY.compare.toLowerCase()} sur une

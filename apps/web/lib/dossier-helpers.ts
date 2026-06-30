@@ -1,5 +1,6 @@
 import type { MarketplaceMgpeSummary } from './types';
 import type { ProspectRow } from './types';
+import { resteACharge } from './finance-math';
 
 function bestText(values: string[]): string {
   return values.filter((v) => v?.trim()).sort((a, b) => b.length - a.length)[0] ?? '';
@@ -32,5 +33,5 @@ export function buildMgpeSummary(batiments: ProspectRow[]): MarketplaceMgpeSumma
 }
 
 export function resteAChargeAfterSubs(capex: number, subventions: number): number {
-  return Math.max(0, capex - subventions);
+  return resteACharge(capex, subventions);
 }

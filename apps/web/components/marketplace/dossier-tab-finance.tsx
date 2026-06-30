@@ -5,7 +5,6 @@ import { motion, useReducedMotion } from 'framer-motion';
 import type { MarketplaceMgpeSummary, MarketplacePack } from '@/lib/types';
 import type { ClientPersona } from '@/lib/brand';
 import type { TerritoryFreePreview } from '@/lib/freemium';
-import { COPY, SCORE_GRADES } from '@/lib/copy';
 import { formatEur } from '@/lib/format';
 import {
   narrativeBudget,
@@ -284,41 +283,6 @@ export function DossierTabFinance({
 
         {/* Synthèse chiffres — données libres EN PREMIER, puis les zones bloquées */}
         <section>
-          {/* Aperçu gratuit : affiché avant les zones floutées pour construire le désir */}
-          {!unlocked && (
-            <div className="mb-5 rounded-xl border border-line bg-surface-sunken p-4">
-              <p className="label-caps mb-3">Aperçu gratuit</p>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {[
-                  {
-                    label: 'Budget estimé',
-                    value: freePreview?.budgetRange ?? pack.budgetRange,
-                  },
-                  {
-                    label: "Niveau d'aides",
-                    value: freePreview?.subventionLevel ?? pack.subventionLevelLabel,
-                  },
-                  {
-                    label: 'Profil DPE',
-                    value: freePreview?.dpeProfile.worstClass ?? '—',
-                    hint: freePreview?.dpeProfile.label,
-                  },
-                  {
-                    label: COPY.scorePriorite,
-                    value: `${pack.radarGrade} · ${pack.radarScore}/100`,
-                    hint: SCORE_GRADES[pack.radarGrade],
-                  },
-                ].map(({ label, value, hint }) => (
-                  <div key={label} className="flex flex-col gap-0.5">
-                    <span className="text-[11px] text-ink-subtle">{label}</span>
-                    <span className="text-sm font-semibold text-ink">{value}</span>
-                    {hint && <span className="text-[11px] text-ink-subtle">{hint}</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {unlocked ? (
             <motion.div
               initial={celebrate ? { opacity: 0, scale: 0.97, filter: 'blur(10px)' } : false}
@@ -329,10 +293,8 @@ export function DossierTabFinance({
             </motion.div>
           ) : (
             <DossierBlurredPaywallZone
-              pack={pack}
-              soldOut={soldOut}
-              title="Débloquez les montants financiers exacts pour 290 €"
-              subtitle="Budget, reste à financer et économies — recalculés en temps réel."
+              title="Montants exacts après déblocage"
+              subtitle="Budget, reste à financer et économies, recalculés en temps réel."
             >
               {heroStrip}
             </DossierBlurredPaywallZone>
@@ -354,7 +316,7 @@ export function DossierTabFinance({
           </p>
           <div className="mt-6">
             {unlocked ? essentialSimulator : (
-              <DossierBlurredPaywallZone pack={pack} soldOut={soldOut}>
+              <DossierBlurredPaywallZone subtitle="Ajustez le taux d'aides après déblocage.">
                 {essentialSimulator}
               </DossierBlurredPaywallZone>
             )}
@@ -407,9 +369,8 @@ export function DossierTabFinance({
               </p>
               <div className="mt-6">
                 <DossierBlurredPaywallZone
-                  pack={pack}
-                  soldOut={soldOut}
-                  title="Pitch prêt-à-l'emploi inclus dans le déblocage"
+                  title="Pitch prêt-à-l'emploi inclus"
+                  subtitle="Texte à envoyer au maire, généré après déblocage."
                 >
                   {mgpeBlock}
                 </DossierBlurredPaywallZone>

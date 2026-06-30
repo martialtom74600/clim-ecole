@@ -11,7 +11,7 @@ export function BrandLogo({ size = 'md', showWordmark = true, className }: {
     <div className={cn('flex items-center gap-2', className)}>
       <span className={cn('font-semibold tracking-tight', text)}>{BRAND.name}</span>
       {showWordmark && size !== 'sm' && (
-        <span className="hidden text-xs text-radar-muted sm:inline">{BRAND.descriptor}</span>
+        <span className="hidden text-xs text-ink-muted sm:inline">{BRAND.descriptor}</span>
       )}
     </div>
   );

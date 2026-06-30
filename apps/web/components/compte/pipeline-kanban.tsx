@@ -88,7 +88,7 @@ export function PipelineKanbanBoard() {
 
   if (loading) {
     return (
-      <div className="card flex items-center justify-center gap-2 p-12 text-radar-muted">
+      <div className="card flex items-center justify-center gap-2 p-12 text-ink-muted">
         <Loader2 className="h-5 w-5 animate-spin" />
         Chargement du pipeline…
       </div>
@@ -98,8 +98,8 @@ export function PipelineKanbanBoard() {
   if (!data?.territories.length) {
     return (
       <div className="card p-8 text-center">
-        <p className="font-medium text-radar-text">Aucun territoire dans votre pipeline</p>
-        <p className="mt-2 text-sm text-radar-muted">
+        <p className="font-medium text-ink">Aucun territoire dans votre pipeline</p>
+        <p className="mt-2 text-sm text-ink-muted">
           Débloquez un dossier depuis l&apos;explorateur pour le suivre ici.
         </p>
         <Link href="/explorer" className="btn-primary mt-6 inline-flex">
@@ -134,8 +134,8 @@ export function PipelineKanbanBoard() {
             >
               <div className="mb-3 flex items-center justify-between gap-2">
                 <div>
-                  <p className="text-sm font-semibold text-radar-text">{column.label}</p>
-                  <p className="text-[10px] text-radar-muted">{column.hint}</p>
+                  <p className="text-sm font-semibold text-ink">{column.label}</p>
+                  <p className="text-[10px] text-ink-muted">{column.hint}</p>
                 </div>
                 <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs font-bold tabular-nums">
                   {cards.length}
@@ -150,13 +150,13 @@ export function PipelineKanbanBoard() {
                     initial={{ opacity: 0, y: 10, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ ...TRANSITION.base, delay: Math.min(ci, 6) * 0.03 }}
-                    className="rounded-lg border border-radar-border bg-white p-3 shadow-sm"
+                    className="rounded-lg border border-line bg-white p-3 shadow-sm"
                   >
                     <div className="flex flex-wrap items-start gap-1.5">
                       {card.hasActiveTender && <ActiveTenderBadge size="sm" />}
                     </div>
-                    <p className="mt-1 font-medium text-sm text-radar-text">{card.name}</p>
-                    <p className="text-xs text-radar-muted">
+                    <p className="mt-1 font-medium text-sm text-ink">{card.name}</p>
+                    <p className="text-xs text-ink-muted">
                       {card.department}
                       {card.capex ? ` · ${formatEur(card.capex, true)}` : ''}
                     </p>
@@ -173,7 +173,7 @@ export function PipelineKanbanBoard() {
                             void updateMeta(card.packId, { note: v || null });
                           }
                         }}
-                        className="w-full rounded-md border border-radar-border bg-radar-canvas px-2 py-1 text-[11px]"
+                        className="w-full rounded-md border border-line bg-surface-sunken px-2 py-1 text-[11px]"
                       />
                       <input
                         type="date"
@@ -184,7 +184,7 @@ export function PipelineKanbanBoard() {
                             nextFollowUp: e.target.value ? `${e.target.value}T09:00:00.000Z` : null,
                           })
                         }
-                        className="w-full rounded-md border border-radar-border bg-radar-canvas px-2 py-1 text-[11px]"
+                        className="w-full rounded-md border border-line bg-surface-sunken px-2 py-1 text-[11px]"
                         aria-label="Prochaine relance"
                       />
                     </div>
@@ -196,7 +196,7 @@ export function PipelineKanbanBoard() {
                         onChange={(e) =>
                           void updateStatus(card.packId, e.target.value as PackPipelineStatus)
                         }
-                        className="w-full rounded-md border border-radar-border bg-radar-canvas px-2 py-1.5 text-xs"
+                        className="w-full rounded-md border border-line bg-surface-sunken px-2 py-1.5 text-xs"
                         aria-label={`Statut pipeline pour ${card.name}`}
                       >
                         {PACK_PIPELINE_STATUSES.map((s) => (
@@ -234,7 +234,7 @@ export function PipelineKanbanBoard() {
                 ))}
 
                 {cards.length === 0 && (
-                  <p className="py-6 text-center text-[11px] text-radar-subtle">Vide</p>
+                  <p className="py-6 text-center text-[11px] text-ink-subtle">Vide</p>
                 )}
               </div>
             </motion.div>
@@ -273,11 +273,11 @@ function Kpi({
 }) {
   return (
     <div className="card p-4">
-      <p className="text-xs font-medium text-radar-muted">{label}</p>
-      <p className={cn('mt-1 text-xl font-bold tabular-nums', accent && 'text-radar-signal')}>
+      <p className="text-xs font-medium text-ink-muted">{label}</p>
+      <p className={cn('mt-1 text-xl font-bold tabular-nums', accent && 'text-ink')}>
         {value}
       </p>
-      {hint && <p className="mt-0.5 text-[10px] text-radar-subtle">{hint}</p>}
+      {hint && <p className="mt-0.5 text-[10px] text-ink-subtle">{hint}</p>}
     </div>
   );
 }

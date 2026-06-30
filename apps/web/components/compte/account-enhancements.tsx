@@ -14,7 +14,7 @@ export function PipelineStatsDashboard({ stats }: { stats: PipelinePortfolioStat
       <StatCard label="CAPEX pipeline" value={formatEur(stats.capexPipeline, true)} />
       <StatCard label="CAPEX gagné" value={formatEur(stats.capexWon, true)} accent />
       <div className="card col-span-full p-4 sm:col-span-2 lg:col-span-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-radar-subtle">Répartition pipeline</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">Répartition pipeline</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {PACK_PIPELINE_COLUMNS.map((col) => (
             <span key={col.id} className={`rounded-full px-2.5 py-1 text-xs font-medium ${col.badgeClass}`}>

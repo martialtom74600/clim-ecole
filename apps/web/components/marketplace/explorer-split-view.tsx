@@ -222,12 +222,12 @@ export function ExplorerSplitView({
 
       {/* Légende carte */}
       <div className="pointer-events-none absolute bottom-4 left-4 z-10 hidden rounded-xl border border-line/60 bg-white/80 px-4 py-3 shadow-raised backdrop-blur-md backdrop-saturate-150 md:block">
-        <p className="text-[10px] font-medium uppercase tracking-wide text-radar-subtle">
+        <p className="text-[10px] font-medium uppercase tracking-wide text-ink-subtle">
           Vue par département · localisation précise après achat
         </p>
-        <div className="mt-2 flex items-center gap-4 text-xs text-radar-muted">
+        <div className="mt-2 flex items-center gap-4 text-xs text-ink-muted">
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-radar-heat" /> {COPY.hot}
+            <span className="h-2.5 w-2.5 rounded-full bg-heat" /> {COPY.hot}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-ink" /> Score A/B
@@ -239,10 +239,10 @@ export function ExplorerSplitView({
       <div className="absolute left-4 top-4 z-20 flex max-w-[calc(100%-2rem)] flex-col gap-3 md:max-w-xs">
         <div className="rounded-2xl border border-line/70 bg-white/85 p-4 shadow-overlay ring-1 ring-ink/[0.02] backdrop-blur-xl backdrop-saturate-150">
           <h1 className="text-lg font-semibold md:text-xl">{COPY.explorer}</h1>
-          <p className="mt-1 text-sm text-radar-muted">
+          <p className="mt-1 text-sm text-ink-muted">
             Carte par département — tranches et priorité visibles, chiffres exacts et contacts après achat.
           </p>
-          <p className="mt-2 text-xs text-radar-subtle">
+          <p className="mt-2 text-xs text-ink-subtle">
             {filtered.length} dossier{filtered.length > 1 ? 's' : ''} · {qualifiedCount} prioritaires
             {selectedDept && (
               <button type="button" onClick={() => setSelectedDept(null)} className="ml-2 underline">
@@ -379,12 +379,12 @@ export function ExplorerSplitView({
       >
         {/* Poignée mobile */}
         <div className="flex justify-center py-2 md:hidden">
-          <span className="h-1 w-10 rounded-full bg-radar-border" />
+          <span className="h-1 w-10 rounded-full bg-line" />
         </div>
 
         {/* Détail sélectionné */}
         {selectedPack && (
-          <div className="shrink-0 border-b border-radar-border p-4">
+          <div className="shrink-0 border-b border-line p-4">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-1.5">
@@ -395,14 +395,14 @@ export function ExplorerSplitView({
                   )}
                 </div>
                 <p className="mt-2 font-medium">{selectedPack.publicName}</p>
-                <p className="text-xs text-radar-muted">
+                <p className="text-xs text-ink-muted">
                   {formatInt(selectedPack.batimentCount)} écoles · localisation précise après achat
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedId(null)}
-                className="shrink-0 rounded-lg p-1.5 text-radar-muted hover:bg-radar-canvas"
+                className="shrink-0 rounded-lg p-1.5 text-ink-muted hover:bg-surface-sunken"
                 aria-label="Fermer"
               >
                 <X className="h-4 w-4" />
@@ -413,7 +413,7 @@ export function ExplorerSplitView({
                 <p className="text-xl font-bold">
                   <PackBudgetLabel rangeLabel={selectedPack.budgetRange} capex={selectedPack.packCapexTotal} className="text-xl font-bold" />
                 </p>
-                <p className="text-xs text-radar-muted">Tranche budget · détail € après achat</p>
+                <p className="text-xs text-ink-muted">Tranche budget · détail € après achat</p>
               </div>
               <Link href={`/explorer/${selectedPack.packId}`} className="btn-primary !px-3 !py-2 !text-xs">
                 {COPY.viewDossier}
@@ -528,8 +528,8 @@ function CompareToggle({
       className={cn(
         'rounded-lg border p-1.5 transition-colors',
         active
-          ? 'border-radar-signal/40 bg-radar-signal/15 text-radar-signal'
-          : 'border-radar-border text-radar-subtle hover:text-radar-muted',
+          ? 'border-ink/40 bg-ink/15 text-ink'
+          : 'border-line text-ink-subtle hover:text-ink-muted',
       )}
     >
       <GitCompare className="h-3.5 w-3.5" />

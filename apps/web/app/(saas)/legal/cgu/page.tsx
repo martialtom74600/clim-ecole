@@ -31,7 +31,7 @@ export default async function CguPage() {
         Les données débloquées sont licenciées pour un usage interne de prospection par
         l&apos;acheteur. Toute revente ou redistribution est interdite.
       </p>
-      <p className="text-sm text-radar-subtle">{COPY.estimatesNote}</p>
+      <p className="text-sm text-ink-subtle">{COPY.estimatesNote}</p>
     </LegalLayout>
   );
 }

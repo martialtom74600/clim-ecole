@@ -232,7 +232,7 @@
   }
 
   .radar-map-shell {
-    @apply relative isolate h-full w-full overflow-hidden bg-radar-elevated;
+    @apply relative isolate h-full w-full overflow-hidden bg-surface-muted;
     z-index: 0;
   }
 

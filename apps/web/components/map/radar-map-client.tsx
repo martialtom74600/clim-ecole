@@ -9,7 +9,7 @@ const RadarMapInner = dynamic(
     ssr: false,
     loading: () => (
       <div className="radar-map-shell flex items-center justify-center">
-        <p className="font-mono text-xs uppercase tracking-widest text-radar-subtle">Chargement…</p>
+        <p className="font-mono text-xs uppercase tracking-widest text-ink-subtle">Chargement…</p>
       </div>
     ),
   },

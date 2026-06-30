@@ -250,10 +250,10 @@ export function ExplorerAdvancedFilters({
   onMinCeeEurosChange: (v: number) => void;
 }) {
   return (
-    <div className="space-y-2 rounded-lg border border-radar-border bg-radar-canvas/50 p-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-radar-subtle">Filtres avancés</p>
+    <div className="space-y-2 rounded-lg border border-line bg-surface-sunken/50 p-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-subtle">Filtres avancés</p>
       <label className="block text-xs">
-        <span className="text-radar-muted">Budget min. (€)</span>
+        <span className="text-ink-muted">Budget min. (€)</span>
         <input
           type="number"
           step={50000}
@@ -264,7 +264,7 @@ export function ExplorerAdvancedFilters({
         />
       </label>
       <label className="block text-xs">
-        <span className="text-radar-muted">Score min.</span>
+        <span className="text-ink-muted">Score min.</span>
         <select
           value={minGrade}
           onChange={(e) => onMinGradeChange(e.target.value as typeof minGrade)}
@@ -276,11 +276,11 @@ export function ExplorerAdvancedFilters({
           <option value="C">C minimum</option>
         </select>
       </label>
-      <label className="flex items-center gap-2 text-xs text-radar-muted">
+      <label className="flex items-center gap-2 text-xs text-ink-muted">
         <input type="checkbox" checked={aoOnly} onChange={(e) => onAoOnlyChange(e.target.checked)} />
         AO actif uniquement
       </label>
-      <label className="flex items-center gap-2 text-xs text-radar-muted">
+      <label className="flex items-center gap-2 text-xs text-ink-muted">
         <input
           type="checkbox"
           checked={mutualizableOnly}
@@ -289,7 +289,7 @@ export function ExplorerAdvancedFilters({
         Mutualisable ESCO (5+ écoles)
       </label>
       <label className="block text-xs">
-        <span className="text-radar-muted">CEE min. (€)</span>
+        <span className="text-ink-muted">CEE min. (€)</span>
         <input
           type="number"
           step={5000}
@@ -306,11 +306,11 @@ export function ExplorerAdvancedFilters({
 export function ExplorerCoveragePanel({ packs }: { packs: MarketplacePack[] }) {
   const deptSet = new Set(packs.map((p) => p.department.split('·')[0]?.trim()).filter(Boolean));
   return (
-    <details className="rounded-lg border border-radar-border bg-white/90">
-      <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-radar-muted">
+    <details className="rounded-lg border border-line bg-white/90">
+      <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-ink-muted">
         Couverture · {deptSet.size} départements · {packs.length} territoires
       </summary>
-      <p className="border-t border-radar-border px-3 py-2 text-[11px] leading-relaxed text-radar-subtle">
+      <p className="border-t border-line px-3 py-2 text-[11px] leading-relaxed text-ink-subtle">
         Extension progressive dept par dept. Les départements sans pastille seront ajoutés au fil des
         synchronisations pipeline.
       </p>

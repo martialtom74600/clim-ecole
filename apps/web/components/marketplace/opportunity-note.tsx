@@ -85,7 +85,7 @@ export function OpportunityNote({
     >
       {showPrintButton && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 print:hidden">
-          <p className="text-sm text-radar-muted">
+          <p className="text-sm text-ink-muted">
             Document prêt pour impression A4 — ajoutez le logo de votre cabinet avant d&apos;imprimer.
           </p>
           <OpportunityNotePrintButton />

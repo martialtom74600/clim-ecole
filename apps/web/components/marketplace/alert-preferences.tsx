@@ -92,16 +92,16 @@ export function AlertPreferencesPanel() {
   return (
     <div className="card p-6">
       <div className="flex items-center gap-2">
-        <Bell className="h-5 w-5 text-radar-muted" />
-        <p className="text-xs font-semibold uppercase tracking-wide text-radar-subtle">Alertes email</p>
+        <Bell className="h-5 w-5 text-ink-muted" />
+        <p className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">Alertes email</p>
       </div>
       <h2 className="mt-2 font-semibold">Être prévenu des nouveaux territoires</h2>
-      <p className="mt-1 text-sm text-radar-muted">
+      <p className="mt-1 text-sm text-ink-muted">
         Recevez un email quand un territoire correspond à votre budget minimum et votre métier.
       </p>
       <div className="mt-4 space-y-4">
         <div>
-          <span className="text-sm text-radar-muted">Votre métier</span>
+          <span className="text-sm text-ink-muted">Votre métier</span>
           <div className="mt-2 flex flex-wrap gap-2">
             {PERSONA_OPTIONS.map(({ id, label, hint, icon: Icon }) => (
               <button
@@ -112,8 +112,8 @@ export function AlertPreferencesPanel() {
                 className={cn(
                   'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
                   personas.includes(id)
-                    ? 'border-radar-text bg-radar-text text-white'
-                    : 'border-radar-border text-radar-muted hover:border-radar-subtle',
+                    ? 'border-ink bg-ink text-white'
+                    : 'border-line text-ink-muted hover:border-ink-subtle',
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -123,7 +123,7 @@ export function AlertPreferencesPanel() {
           </div>
         </div>
         <label className="block text-sm">
-          <span className="text-radar-muted">Budget travaux minimum</span>
+          <span className="text-ink-muted">Budget travaux minimum</span>
           <input
             type="number"
             className="input-field mt-1"
@@ -131,10 +131,10 @@ export function AlertPreferencesPanel() {
             step={50000}
             onChange={(e) => setMinCapex(Number(e.target.value))}
           />
-          <span className="mt-1 block text-xs text-radar-subtle">En euros — ex. 400 000 pour les dossiers &gt; 400 k€</span>
+          <span className="mt-1 block text-xs text-ink-subtle">En euros — ex. 400 000 pour les dossiers &gt; 400 k€</span>
         </label>
         <label className="block text-sm">
-          <span className="text-radar-muted">Votre email</span>
+          <span className="text-ink-muted">Votre email</span>
           <input
             type="email"
             className="input-field mt-1"

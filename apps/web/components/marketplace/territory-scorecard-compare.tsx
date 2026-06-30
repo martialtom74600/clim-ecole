@@ -21,15 +21,15 @@ export function TerritoryScorecardCompare({ packs }: { packs: MarketplacePack[] 
   return (
     <div className="space-y-8">
       {recommendedId && (
-        <div className="card border-radar-signal/40 bg-radar-canvas p-5 md:p-6">
+        <div className="card border-ink/40 bg-surface-sunken p-5 md:p-6">
           <div className="flex items-start gap-3">
-            <Trophy className="mt-0.5 h-5 w-5 shrink-0 text-radar-signal" />
+            <Trophy className="mt-0.5 h-5 w-5 shrink-0 text-ink" />
             <div>
-              <p className="font-semibold text-radar-text">Recommandation Scorecard</p>
-              <p className="mt-1 text-sm text-radar-muted">
+              <p className="font-semibold text-ink">Recommandation Scorecard</p>
+              <p className="mt-1 text-sm text-ink-muted">
                 Classement déterministe (Radar, CAPEX, subventions, urgence AO, ROI) — sans IA.
                 Priorisez{' '}
-                <strong className="text-radar-text">
+                <strong className="text-ink">
                   {packs.find((p) => p.packId === recommendedId)?.publicName}
                 </strong>{' '}
                 pour maximiser vos chances de closing.
@@ -48,32 +48,32 @@ export function TerritoryScorecardCompare({ packs }: { packs: MarketplacePack[] 
               key={pack.packId}
               className={cn(
                 'card overflow-hidden',
-                isWinner && 'ring-2 ring-radar-signal/50',
+                isWinner && 'ring-2 ring-ink/50',
               )}
             >
-              <div className="border-b border-radar-border p-5">
+              <div className="border-b border-line p-5">
                 <div className="flex flex-wrap items-center gap-2">
                   <RadarScoreBadge score={pack.radarScore} grade={pack.radarGrade} previewOnly />
                   {pack.hasActiveTender && <ActiveTenderBadge size="sm" />}
                   {isWinner && (
-                    <span className="rounded-md bg-radar-signal/10 px-2 py-0.5 text-[10px] font-bold uppercase text-radar-signal">
+                    <span className="rounded-md bg-ink/10 px-2 py-0.5 text-[10px] font-bold uppercase text-ink">
                       #1 Scorecard
                     </span>
                   )}
                 </div>
                 <p className="mt-3 font-semibold">{pack.publicName}</p>
-                <p className="text-xs text-radar-muted">{pack.department}</p>
+                <p className="text-xs text-ink-muted">{pack.department}</p>
                 <PersonaBadgeGroup personas={pack.personas} className="mt-2" />
 
                 <div className="mt-4 flex items-end justify-between">
                   <div>
-                    <p className="text-3xl font-bold tabular-nums text-radar-signal">
+                    <p className="text-3xl font-bold tabular-nums text-ink">
                       {score.totalScore}
-                      <span className="text-lg text-radar-muted">/100</span>
+                      <span className="text-lg text-ink-muted">/100</span>
                     </p>
-                    <p className="text-xs text-radar-muted">Grade scorecard {score.grade}</p>
+                    <p className="text-xs text-ink-muted">Grade scorecard {score.grade}</p>
                   </div>
-                  <span className="text-sm font-medium text-radar-muted">Rang #{score.rank}</span>
+                  <span className="text-sm font-medium text-ink-muted">Rang #{score.rank}</span>
                 </div>
               </div>
 
@@ -99,7 +99,7 @@ export function TerritoryScorecardCompare({ packs }: { packs: MarketplacePack[] 
                     {score.highlights.map((h) => (
                       <li
                         key={h}
-                        className="rounded-md bg-radar-elevated px-2 py-0.5 text-[10px] text-radar-muted"
+                        className="rounded-md bg-surface-muted px-2 py-0.5 text-[10px] text-ink-muted"
                       >
                         {h}
                       </li>
@@ -119,7 +119,7 @@ export function TerritoryScorecardCompare({ packs }: { packs: MarketplacePack[] 
       <div className="card overflow-x-auto">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead>
-            <tr className="border-b border-radar-border bg-radar-elevated text-[11px] uppercase tracking-wide text-radar-muted">
+            <tr className="border-b border-line bg-surface-muted text-[11px] uppercase tracking-wide text-ink-muted">
               <th className="px-4 py-3">Critère</th>
               {packs.map((p) => (
                 <th key={p.packId} className="px-4 py-3 text-right">
@@ -128,7 +128,7 @@ export function TerritoryScorecardCompare({ packs }: { packs: MarketplacePack[] 
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-radar-border">
+          <tbody className="divide-y divide-line">
             {scorecards[0]?.dimensions.map((_, dimIdx) => (
               <tr key={dimIdx}>
                 <td className="px-4 py-3 font-medium">{scorecards[0].dimensions[dimIdx].label}</td>
@@ -137,16 +137,16 @@ export function TerritoryScorecardCompare({ packs }: { packs: MarketplacePack[] 
                   return (
                     <td key={p.packId} className="px-4 py-3 text-right tabular-nums">
                       {dim ? `${dim.score}/${dim.maxScore}` : '—'}
-                      <p className="text-[10px] text-radar-subtle">{dim?.detail}</p>
+                      <p className="text-[10px] text-ink-subtle">{dim?.detail}</p>
                     </td>
                   );
                 })}
               </tr>
             ))}
-            <tr className="bg-radar-canvas font-semibold">
+            <tr className="bg-surface-sunken font-semibold">
               <td className="px-4 py-3">Total Scorecard</td>
               {packs.map((p) => (
-                <td key={p.packId} className="px-4 py-3 text-right tabular-nums text-radar-signal">
+                <td key={p.packId} className="px-4 py-3 text-right tabular-nums text-ink">
                   {byPackId.get(p.packId)?.totalScore}/100
                 </td>
               ))}
@@ -161,7 +161,7 @@ export function TerritoryScorecardCompare({ packs }: { packs: MarketplacePack[] 
 function ScoreRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-2">
-      <dt className="text-radar-muted">{label}</dt>
+      <dt className="text-ink-muted">{label}</dt>
       <dd className="font-semibold tabular-nums">{value}</dd>
     </div>
   );
@@ -172,13 +172,13 @@ function DimensionBar({ dimension }: { dimension: TerritoryScorecard['dimensions
   return (
     <div>
       <div className="flex justify-between text-[11px]">
-        <span className="text-radar-muted">{dimension.label}</span>
-        <span className="tabular-nums text-radar-text">
+        <span className="text-ink-muted">{dimension.label}</span>
+        <span className="tabular-nums text-ink">
           {dimension.score}/{dimension.maxScore}
         </span>
       </div>
-      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-radar-elevated">
-        <div className="h-full bg-radar-signal transition-all" style={{ width: `${pct}%` }} />
+      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-muted">
+        <div className="h-full bg-ink transition-all" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

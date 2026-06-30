@@ -62,7 +62,7 @@ function SuccessInner() {
     return (
       <div className="page-content flex min-h-[50vh] flex-col items-center justify-center text-center">
         <p className="text-lg font-semibold">Confirmation du paiement…</p>
-        <p className="mt-2 text-radar-muted">
+        <p className="mt-2 text-ink-muted">
           {status === 'pending'
             ? 'Activation de votre accès en cours (quelques secondes)'
             : 'Vérification du paiement'}
@@ -75,7 +75,7 @@ function SuccessInner() {
     return (
       <div className="page-content flex min-h-[50vh] flex-col items-center justify-center text-center">
         <p className="text-lg font-semibold">Erreur de confirmation</p>
-        <p className="mt-2 text-sm text-radar-muted">
+        <p className="mt-2 text-sm text-ink-muted">
           Si le paiement a été débité, consultez Mon compte dans quelques instants ou contactez le support.
         </p>
         <Link href="/compte" className="btn-primary mt-6">
@@ -88,31 +88,31 @@ function SuccessInner() {
   return (
     <div className="page-content">
       <div className="card mx-auto max-w-xl p-8 text-center md:p-10">
-        <CheckCircle2 className="mx-auto h-12 w-12 text-radar-signal" />
+        <CheckCircle2 className="mx-auto h-12 w-12 text-ink" />
         <h1 className="mt-4 text-2xl font-semibold">Paiement confirmé</h1>
-        <p className="mt-2 text-radar-muted">
+        <p className="mt-2 text-ink-muted">
           {plan === 'pro'
             ? `Votre ${COPY.subscription.toLowerCase()} est actif. Tous les territoires sont débloqués.`
             : 'Votre territoire est débloqué. Noms, écoles et contacts sont visibles.'}
         </p>
 
         <ol className="mt-8 space-y-3 text-left text-sm">
-          <li className="flex items-start gap-3 rounded-lg bg-radar-canvas p-3">
-            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-radar-signal" />
+          <li className="flex items-start gap-3 rounded-lg bg-surface-sunken p-3">
+            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
             Contactez les mairies via les emails du dossier
           </li>
-          <li className="flex items-start gap-3 rounded-lg bg-radar-canvas p-3">
-            <Download className="mt-0.5 h-4 w-4 shrink-0 text-radar-signal" />
+          <li className="flex items-start gap-3 rounded-lg bg-surface-sunken p-3">
+            <Download className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
             Exportez le CSV ou la note d&apos;opportunité depuis la fiche territoire
           </li>
-          <li className="flex items-start gap-3 rounded-lg bg-radar-canvas p-3">
-            <Star className="mt-0.5 h-4 w-4 shrink-0 text-radar-signal" />
+          <li className="flex items-start gap-3 rounded-lg bg-surface-sunken p-3">
+            <Star className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
             Ajoutez le territoire à vos favoris pour le retrouver
           </li>
         </ol>
 
         {plan === 'dossier' && (
-          <p className="mt-6 text-xs text-radar-subtle">
+          <p className="mt-6 text-xs text-ink-subtle">
             Accès valable 30 jours pour ce territoire.
           </p>
         )}

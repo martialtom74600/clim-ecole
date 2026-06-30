@@ -3,7 +3,13 @@ import { Loader2 } from 'lucide-react';
 import type { MarketplacePackDetail } from '@/lib/types';
 import { DossierApp } from '@/components/marketplace/dossier-app';
 
-export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetail }) {
+export function MarketplacePackDetailView({
+  data,
+  isDemo = false,
+}: {
+  data: MarketplacePackDetail;
+  isDemo?: boolean;
+}) {
   const {
     pack,
     buildings,
@@ -13,6 +19,7 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
     nomEpci,
     mgpe,
     dataLoadedAt,
+    similarPacks,
   } = data;
 
   const soldOut = pack.soldOut && !unlocked;
@@ -23,10 +30,12 @@ export function MarketplacePackDetailView({ data }: { data: MarketplacePackDetai
         pack={pack}
         buildings={buildings}
         unlocked={unlocked}
+        isDemo={isDemo}
         communesLabel={communesLabel}
         nomEpci={nomEpci}
         mgpe={mgpe}
         freePreview={freePreview}
+        similarPacks={similarPacks}
         soldOut={soldOut}
         dataLoadedAt={dataLoadedAt}
       />

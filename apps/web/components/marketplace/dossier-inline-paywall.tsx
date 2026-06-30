@@ -1,9 +1,34 @@
 'use client';
 
-import { Lock, Sparkles } from 'lucide-react';
+import { Database, Lock, Scale, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 import type { MarketplacePack } from '@/lib/types';
 import { CheckoutButton } from '@/components/marketplace/checkout-button';
 import { cn } from '@/lib/utils';
+
+/**
+ * Bandeau de réassurance affiché au point de paiement — traite les objections
+ * invisibles (accès, sécurité, source, légalité) qui bloquent un achat à 290 €.
+ * Partagé entre l'overlay inline et la carte paywall.
+ */
+const PAYWALL_TRUST = [
+  { icon: Zap, label: 'Accès immédiat · 30 jours' },
+  { icon: ShieldCheck, label: 'Paiement sécurisé Stripe' },
+  { icon: Database, label: 'Données publiques officielles' },
+  { icon: Scale, label: 'Sourcing légal (R2111-1)' },
+] as const;
+
+export function PaywallTrust({ className }: { className?: string }) {
+  return (
+    <ul className={cn('grid grid-cols-2 gap-x-3 gap-y-1.5 text-left', className)}>
+      {PAYWALL_TRUST.map(({ icon: Icon, label }) => (
+        <li key={label} className="flex items-center gap-1.5 text-[11px] leading-tight text-ink-muted">
+          <Icon className="h-3 w-3 shrink-0 text-ink-subtle" aria-hidden />
+          {label}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 /** Overlay compact posé sur une zone floutée — conclusion logique du freemium */
 export function DossierInlinePaywall({
@@ -49,6 +74,7 @@ export function DossierInlinePaywall({
           <Sparkles className="h-4 w-4" />
           {soldOut ? 'Places épuisées' : 'Débloquer ce territoire'}
         </CheckoutButton>
+        <PaywallTrust className="mt-4 border-t border-line pt-3" />
       </div>
     </div>
   );

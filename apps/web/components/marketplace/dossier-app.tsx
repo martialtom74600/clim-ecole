@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import Link from 'next/link';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type {
   MarketplaceBuilding,
@@ -35,20 +37,24 @@ export function DossierApp({
   pack,
   buildings,
   unlocked,
+  isDemo = false,
   communesLabel,
   nomEpci,
   mgpe,
   freePreview,
+  similarPacks,
   soldOut = false,
   dataLoadedAt,
 }: {
   pack: MarketplacePack;
   buildings: MarketplaceBuilding[];
   unlocked: boolean;
+  isDemo?: boolean;
   communesLabel?: string;
   nomEpci?: string;
   mgpe?: MarketplaceMgpeSummary;
   freePreview?: TerritoryFreePreview;
+  similarPacks?: MarketplacePack[];
   soldOut?: boolean;
   dataLoadedAt?: string;
 }) {
@@ -85,14 +91,14 @@ export function DossierApp({
   }, [tabParam, goToTab]);
 
   useEffect(() => {
-    if (unlocked) {
+    if (unlocked && !isDemo) {
       const key = `clim-checklist-${pack.packId}`;
       if (!localStorage.getItem(key)) {
         setShowChecklist(true);
         localStorage.setItem(key, '1');
       }
     }
-  }, [unlocked, pack.packId]);
+  }, [unlocked, isDemo, pack.packId]);
 
   /* Shadow sur le sticky uniquement après le premier pixel de scroll */
   useEffect(() => {
@@ -119,6 +125,7 @@ export function DossierApp({
           unlocked={unlocked}
           soldOut={soldOut}
           freePreview={freePreview}
+          similarPacks={similarPacks}
           packCapexTotal={pack.packCapexTotal}
           subventionRatio={pack.subventionRatio}
           resteAChargeTotal={pack.resteAChargeTotal}
@@ -184,6 +191,7 @@ export function DossierApp({
 
   return (
     <div className={DOSSIER_PAGE}>
+      {isDemo && <DemoBanner />}
       {/* Sticky — glassmorphism + shadow conditionnelle au scroll */}
       <div className={cn(DOSSIER_STICKY, scrolled && DOSSIER_STICKY_SCROLLED)}>
         <div className="mx-auto w-full max-w-7xl px-5 md:px-8">
@@ -216,6 +224,36 @@ export function DossierApp({
 
       {/* Un seul <main> dans toute la page — le layout (saas)/layout.tsx en contient déjà un */}
       <div>{animatedPanels}</div>
+    </div>
+  );
+}
+
+/**
+ * Bandeau de la démo publique : assume que les données sont réelles et 100 %
+ * débloquées, et renvoie vers l'explorateur pour transformer l'émotion en achat.
+ */
+function DemoBanner() {
+  return (
+    <div className="border-b border-ink/10 bg-ink text-white">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-5 py-3 md:flex-row md:items-center md:justify-between md:px-8">
+        <p className="flex items-center gap-2 text-sm">
+          <Sparkles className="h-4 w-4 shrink-0 text-white/80" strokeWidth={1.5} />
+          <span>
+            <strong className="font-semibold">Démonstration</strong>
+            <span className="text-white/70">
+              {' '}
+              — dossier réel entièrement débloqué. Votre territoire dès 290 € HT.
+            </span>
+          </span>
+        </p>
+        <Link
+          href="/explorer"
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-ink transition-transform hover:scale-[1.02] active:scale-95"
+        >
+          Choisir mon territoire
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
     </div>
   );
 }

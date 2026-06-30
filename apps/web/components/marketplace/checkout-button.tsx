@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { COPY } from '@/lib/copy';
 import { trackEvent } from '@/lib/track';
+import { useToast } from '@/components/ui/toast';
 
 interface CheckoutButtonProps {
   plan: 'dossier' | 'pro';
@@ -21,6 +22,7 @@ export function CheckoutButton({
   children,
 }: CheckoutButtonProps) {
   const [loading, setLoading] = useState(false);
+  const toast = useToast();
 
   async function handleClick() {
     if (disabled) return;
@@ -42,12 +44,15 @@ export function CheckoutButton({
         return;
       }
       if (data.soldOut) {
-        alert(
-          `Ce territoire a atteint la limite d'achats à l'unité. L'${COPY.subscription.toLowerCase()} débloque tous les territoires.`,
+        toast(
+          `Places à l'unité épuisées sur ce territoire. L'${COPY.subscription.toLowerCase()} débloque tout l'accès.`,
+          'error',
         );
         return;
       }
-      alert(data.error ?? 'Checkout indisponible — contact@strate.studio');
+      toast(data.error ?? 'Paiement indisponible — contact@strate.studio', 'error');
+    } catch {
+      toast('Connexion interrompue — réessayez dans un instant.', 'error');
     } finally {
       setLoading(false);
     }

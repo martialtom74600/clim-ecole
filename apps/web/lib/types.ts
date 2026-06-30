@@ -369,4 +369,6 @@ export interface MarketplacePackDetail {
   mgpe?: MarketplaceMgpeSummary;
   /** Somme CAPEX − subventions au niveau pack */
   resteAChargeAfterSubsTotal?: number;
+  /** Territoires de repli proposés quand le dossier est verrouillé */
+  similarPacks?: MarketplacePack[];
 }

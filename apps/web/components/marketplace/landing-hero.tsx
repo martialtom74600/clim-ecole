@@ -6,6 +6,7 @@ import { getMarketplaceGlobalStats, getMarketplacePacks } from '@/lib/marketplac
 import { getCoverageBadge } from '@/lib/coverage';
 import { formatInt, formatEur } from '@/lib/format';
 import { ClientPersonasSection } from '@/components/brand/personas';
+import { PersonaSegmenter } from '@/components/brand/persona-segmenter';
 import { RadarScoreBadge } from '@/components/marketplace/radar-score-badge';
 import { Spotlight } from '@/components/ui/spotlight';
 
@@ -45,12 +46,21 @@ export async function LandingHero() {
 
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-muted">{BRAND.tagline}</p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link href="/explorer" className="btn-primary">
               {COPY.openExplorer}
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href="/legal/methodologie" className="btn-secondary">Comment ça marche</Link>
+            <Link href="/demo" className="btn-secondary">
+              <Unlock className="h-4 w-4" />
+              Voir un dossier complet
+            </Link>
+            <Link
+              href="/legal/methodologie"
+              className="text-sm font-medium text-ink-muted transition-colors hover:text-ink"
+            >
+              Comment ça marche
+            </Link>
           </div>
 
           {/* Live proof strip */}
@@ -62,6 +72,9 @@ export async function LandingHero() {
           </dl>
         </div>
       </section>
+
+      {/* Segmentation à l'entrée — pilotée par le ROI métier */}
+      <PersonaSegmenter />
 
       {/* Pression réglementaire */}
       <section className="border-b border-line bg-ink text-white">
@@ -143,6 +156,18 @@ export async function LandingHero() {
                 Le gratuit suffit pour prioriser — le payant sert à chiffrer un devis et lancer la prospection.
               </p>
             </div>
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            <span className="text-ink-muted">Pas convaincu&nbsp;?</span>
+            <Link
+              href="/demo"
+              className="inline-flex items-center gap-1.5 font-medium text-ink underline-offset-4 hover:underline"
+            >
+              <Unlock className="h-4 w-4" />
+              Visitez un dossier de démonstration entièrement débloqué
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </section>

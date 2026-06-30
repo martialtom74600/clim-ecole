@@ -350,24 +350,44 @@ export const getMarketplacePacks = cache(async (): Promise<MarketplacePack[]> =>
   );
 });
 
+/**
+ * Choisit le territoire vitrine pour la démo publique (`/demo`).
+ * Déterministe : le meilleur deal qualifié (priorité aux dossiers chauds),
+ * pour offrir un aperçu « entièrement débloqué » à fort impact. Surchargeable
+ * via DEMO_PACK_ID si l'on veut épingler un territoire précis.
+ */
+export const getDemoPackId = cache(async (): Promise<string | null> => {
+  const pinned = process.env.DEMO_PACK_ID?.trim();
+  if (pinned) return pinned;
+  const packs = await getMarketplacePacks();
+  if (packs.length === 0) return null;
+  const qualified = packs.filter((p) => p.isQualified);
+  const pool = qualified.length > 0 ? qualified : packs;
+  const hot = pool.find((p) => p.isHot);
+  return (hot ?? pool[0]).packId;
+});
+
 export const getMarketplacePackById = cache(
   async (
     packId: string,
     accountId?: string | null,
+    opts?: { demo?: boolean },
   ): Promise<MarketplacePackDetail | null> => {
     const codeEpci = decodePackId(packId);
     if (!codeEpci) return null;
 
-    const [summaries, detail, unlocked, coverageLabel, unlockCounts, syncMeta, tender] =
+    const [summaries, detail, entitled, coverageLabel, unlockCounts, syncMeta, tender] =
       await Promise.all([
       getAllEpciSummary(),
       getEpciByCode(codeEpci),
-      checkPackEntitlement(accountId, packId),
+      opts?.demo ? Promise.resolve(true) : checkPackEntitlement(accountId, packId),
       getCoverageBadge(),
       getPackUnlockCountsMap(),
       getCsvSyncMeta(),
       getTerritoryTenderSignal(codeEpci),
     ]);
+    /* En mode démo, le dossier est intégralement déverrouillé sans entitlement réel. */
+    const unlocked = opts?.demo ? true : entitled;
 
     const index = summaries.findIndex((s) => s.codeEpci === codeEpci);
     if (index < 0 || !detail) return null;
@@ -408,10 +428,17 @@ export const getMarketplacePackById = cache(
       batimentCount: pack.batimentCount,
     });
 
+    /* Territoires de repli — anti cul-de-sac : si le visiteur n'achète pas
+       (ou si c'est complet), on lui propose immédiatement où aller ensuite. */
+    const similarPacks = unlocked
+      ? undefined
+      : selectSimilarPacks(await getMarketplacePacks(), pack, 3);
+
     return {
       pack: redactPackFinancials(unlocked ? pack : { ...pack, financialsHidden: true }),
       buildings,
       unlocked,
+      similarPacks,
       freePreview: unlocked
         ? undefined
         : buildTerritoryFreePreview({
@@ -433,6 +460,36 @@ export const getMarketplacePackById = cache(
     };
   },
 );
+
+/**
+ * Classe les autres territoires par proximité avec la cible : département,
+ * métier dominant, ordre de grandeur du budget, qualité. On privilégie les
+ * dossiers encore disponibles pour ne jamais renvoyer vers un autre mur.
+ */
+export function selectSimilarPacks(
+  all: MarketplacePack[],
+  target: MarketplacePack,
+  limit = 3,
+): MarketplacePack[] {
+  const score = (p: MarketplacePack): number => {
+    let s = 0;
+    if (p.department === target.department) s += 4;
+    if (p.primaryPersona === target.primaryPersona) s += 3;
+    else if (p.personas.some((x) => target.personas.includes(x))) s += 1;
+    /* La liste publique caviarde le CAPEX (0) : on compare la tranche affichée. */
+    if (p.budgetRange === target.budgetRange) s += 3;
+    if (p.isQualified) s += 1;
+    if (!p.soldOut && p.slotsRemaining > 0) s += 2;
+    return s;
+  };
+
+  return all
+    .filter((p) => p.packId !== target.packId)
+    .map((p) => ({ p, s: score(p) }))
+    .sort((a, b) => b.s - a.s || b.p.radarScore - a.p.radarScore)
+    .slice(0, limit)
+    .map((x) => x.p);
+}
 
 export function isHotLevel(level: ClosingLevel): boolean {
   return level === 'chaud';

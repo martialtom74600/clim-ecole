@@ -39,6 +39,7 @@ import {
 import { CeeTerritoryPanel, EscoMutualizationPanel } from '@/components/marketplace/cee-esco-panels';
 import { DossierBlurredPaywallZone } from '@/components/marketplace/dossier-inline-paywall';
 import { DossierPaywallCard } from '@/components/marketplace/dossier-paywall-card';
+import { DossierNextSteps } from '@/components/marketplace/dossier-next-steps';
 import { cn } from '@/lib/utils';
 
 export function DossierTabFinance({
@@ -46,6 +47,7 @@ export function DossierTabFinance({
   unlocked,
   soldOut,
   freePreview,
+  similarPacks,
   packCapexTotal,
   subventionRatio,
   resteAChargeTotal,
@@ -60,6 +62,7 @@ export function DossierTabFinance({
   unlocked: boolean;
   soldOut?: boolean;
   freePreview?: TerritoryFreePreview;
+  similarPacks?: MarketplacePack[];
   packCapexTotal: number;
   subventionRatio: number;
   resteAChargeTotal: number;
@@ -428,12 +431,18 @@ export function DossierTabFinance({
 
         {/* CTA unique en bas de page — un seul point de conversion */}
         {!unlocked && (
-          <section className={DOSSIER_SECTION}>
+          <section className={cn(DOSSIER_SECTION, 'space-y-4')}>
             <DossierPaywallCard
               pack={pack}
               freePreview={freePreview}
               soldOut={soldOut ?? false}
               embedded
+            />
+            {/* Filet anti cul-de-sac : suivre, être alerté, ou rebondir ailleurs */}
+            <DossierNextSteps
+              pack={pack}
+              similarPacks={similarPacks}
+              soldOut={soldOut ?? false}
             />
           </section>
         )}

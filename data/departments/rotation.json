@@ -2,7 +2,7 @@
   "phase": "initial",
   "nextDeptIndex": 43,
   "initialStartIndex": 2,
-  "initialDeptsProcessed": 24,
+  "initialDeptsProcessed": 32,
   "refreshCycle": 0,
   "completedInitialAt": null,
   "intervalHours": 12,
@@ -19,54 +19,54 @@
   "emptyDeptSkipDays": 90,
   "deptDurations": {
     "069": [
-      0,
       2.7,
+      2.4,
       2.4
     ],
     "059": [
-      14.3,
       6,
-      5.2
+      5.2,
+      7.9
     ],
     "075": [
-      0,
       0.3,
-      0.4
+      0.4,
+      0.3
     ],
     "013": [
-      0.2,
       2.3,
-      2.1
+      2.1,
+      2.2
     ],
     "062": [
-      0.4,
       4.6,
-      3.5
+      3.5,
+      3.9
     ],
     "033": [
-      0.5,
       3.5,
-      3.2
+      3.2,
+      3.7
     ],
     "031": [
-      0.5,
       2.8,
-      2.6
+      2.6,
+      3.5
     ],
     "044": [
-      0.3,
       3.1,
-      2.8
+      2.8,
+      3
     ]
   },
   "monthlyBudget": {
     "month": "2026-06",
-    "estimatedMinutes": 63.9,
+    "estimatedMinutes": 90.7,
     "limitMinutes": 800,
     "skipWhenOverBudget": true,
     "skipOnlyDuringInitial": true
   },
-  "lastRunAt": "2026-06-29T15:32:08.450Z",
+  "lastRunAt": "2026-06-30T15:19:36.282Z",
   "lastDepartment": "044",
   "lastStatus": "done",
   "lastRowCount": 33,
@@ -76,16 +76,16 @@
       "code": "069",
       "index": 67,
       "status": "done",
-      "rowCount": 58,
-      "durationMinutes": 2.4078833333333334,
+      "rowCount": 57,
+      "durationMinutes": 2.4194,
       "mode": "full"
     },
     {
       "code": "059",
       "index": 57,
       "status": "done",
-      "rowCount": 116,
-      "durationMinutes": 5.23105,
+      "rowCount": 117,
+      "durationMinutes": 7.85725,
       "mode": "full"
     },
     {
@@ -93,15 +93,15 @@
       "index": 73,
       "status": "empty",
       "rowCount": 0,
-      "durationMinutes": 0.3821333333333333,
+      "durationMinutes": 0.25121666666666664,
       "mode": "full"
     },
     {
       "code": "013",
       "index": 12,
       "status": "done",
-      "rowCount": 8,
-      "durationMinutes": 2.147266666666667,
+      "rowCount": 3,
+      "durationMinutes": 2.2097333333333333,
       "mode": "full"
     },
     {
@@ -109,7 +109,7 @@
       "index": 60,
       "status": "done",
       "rowCount": 88,
-      "durationMinutes": 3.54055,
+      "durationMinutes": 3.9090333333333334,
       "mode": "full"
     },
     {
@@ -117,15 +117,15 @@
       "index": 31,
       "status": "done",
       "rowCount": 24,
-      "durationMinutes": 3.217783333333333,
+      "durationMinutes": 3.6632666666666664,
       "mode": "full"
     },
     {
       "code": "031",
       "index": 29,
       "status": "done",
-      "rowCount": 26,
-      "durationMinutes": 2.5727166666666665,
+      "rowCount": 33,
+      "durationMinutes": 3.46,
       "mode": "full"
     },
     {
@@ -133,9 +133,9 @@
       "index": 42,
       "status": "done",
       "rowCount": 33,
-      "durationMinutes": 2.807183333333333,
+      "durationMinutes": 3.0174,
       "mode": "full"
     }
   ],
-  "lastRunDurationMinutes": 22.3
+  "lastRunDurationMinutes": 26.8
 }

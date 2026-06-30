@@ -16,6 +16,8 @@ export interface CustomerAccount {
   /** Statut pipeline CRM par packId (Module 1) */
   pipelineByPackId?: Record<string, import('./pipeline-crm').PackPipelineStatus>;
   stripeCustomerId?: string;
+  /** Incrémenté pour révoquer toutes les sessions (logout all devices). */
+  sessionVersion: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -58,18 +60,35 @@ export function isJsonStoreAllowed(): boolean {
   return process.env.NODE_ENV !== 'production';
 }
 
+function normalizeAccount(account: CustomerAccount | undefined): CustomerAccount | null {
+  if (!account) return null;
+  if (account.sessionVersion == null) account.sessionVersion = 1;
+  return account;
+}
+
 export async function jsonGetAccount(accountId: string): Promise<CustomerAccount | null> {
   const store = await readStore();
-  return store.accounts[accountId] ?? null;
+  return normalizeAccount(store.accounts[accountId]);
 }
 
 export async function jsonGetAccountByStripeCustomerId(
   stripeCustomerId: string,
 ): Promise<CustomerAccount | null> {
   const store = await readStore();
-  return (
-    Object.values(store.accounts).find((a) => a.stripeCustomerId === stripeCustomerId) ?? null
+  return normalizeAccount(
+    Object.values(store.accounts).find((a) => a.stripeCustomerId === stripeCustomerId),
   );
+}
+
+/** Recherche par email (insensible à la casse) — voir dbGetAccountByEmail. */
+export async function jsonGetAccountByEmail(email: string): Promise<CustomerAccount | null> {
+  const norm = email.trim().toLowerCase();
+  if (!norm) return null;
+  const store = await readStore();
+  const matches = Object.values(store.accounts)
+    .filter((a) => a.email?.trim().toLowerCase() === norm)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  return normalizeAccount(matches[0]);
 }
 
 export async function jsonGetOrCreateAccount(
@@ -78,7 +97,7 @@ export async function jsonGetOrCreateAccount(
 ): Promise<CustomerAccount> {
   const store = await readStore();
   const id = accountId ?? newAccountId();
-  const existing = store.accounts[id];
+  const existing = normalizeAccount(store.accounts[id]);
   if (existing) return existing;
 
   const now = new Date().toISOString();
@@ -87,12 +106,24 @@ export async function jsonGetOrCreateAccount(
     email: email ?? '',
     proUntil: null,
     packIds: [],
+    sessionVersion: 1,
     createdAt: now,
     updatedAt: now,
   };
   store.accounts[id] = account;
   await writeStore(store);
   return account;
+}
+
+/** Révoque toutes les sessions du compte (logout all devices). */
+export async function jsonBumpSessionVersion(accountId: string): Promise<number> {
+  const store = await readStore();
+  const account = store.accounts[accountId];
+  if (!account) return 0;
+  account.sessionVersion = (account.sessionVersion ?? 1) + 1;
+  account.updatedAt = new Date().toISOString();
+  await writeStore(store);
+  return account.sessionVersion;
 }
 
 export async function jsonUpdateAccount(

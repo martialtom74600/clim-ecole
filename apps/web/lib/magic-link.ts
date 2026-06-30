@@ -5,32 +5,38 @@ import { sendEmail } from './email';
 export interface MagicLinkPayload {
   email: string;
   accountId: string;
+  /** Identifiant unique du lien — consommé une seule fois côté serveur. */
+  jti: string;
   exp: number;
 }
 
-const MAGIC_TTL_MS = 1000 * 60 * 15; // 15 min
+export const MAGIC_TTL_MS = 1000 * 60 * 15; // 15 min
 
 function magicSecret(): string {
   const base = process.env.AUTH_SECRET?.trim() ?? 'clim-magic-dev';
   return `magic:${base}`;
 }
 
-export function createMagicLinkToken(email: string, accountId: string): string {
+export function createMagicLinkToken(email: string, accountId: string, jti: string): string {
   return signPayload(
-    { email: email.trim().toLowerCase(), accountId, exp: Date.now() + MAGIC_TTL_MS },
+    { email: email.trim().toLowerCase(), accountId, jti, exp: Date.now() + MAGIC_TTL_MS },
     magicSecret(),
   );
 }
 
 export function verifyMagicLinkToken(token: string): MagicLinkPayload | null {
   const data = verifySignedPayload<MagicLinkPayload>(token, magicSecret());
-  if (!data?.email || !data.accountId) return null;
+  if (!data?.email || !data.accountId || !data.jti) return null;
   if (data.exp && Date.now() > data.exp) return null;
   return data;
 }
 
-export async function sendMagicLinkEmail(email: string, accountId: string): Promise<boolean> {
-  const token = createMagicLinkToken(email, accountId);
+export async function sendMagicLinkEmail(
+  email: string,
+  accountId: string,
+  jti: string,
+): Promise<boolean> {
+  const token = createMagicLinkToken(email, accountId, jti);
   const url = `${appUrl()}/api/auth/magic-link/verify?token=${encodeURIComponent(token)}`;
   return sendEmail({
     to: email,

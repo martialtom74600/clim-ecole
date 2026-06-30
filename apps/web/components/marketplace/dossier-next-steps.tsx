@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Star } from 'lucide-react';
+import { ArrowRight, Laptop, Star } from 'lucide-react';
 import type { MarketplacePack } from '@/lib/types';
 import { getWatchlist } from '@/lib/radar-client-storage';
 import { useAccountPreferences } from '@/hooks/use-account-preferences';
@@ -26,7 +26,7 @@ export function DossierNextSteps({
   soldOut?: boolean;
   className?: string;
 }) {
-  const { prefs, toggleWatchlist } = useAccountPreferences();
+  const { prefs, toggleWatchlist, authenticated } = useAccountPreferences();
   const [following, setFollowing] = useState(false);
 
   useEffect(() => {
@@ -61,6 +61,18 @@ export function DossierNextSteps({
         <Star className={cn('h-4 w-4', following && 'fill-current')} />
         {following ? 'Territoire suivi' : 'Suivre ce territoire'}
       </button>
+
+      {following && !authenticated && (
+        <Link
+          href="/compte"
+          className="mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed text-ink-muted transition-colors hover:text-ink"
+        >
+          <Laptop className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <span>
+            Connectez-vous pour retrouver vos favoris sur tous vos appareils — sans mot de passe.
+          </span>
+        </Link>
+      )}
 
       <TerritoryAlertCapture pack={pack} className="mt-3" />
 

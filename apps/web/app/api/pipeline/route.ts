@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCustomerSession } from '@/lib/auth';
+import { getActiveCustomerAccountId } from '@/lib/api-guard';
 import { getAccount, updatePackPipelineStatus } from '@/lib/entitlements';
 import { decodePackId, getMarketplacePackById } from '@/lib/marketplace';
 import { getTerritoryTenderSignal } from '@/lib/territory-tenders';
@@ -11,17 +11,17 @@ import {
 } from '@/lib/pipeline-crm';
 
 export async function GET() {
-  const session = await getCustomerSession();
-  if (!session) {
+  const accountId = await getActiveCustomerAccountId();
+  if (!accountId) {
     return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
   }
 
-  const account = await getAccount(session.accountId);
+  const account = await getAccount(accountId);
   if (!account) {
     return NextResponse.json({ error: 'Compte introuvable' }, { status: 404 });
   }
 
-  const notes = await loadPackNotes(session.accountId);
+  const notes = await loadPackNotes(accountId);
   const cards: PipelineTerritoryCard[] = [];
 
   for (const packId of account.packIds) {
@@ -52,8 +52,8 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const session = await getCustomerSession();
-  if (!session) {
+  const accountId = await getActiveCustomerAccountId();
+  if (!accountId) {
     return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
   }
 
@@ -73,14 +73,14 @@ export async function PATCH(request: Request) {
     if (!isPackPipelineStatus(status)) {
       return NextResponse.json({ error: 'status invalide' }, { status: 400 });
     }
-    const ok = await updatePackPipelineStatus(session.accountId, packId, status);
+    const ok = await updatePackPipelineStatus(accountId, packId, status);
     if (!ok) {
       return NextResponse.json({ error: 'Mise à jour refusée' }, { status: 403 });
     }
   }
 
   if (note !== undefined || nextFollowUp !== undefined) {
-    await updatePackNote(session.accountId, packId, note ?? null, nextFollowUp ?? null);
+    await updatePackNote(accountId, packId, note ?? null, nextFollowUp ?? null);
   }
 
   return NextResponse.json({ ok: true, packId, status, note, nextFollowUp });

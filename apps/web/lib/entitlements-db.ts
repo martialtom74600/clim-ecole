@@ -11,6 +11,7 @@ function rowToAccount(row: {
   email: string;
   stripe_customer_id: string | null;
   pro_until: string | null;
+  session_version?: number | null;
   created_at: string;
   updated_at: string;
 }): CustomerAccount {
@@ -20,6 +21,7 @@ function rowToAccount(row: {
     proUntil: row.pro_until,
     packIds: [],
     stripeCustomerId: row.stripe_customer_id ?? undefined,
+    sessionVersion: row.session_version ?? 1,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -86,6 +88,26 @@ export async function dbGetAccountByStripeCustomerId(
   return hydrateAccount(data);
 }
 
+/**
+ * Recherche par email (insensible à la casse) — pierre angulaire du cross-device :
+ * un même email doit toujours retomber sur le même compte. On prend le plus ancien
+ * pour rester déterministe si des doublons historiques existent.
+ */
+export async function dbGetAccountByEmail(email: string): Promise<CustomerAccount | null> {
+  const norm = email.trim().toLowerCase();
+  if (!norm) return null;
+  const sb = getSupabaseServer();
+  const { data } = await sb
+    .from('customer_accounts')
+    .select('*')
+    .ilike('email', norm)
+    .order('created_at', { ascending: true })
+    .limit(1);
+  const row = data?.[0];
+  if (!row) return null;
+  return hydrateAccount(row);
+}
+
 export async function dbGetOrCreateAccount(
   accountId?: string,
   email?: string,
@@ -135,6 +157,18 @@ export async function dbUpdateAccount(
 
   if (error || !data) return null;
   return hydrateAccount(data);
+}
+
+/** Révoque toutes les sessions du compte (logout all devices). */
+export async function dbBumpSessionVersion(accountId: string): Promise<number> {
+  const sb = getSupabaseServer();
+  const current = await dbGetAccount(accountId);
+  const next = (current?.sessionVersion ?? 1) + 1;
+  const { error } = await sb
+    .from('customer_accounts')
+    .update({ session_version: next, updated_at: new Date().toISOString() })
+    .eq('id', accountId);
+  return error ? 0 : next;
 }
 
 export async function dbGetPackUnlockCount(packId: string): Promise<number> {

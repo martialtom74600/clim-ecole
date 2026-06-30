@@ -5,6 +5,8 @@ export interface CustomerPreferences {
   watchlist: string[];
   compareIds: string[];
   blacklistUais: string[];
+  /** Tombstones : territoires explicitement retirés (anti-résurrection à la fusion). */
+  removedWatchlist: string[];
   onboarding?: {
     persona?: ClientPersona;
     minCapex?: number;
@@ -17,6 +19,7 @@ const EMPTY: CustomerPreferences = {
   watchlist: [],
   compareIds: [],
   blacklistUais: [],
+  removedWatchlist: [],
 };
 
 export async function getCustomerPreferences(accountId: string): Promise<CustomerPreferences> {
@@ -34,6 +37,7 @@ export async function getCustomerPreferences(accountId: string): Promise<Custome
     watchlist: (data.watchlist as string[]) ?? [],
     compareIds: (data.compare_ids as string[]) ?? [],
     blacklistUais: (data.blacklist_uais as string[]) ?? [],
+    removedWatchlist: (data.removed_watchlist as string[]) ?? [],
     onboarding: (data.onboarding as CustomerPreferences['onboarding']) ?? undefined,
     referralCode: (data.referral_code as string) ?? undefined,
   };
@@ -44,10 +48,21 @@ export async function upsertCustomerPreferences(
   patch: Partial<CustomerPreferences>,
 ): Promise<CustomerPreferences> {
   const current = await getCustomerPreferences(accountId);
+  const newWatchlist = patch.watchlist ?? current.watchlist;
+
+  // Tombstones (LWW) : tout territoire présent avant et absent maintenant est
+  // marqué retiré ; tout territoire ré-ajouté explicitement sort des tombstones.
+  // Les tombstones sont strictement serveur-autoritaires (le client ne les pilote pas).
+  const removedNow = current.watchlist.filter((id) => !newWatchlist.includes(id));
+  const removedWatchlist = Array.from(
+    new Set([...(current.removedWatchlist ?? []), ...removedNow]),
+  ).filter((id) => !newWatchlist.includes(id));
+
   const next: CustomerPreferences = {
-    watchlist: patch.watchlist ?? current.watchlist,
+    watchlist: newWatchlist,
     compareIds: patch.compareIds ?? current.compareIds,
     blacklistUais: patch.blacklistUais ?? current.blacklistUais,
+    removedWatchlist,
     onboarding: patch.onboarding ?? current.onboarding,
     referralCode: patch.referralCode ?? current.referralCode,
   };
@@ -61,6 +76,7 @@ export async function upsertCustomerPreferences(
       watchlist: next.watchlist,
       compare_ids: next.compareIds.slice(-3),
       blacklist_uais: next.blacklistUais,
+      removed_watchlist: next.removedWatchlist,
       onboarding: next.onboarding ?? null,
       referral_code: next.referralCode ?? null,
       updated_at: new Date().toISOString(),

@@ -13,6 +13,8 @@ interface AdminSession {
 interface CustomerSession {
   role: 'customer';
   accountId: string;
+  /** Version de session — comparée à customer_accounts.session_version pour révocation. */
+  v?: number;
   exp?: number;
 }
 
@@ -36,8 +38,8 @@ export function createAdminToken(): string {
   return signAuthToken({ role: 'admin' });
 }
 
-export function createCustomerToken(accountId: string): string {
-  return signAuthToken({ role: 'customer', accountId });
+export function createCustomerToken(accountId: string, sessionVersion = 1): string {
+  return signAuthToken({ role: 'customer', accountId, v: sessionVersion });
 }
 
 function safeEqualString(a: string, b: string): boolean {

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { verifyMagicLinkToken } from '@/lib/magic-link';
+import { consumeMagicLinkToken } from '@/lib/magic-link-store';
 import { createCustomerToken, CUSTOMER_COOKIE } from '@/lib/auth';
-import { dbGetOrCreateAccount } from '@/lib/entitlements-db';
-import { newAccountId } from '@/lib/crypto';
+import { getOrCreateAccount } from '@/lib/entitlements';
 import { appUrl } from '@/lib/stripe';
 
 export async function GET(request: Request) {
@@ -17,10 +17,18 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${appUrl()}/compte?error=magic_expired`);
   }
 
-  await dbGetOrCreateAccount(payload.accountId, payload.email);
+  // Single-use : on consomme le jti. Tout rejeu (lien déjà cliqué, préfetch du
+  // client mail, interception) échoue ici même si la signature reste valide.
+  const consumed = await consumeMagicLinkToken(payload.jti);
+  if (!consumed) {
+    return NextResponse.redirect(`${appUrl()}/compte?error=magic_expired`);
+  }
 
-  const response = NextResponse.redirect(`${appUrl()}/compte`);
-  response.cookies.set(CUSTOMER_COOKIE, createCustomerToken(payload.accountId), {
+  // Le compte a été résolu (et dédupliqué par email) à l'envoi du lien.
+  const account = await getOrCreateAccount(consumed.accountId, consumed.email);
+
+  const response = NextResponse.redirect(`${appUrl()}/compte?synced=1`);
+  response.cookies.set(CUSTOMER_COOKIE, createCustomerToken(account.id, account.sessionVersion), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',

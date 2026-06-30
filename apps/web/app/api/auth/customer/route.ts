@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
-import { getCustomerSession } from '@/lib/auth';
+import { getActiveCustomerAccountId } from '@/lib/api-guard';
 import { getAccount, isProActive } from '@/lib/entitlements';
 import { getMarketplacePackById } from '@/lib/marketplace';
 
 export async function GET() {
-  const session = await getCustomerSession();
-  if (!session) {
+  const accountId = await getActiveCustomerAccountId();
+  if (!accountId) {
     return NextResponse.json({ authenticated: false });
   }
 
-  const account = await getAccount(session.accountId);
+  const account = await getAccount(accountId);
   if (!account) {
     return NextResponse.json({ authenticated: false });
   }

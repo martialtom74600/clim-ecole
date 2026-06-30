@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAdminSession, getCustomerSession } from '@/lib/auth';
-import { checkPackEntitlement } from '@/lib/entitlements';
+import { checkPackEntitlement, getAccount } from '@/lib/entitlements';
 import { isTestMode } from '@/lib/test-mode';
 
 export async function requireAdminApi(): Promise<NextResponse | null> {
@@ -10,14 +10,31 @@ export async function requireAdminApi(): Promise<NextResponse | null> {
   return null;
 }
 
+/**
+ * Renvoie l'accountId d'une session client *valide et non révoquée*, sinon null.
+ * La vérification de session_version permet le "logout all devices" : bumper la
+ * version côté compte invalide instantanément tous les cookies déjà émis.
+ * Les anciens cookies sans `v` sont tolérés (rétrocompat) — ils seront réémis
+ * avec une version à la prochaine connexion.
+ */
+export async function getActiveCustomerAccountId(): Promise<string | null> {
+  const session = await getCustomerSession();
+  if (!session) return null;
+  if (session.v === undefined) return session.accountId;
+  const account = await getAccount(session.accountId);
+  if (!account) return null;
+  if ((account.sessionVersion ?? 1) !== session.v) return null;
+  return session.accountId;
+}
+
 export async function requireCustomerApi(): Promise<
   { accountId: string } | NextResponse
 > {
-  const session = await getCustomerSession();
-  if (!session) {
+  const accountId = await getActiveCustomerAccountId();
+  if (!accountId) {
     return NextResponse.json({ error: 'Connexion requise' }, { status: 401 });
   }
-  return { accountId: session.accountId };
+  return { accountId };
 }
 
 export async function requirePackAccessApi(

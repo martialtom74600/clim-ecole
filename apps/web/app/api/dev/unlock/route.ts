@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   if (body.packId) await grantPackAccess(account.id, body.packId);
 
   const jar = await cookies();
-  jar.set(CUSTOMER_COOKIE, createCustomerToken(account.id), {
+  jar.set(CUSTOMER_COOKIE, createCustomerToken(account.id, account.sessionVersion), {
     httpOnly: true,
     sameSite: 'lax',
     secure: false,

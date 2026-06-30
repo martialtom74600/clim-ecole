@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, ExternalLink, Kanban, LogOut } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ExternalLink, Kanban, LogOut } from 'lucide-react';
 import { COPY } from '@/lib/copy';
 import { AlertPreferencesPanel } from '@/components/marketplace/alert-preferences';
 import { GuidedSteps } from '@/components/marketplace/guided-steps';
@@ -24,6 +24,7 @@ interface AccountState {
 
 export default function ComptePage() {
   const [account, setAccount] = useState<AccountState | null>(null);
+  const [notice, setNotice] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/auth/customer')
@@ -32,8 +33,28 @@ export default function ComptePage() {
       .catch(() => setAccount({ authenticated: false }));
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('synced')) {
+      setNotice({
+        kind: 'success',
+        text: 'Connecté — vos favoris, pipeline et territoires sont synchronisés sur cet appareil.',
+      });
+    } else if (params.get('error') === 'magic_expired') {
+      setNotice({ kind: 'error', text: 'Lien de connexion expiré — demandez-en un nouveau.' });
+    }
+    if (params.has('synced') || params.has('error')) {
+      window.history.replaceState(null, '', '/compte');
+    }
+  }, []);
+
   async function logout() {
     await fetch('/api/auth/customer/logout', { method: 'POST' });
+    setAccount({ authenticated: false });
+  }
+
+  async function logoutAll() {
+    await fetch('/api/auth/customer/logout-all', { method: 'POST' });
     setAccount({ authenticated: false });
   }
 
@@ -55,12 +76,37 @@ export default function ComptePage() {
               </Link>
               <button type="button" onClick={logout} className="btn-ghost text-sm">
                 <LogOut className="h-4 w-4" />
-                Réinitialiser cet appareil
+                Déconnecter cet appareil
+              </button>
+              <button
+                type="button"
+                onClick={logoutAll}
+                className="btn-ghost text-sm text-ink-subtle"
+                title="Invalide toutes les sessions ouvertes, sur tous vos appareils"
+              >
+                Tous les appareils
               </button>
             </div>
           ) : undefined
         }
       />
+
+      {notice && (
+        <div
+          className={
+            notice.kind === 'success'
+              ? 'mb-6 flex items-center gap-2 rounded-xl border border-positive-border bg-positive-soft px-4 py-3 text-sm text-positive-text'
+              : 'mb-6 flex items-center gap-2 rounded-xl border border-warning-border bg-warning-soft px-4 py-3 text-sm text-warning-text'
+          }
+        >
+          {notice.kind === 'success' ? (
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+          ) : (
+            <AlertCircle className="h-4 w-4 shrink-0" />
+          )}
+          {notice.text}
+        </div>
+      )}
 
       {!account && (
         <p className="text-ink-muted">Chargement…</p>

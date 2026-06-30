@@ -5,6 +5,7 @@ import { ToastProvider } from '@/components/ui/toast';
 import { AccountPreferencesProvider } from '@/hooks/use-account-preferences';
 import { AnalyticsScripts } from '@/components/analytics/analytics-scripts';
 import { TestModeBanner } from '@/components/dev/test-mode-banner';
+import { SyncNudge } from '@/components/compte/sync-nudge';
 import './globals.css';
 
 const inter = Inter({
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <MotionConfig reducedMotion="user">
           <AccountPreferencesProvider>
             <ToastProvider>{children}</ToastProvider>
+            <SyncNudge />
           </AccountPreferencesProvider>
         </MotionConfig>
       </body>

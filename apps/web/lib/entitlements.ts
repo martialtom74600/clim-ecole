@@ -5,8 +5,10 @@ import { isSupabaseConfigured } from './supabase-server';
 import { isTestMode } from './test-mode';
 import {
   isJsonStoreAllowed,
+  jsonBumpSessionVersion,
   jsonDeleteAlertSubscription,
   jsonGetAccount,
+  jsonGetAccountByEmail,
   jsonGetAccountByStripeCustomerId,
   jsonGetOrCreateAccount,
   jsonGetPackUnlockCount,
@@ -23,8 +25,10 @@ import {
   type CustomerAccount,
 } from './entitlements-store';
 import {
+  dbBumpSessionVersion,
   dbDeleteAlertSubscription,
   dbGetAccount,
+  dbGetAccountByEmail,
   dbGetAccountByStripeCustomerId,
   dbGetOrCreateAccount,
   dbGetPackUnlockCount,
@@ -68,6 +72,15 @@ export async function getAccountByStripeCustomerId(
   return useDb()
     ? dbGetAccountByStripeCustomerId(stripeCustomerId)
     : jsonGetAccountByStripeCustomerId(stripeCustomerId);
+}
+
+export async function getAccountByEmail(email: string): Promise<CustomerAccount | null> {
+  return useDb() ? dbGetAccountByEmail(email) : jsonGetAccountByEmail(email);
+}
+
+/** Révoque toutes les sessions actives du compte (logout all devices). */
+export async function bumpSessionVersion(accountId: string): Promise<number> {
+  return useDb() ? dbBumpSessionVersion(accountId) : jsonBumpSessionVersion(accountId);
 }
 
 export async function getOrCreateAccount(

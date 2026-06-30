@@ -64,7 +64,7 @@ export async function POST(request: Request) {
   });
 
   const jar = await cookies();
-  jar.set(CUSTOMER_COOKIE, createCustomerToken(account.id), {
+  jar.set(CUSTOMER_COOKIE, createCustomerToken(account.id, account.sessionVersion), {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',

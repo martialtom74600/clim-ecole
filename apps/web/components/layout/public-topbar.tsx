@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { BrandLogo } from '@/components/brand/logo';
 import { PERSONA_LIST } from '@/lib/brand';
+import { useAccountPreferences } from '@/hooks/use-account-preferences';
 
 const NAV = [
   { href: '/explorer', label: 'Explorateur' },
@@ -24,6 +25,8 @@ export function PublicTopbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [solutionsOpen, setSolutionsOpen] = useState(false);
+  const { authenticated, loaded } = useAccountPreferences();
+  const accountLabel = loaded && !authenticated ? 'Se connecter' : 'Mon compte';
 
   return (
     <header className="sticky top-0 z-[100] border-b border-line/70 bg-white/75 backdrop-blur-xl backdrop-saturate-150 print:hidden">
@@ -78,7 +81,7 @@ export function PublicTopbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Link href="/compte" className="btn-ghost"><User className="h-4 w-4" />Mon compte</Link>
+          <Link href="/compte" className="btn-ghost"><User className="h-4 w-4" />{accountLabel}</Link>
           <Link href="/tarifs?plan=pro" className="btn-primary !py-2 !text-sm">990 €/mois · tout débloquer</Link>
         </div>
 
@@ -102,7 +105,7 @@ export function PublicTopbar() {
             </Link>
           ))}
           <div className="mt-3 space-y-2 border-t border-line pt-3">
-            <Link href="/compte" className="btn-secondary block text-center">Mon compte</Link>
+            <Link href="/compte" className="btn-secondary block text-center">{accountLabel}</Link>
             <Link href="/tarifs?plan=pro" className="btn-primary block text-center">Voir les tarifs</Link>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCustomerSession } from '@/lib/auth';
+import { getActiveCustomerAccountId } from '@/lib/api-guard';
 import {
   getCustomerPreferences,
   upsertCustomerPreferences,
@@ -7,18 +7,25 @@ import {
 } from '@/lib/client-preferences-db';
 
 export async function GET() {
-  const session = await getCustomerSession();
-  if (!session) {
-    return NextResponse.json({ watchlist: [], compareIds: [], blacklistUais: [], onboarding: null });
+  const accountId = await getActiveCustomerAccountId();
+  if (!accountId) {
+    return NextResponse.json({
+      authenticated: false,
+      watchlist: [],
+      compareIds: [],
+      blacklistUais: [],
+      removedWatchlist: [],
+      onboarding: null,
+    });
   }
-  const prefs = await getCustomerPreferences(session.accountId);
-  const referralCode = await ensureReferralCode(session.accountId);
-  return NextResponse.json({ ...prefs, referralCode });
+  const prefs = await getCustomerPreferences(accountId);
+  const referralCode = await ensureReferralCode(accountId);
+  return NextResponse.json({ authenticated: true, ...prefs, referralCode });
 }
 
 export async function PUT(request: Request) {
-  const session = await getCustomerSession();
-  if (!session) {
+  const accountId = await getActiveCustomerAccountId();
+  if (!accountId) {
     return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
   }
 
@@ -29,7 +36,7 @@ export async function PUT(request: Request) {
     onboarding?: { persona?: string; minCapex?: number; completedAt?: string };
   };
 
-  const prefs = await upsertCustomerPreferences(session.accountId, {
+  const prefs = await upsertCustomerPreferences(accountId, {
     watchlist: body.watchlist,
     compareIds: body.compareIds?.slice(-3),
     blacklistUais: body.blacklistUais,

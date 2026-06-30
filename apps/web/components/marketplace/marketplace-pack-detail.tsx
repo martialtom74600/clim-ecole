@@ -20,6 +20,7 @@ export function MarketplacePackDetailView({
     mgpe,
     dataLoadedAt,
     similarPacks,
+    radarFactors,
   } = data;
 
   const soldOut = pack.soldOut && !unlocked;
@@ -38,6 +39,7 @@ export function MarketplacePackDetailView({
         similarPacks={similarPacks}
         soldOut={soldOut}
         dataLoadedAt={dataLoadedAt}
+        radarFactors={radarFactors}
       />
     </Suspense>
   );

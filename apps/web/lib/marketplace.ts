@@ -37,6 +37,14 @@ function obfuscateCommune(sectorIndex: number, regionLabel = 'France'): string {
   return `Secteur ${sectors[sectorIndex % sectors.length]} · ${regionLabel.split(' · ')[0]}`;
 }
 
+/** Décale légèrement les coords (~1 km) pour l'aperçu carte flouté sans révéler l'adresse. */
+function obfuscatePreviewCoord(value: number, index: number, axis: 'lat' | 'lon'): number {
+  const span = axis === 'lat' ? 0.012 : 0.016;
+  const sign = index % 2 === 0 ? 1 : -1;
+  const magnitude = 0.35 + ((index * 7) % 6) / 10;
+  return value + sign * span * magnitude;
+}
+
 function bestRoiAnnees(buildings: { fondsRoiPessimisteAnnees: number }[]): number {
   const valid = buildings
     .map((b) => b.fondsRoiPessimisteAnnees)
@@ -201,6 +209,10 @@ function toMarketplaceBuilding(
       roiAnnees: 0,
       closingTemperature: '',
       detailsHidden: true,
+      latitude:
+        b.latitude != null ? obfuscatePreviewCoord(b.latitude, index, 'lat') : undefined,
+      longitude:
+        b.longitude != null ? obfuscatePreviewCoord(b.longitude, index, 'lon') : undefined,
     };
   }
 

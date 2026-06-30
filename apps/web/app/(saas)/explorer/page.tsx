@@ -8,7 +8,7 @@ export default async function ExplorerPage({
 }) {
   const { filter } = await searchParams;
   return (
-    <div className="flex min-h-[calc(100svh-3.5rem)] flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <ExplorerNarrativeHeader />
       <div className="relative min-h-0 flex-1">
         <MarketplaceExplorer initialPersonaFilter={filter} />

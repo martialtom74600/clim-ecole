@@ -296,7 +296,7 @@ export function ExplorerAdvancedFilters({
           value={minCeeEuros || ''}
           onChange={(e) => onMinCeeEurosChange(Number(e.target.value) || 0)}
           className="input-field mt-1 !py-1.5 !text-xs"
-          placeholder="25000"
+          placeholder="15000"
         />
       </label>
     </div>

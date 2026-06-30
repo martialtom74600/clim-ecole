@@ -7,14 +7,14 @@ import type { ClientPersona } from './brand';
 
 export const PERSONA_THRESHOLDS = {
   BTP_CAPEX_MIN: 400_000,
-  AMO_SUBVENTION_RATIO_MIN: 0.4,
-  BE_SURFACE_MAX_M2: 1_500,
-  BE_PASSOIRE_MAJORITY: 0.5,
+  AMO_SUBVENTION_RATIO_MIN: 0.5,
+  BE_SURFACE_MAX_M2: 2_500,
+  BE_PASSOIRE_MAJORITY: 0.4,
   /** ESCO — volume mutualisable */
   ESCO_BATIMENT_MIN: 5,
   ESCO_CAPEX_MIN: 800_000,
   /** CEE — cumac significatif */
-  CEE_EUROS_MIN: 25_000,
+  CEE_EUROS_MIN: 15_000,
   CEE_PASSOIRE_MIN: 0.4,
 } as const;
 
@@ -78,7 +78,7 @@ export function inferDealPersona(deal: DealPersonaInput): DealPersonaResult {
   }
 
   if (
-    subventionRatio > PERSONA_THRESHOLDS.AMO_SUBVENTION_RATIO_MIN ||
+    subventionRatio >= PERSONA_THRESHOLDS.AMO_SUBVENTION_RATIO_MIN ||
     statutProjetEpci === 'PROJET_GLOBAL_VALIDE'
   ) {
     personas.push('amo');

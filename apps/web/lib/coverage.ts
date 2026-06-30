@@ -1,3 +1,5 @@
+import 'server-only';
+
 import fs from 'fs';
 import path from 'path';
 import { cache } from 'react';
@@ -85,7 +87,7 @@ export async function getCoverageBadge(): Promise<string> {
   if (stats.regionCount === 1) {
     return `${stats.regionLabels[0]} · extension France`;
   }
-  return 'France · couverture progressive';
+  return `${stats.departmentCount} départements · couverture progressive`;
 }
 
 /** Phrase pour pages légales / marketing */

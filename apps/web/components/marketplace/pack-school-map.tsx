@@ -6,6 +6,14 @@ import { FRANCE_CENTER } from '@/lib/map-utils';
 import { dpeHex } from '@/lib/dpe-colors';
 import { cn } from '@/lib/utils';
 
+async function waitForElementSize(el: HTMLElement, attempts = 30): Promise<boolean> {
+  for (let i = 0; i < attempts; i++) {
+    if (el.offsetWidth > 0 && el.offsetHeight > 0) return true;
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  }
+  return el.offsetWidth > 0 && el.offsetHeight > 0;
+}
+
 export function PackSchoolMap({
   buildings,
   variant = 'card',
@@ -25,24 +33,28 @@ export function PackSchoolMap({
    */
   interactive?: boolean;
 }) {
+  const shellRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import('leaflet').Map | null>(null);
   const resizeRef = useRef<ResizeObserver | null>(null);
 
-  const geo = buildings.filter(
-    (b) => b.latitude != null && b.longitude != null && !b.detailsHidden,
-  );
+  const geo = buildings.filter((b) => b.latitude != null && b.longitude != null);
 
   useEffect(() => {
-    const points = buildings.filter(
-      (b) => b.latitude != null && b.longitude != null && !b.detailsHidden,
-    );
-    if (!containerRef.current || points.length === 0) return;
+    const points = buildings.filter((b) => b.latitude != null && b.longitude != null);
+    const shell = shellRef.current;
+    const container = containerRef.current;
+    if (!shell || !container || points.length === 0) return;
 
     let cancelled = false;
+    let intersectionObserver: IntersectionObserver | null = null;
 
     async function init() {
       const L = (await import('leaflet')).default;
+      if (cancelled || !containerRef.current || !shellRef.current) return;
+
+      await waitForElementSize(shellRef.current);
+
       if (cancelled || !containerRef.current) return;
 
       if (mapRef.current) {
@@ -82,7 +94,7 @@ export function PackSchoolMap({
         }).addTo(map);
 
         marker.bindTooltip(
-          `<strong>${b.realName ?? b.publicName}</strong><br/>${b.realCommune ?? b.publicCommune} · DPE ${b.classeDpe}`,
+          `<strong>${b.detailsHidden ? b.publicName : (b.realName ?? b.publicName)}</strong><br/>${b.detailsHidden ? b.publicCommune : (b.realCommune ?? b.publicCommune)} · DPE ${b.classeDpe}`,
           { direction: 'top', offset: [0, -6] },
         );
       }
@@ -97,19 +109,31 @@ export function PackSchoolMap({
 
       mapRef.current = map;
 
-      /* Leaflet calcule mal sa taille s'il s'initialise dans un conteneur qui
-         vient d'apparaître (modale, onglet, sticky) → on force le recalcul au
-         montage puis à chaque redimensionnement du conteneur. */
-      requestAnimationFrame(() => mapRef.current?.invalidateSize());
-      const ro = new ResizeObserver(() => mapRef.current?.invalidateSize());
-      ro.observe(containerRef.current);
+      const invalidate = () => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => mapRef.current?.invalidateSize());
+        });
+      };
+
+      invalidate();
+      const ro = new ResizeObserver(invalidate);
+      ro.observe(shellRef.current!);
       resizeRef.current = ro;
+
+      intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) invalidate();
+        },
+        { threshold: 0.05 },
+      );
+      intersectionObserver.observe(shellRef.current!);
     }
 
     void init();
 
     return () => {
       cancelled = true;
+      intersectionObserver?.disconnect();
       resizeRef.current?.disconnect();
       resizeRef.current = null;
       if (mapRef.current) {
@@ -133,24 +157,24 @@ export function PackSchoolMap({
     );
   }
 
-  const mapShell = (
-    <div
-      ref={containerRef}
-      className={cn(
-        'radar-map-shell w-full',
-        variant === 'card' ? 'h-72 md:h-96' : fill ? 'absolute inset-0' : 'h-full min-h-[16rem]',
-        variant === 'embedded' && !fill && className,
-      )}
-    />
+  const shellClass = cn(
+    'radar-map-shell',
+    variant === 'card' && 'h-72 w-full md:h-96',
+    variant === 'embedded' && (fill ? 'h-full min-h-0 w-full' : 'h-full min-h-[16rem] w-full'),
+    className,
+  );
+
+  const mapPane = (
+    <div className={cn('relative', showHeader ? 'min-h-0 flex-1' : 'absolute inset-0')}>
+      <div ref={containerRef} className="absolute inset-0" />
+    </div>
   );
 
   if (variant === 'embedded') {
     return (
       <div
-        className={cn(
-          fill ? 'flex h-full min-h-0 flex-col' : 'overflow-hidden',
-          className,
-        )}
+        ref={shellRef}
+        className={cn(shellClass, showHeader && 'flex flex-col overflow-hidden')}
       >
         {showHeader && (
           <div className="shrink-0 border-b border-line px-4 py-3">
@@ -161,9 +185,7 @@ export function PackSchoolMap({
             </p>
           </div>
         )}
-        <div className={cn('relative', fill ? 'min-h-0 flex-1' : undefined)}>
-          {mapShell}
-        </div>
+        {mapPane}
       </div>
     );
   }
@@ -179,7 +201,9 @@ export function PackSchoolMap({
           </p>
         </div>
       )}
-      {mapShell}
+      <div ref={shellRef} className={shellClass}>
+        {mapPane}
+      </div>
     </div>
   );
 }

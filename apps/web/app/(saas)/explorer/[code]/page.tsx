@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getCustomerSession } from '@/lib/auth';
-import { getMarketplacePackById } from '@/lib/marketplace';
+import { isPublicDemoPack, loadPackForViewer } from '@/lib/pack-access';
 import { MarketplacePackDetailView } from '@/components/marketplace/marketplace-pack-detail';
 
 export default async function ExplorerPackPage({
@@ -10,8 +10,10 @@ export default async function ExplorerPackPage({
 }) {
   const { code: packId } = await params;
   const session = await getCustomerSession();
-  const data = await getMarketplacePackById(packId, session?.accountId);
+  const data = await loadPackForViewer(packId, session?.accountId);
   if (!data) notFound();
 
-  return <MarketplacePackDetailView data={data} />;
+  const isDemo = await isPublicDemoPack(packId);
+
+  return <MarketplacePackDetailView data={data} isDemo={isDemo} />;
 }

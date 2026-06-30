@@ -48,6 +48,7 @@ export function DossierApp({
   similarPacks,
   soldOut = false,
   dataLoadedAt,
+  radarFactors,
 }: {
   pack: MarketplacePack;
   buildings: MarketplaceBuilding[];
@@ -60,6 +61,7 @@ export function DossierApp({
   similarPacks?: MarketplacePack[];
   soldOut?: boolean;
   dataLoadedAt?: string;
+  radarFactors?: string[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -67,7 +69,7 @@ export function DossierApp({
   const sectionParam = searchParams.get('section');
   const presentParam = searchParams.get('present') === '1';
 
-  const { active: activeSection, navigate } = useDossierSectionSpy('verdict');
+  const { active: activeSection, setActive: setActiveSection } = useDossierSectionSpy('verdict');
   const [presentation, setPresentation] = useState(presentParam);
   const [showChecklist, setShowChecklist] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -102,13 +104,14 @@ export function DossierApp({
 
   const changeSection = useCallback(
     (next: DossierSectionId) => {
-      navigate(next);
+      scrollToDossierSection(next);
+      setActiveSection(next);
       const params = new URLSearchParams(searchParams.toString());
       params.set('section', next);
       params.delete('tab');
       router.replace(`?${params.toString()}`, { scroll: false });
     },
-    [router, searchParams, navigate],
+    [router, searchParams, setActiveSection],
   );
 
   const content = (
@@ -119,6 +122,7 @@ export function DossierApp({
         unlocked={unlocked}
         packCapexTotal={pack.packCapexTotal}
         subventionRatio={pack.subventionRatio}
+        radarFactors={radarFactors}
       />
 
       <DossierTabProspect

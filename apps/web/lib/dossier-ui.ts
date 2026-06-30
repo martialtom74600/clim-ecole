@@ -43,10 +43,8 @@ export const DOSSIER_KPI_LABEL = 'text-[11px] font-semibold uppercase tracking-w
 export const DOSSIER_STACK = 'space-y-12';
 
 /**
- * Wrapper sticky pour la carte prospect (desktop uniquement).
- *
- * top-[180px] = topbar h-14 (56px) + header dossier (~64px) + barre onglets (~40px) + marge = 180px.
- * h-[calc(100vh-200px)] garantit que la carte descend jusqu'en bas de l'écran
- * sans dépasser (200px = sticky offset + marge basse de sécurité).
+ * Carte prospect desktop — hauteur viewport sans sticky (page longue en 4 sections).
+ * topbar + header dossier ≈ 220px ; max-h évite une carte trop haute sur grands écrans.
  */
-export const DOSSIER_MAP_STICKY = 'sticky top-[180px] h-[calc(100vh-200px)]';
+export const DOSSIER_MAP_DESKTOP =
+  'h-[calc(100vh-220px)] min-h-[320px] max-h-[560px]';

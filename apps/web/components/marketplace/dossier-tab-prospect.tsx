@@ -4,7 +4,7 @@ import type { MarketplaceBuilding, MarketplacePack } from '@/lib/types';
 import type { TerritoryFreePreview } from '@/lib/freemium';
 import {
   DOSSIER_CONTENT,
-  DOSSIER_MAP_STICKY,
+  DOSSIER_MAP_DESKTOP,
   DOSSIER_SECTION,
   DOSSIER_SECTION_DESC,
   DOSSIER_SECTION_TITLE,
@@ -15,6 +15,7 @@ import { DossierSchoolMapMobile } from '@/components/marketplace/dossier-school-
 import { DossierArtisansStrip } from '@/components/marketplace/dossier-artisans-strip';
 import { DossierLockHint } from '@/components/marketplace/dossier-inline-paywall';
 import { useAccountPreferences } from '@/hooks/use-account-preferences';
+import { cn } from '@/lib/utils';
 
 export function DossierTabProspect({
   buildings,
@@ -37,23 +38,18 @@ export function DossierTabProspect({
   );
 
   /**
-   * Carte desktop uniquement — interactive et sticky.
+   * Carte desktop uniquement — hauteur fixe via DOSSIER_MAP_DESKTOP.
    * Sur mobile, on utilise DossierSchoolMapMobile (aperçu non bloquant + modale)
    * pour ne jamais piéger le scroll tactile.
-   * Ce composant n'a pas de hauteur propre : le wrapper parent (DOSSIER_MAP_STICKY)
-   * la définit, et h-full se propage jusqu'à Leaflet via la chaîne flex.
+   * h-full se propage jusqu'à Leaflet via la chaîne flex.
    */
   const desktopMap = (
-    <div className="relative h-full w-full overflow-hidden rounded-xl border border-line shadow-card">
+    <div className={cn(DOSSIER_MAP_DESKTOP, 'relative overflow-hidden rounded-xl border border-line shadow-card')}>
       {unlocked ? (
         <PackSchoolMap buildings={filtered} variant="embedded" fill showHeader={false} />
       ) : (
         <>
-          {/*
-           * Le blur wrapper doit aussi avoir h-full pour que PackSchoolMap
-           * (qui utilise fill + flex h-full) puisse occuper la totalité.
-           */}
-          <div className="pointer-events-none h-full select-none blur-sm">
+          <div className="absolute inset-0 pointer-events-none select-none blur-sm">
             <PackSchoolMap buildings={filtered} variant="embedded" fill showHeader={false} />
           </div>
           <DossierLockHint
@@ -104,15 +100,10 @@ export function DossierTabProspect({
         </div>
 
         {/*
-         * DESKTOP — carte sticky col 5/12.
-         * DOSSIER_MAP_STICKY fournit sticky + top + h-[calc(100vh-200px)].
-         * desktopMap s'y adapte via h-full.
-         * lg:block masqué sur mobile (l'aperçu mobile est déjà rendu au-dessus).
+         * DESKTOP — carte col 5/12, hauteur explicite via DOSSIER_MAP_DESKTOP.
          */}
         <div className="hidden lg:col-span-5 lg:block">
-          <div className={DOSSIER_MAP_STICKY}>
-            {desktopMap}
-          </div>
+          {desktopMap}
         </div>
 
       </div>

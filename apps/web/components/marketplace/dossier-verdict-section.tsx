@@ -21,12 +21,14 @@ export function DossierVerdictSection({
   unlocked,
   packCapexTotal,
   subventionRatio,
+  radarFactors,
 }: {
   pack: MarketplacePack;
   freePreview?: TerritoryFreePreview;
   unlocked: boolean;
   packCapexTotal?: number;
   subventionRatio?: number;
+  radarFactors?: string[];
 }) {
   const { headline, subline } = buildTerritoryVerdict(pack, {
     freePreview,
@@ -94,6 +96,22 @@ export function DossierVerdictSection({
 
         {!unlocked && (
           <p className="mt-4 text-xs text-ink-subtle">{COPY.freePreviewHint}</p>
+        )}
+
+        {unlocked && radarFactors && radarFactors.length > 0 && (
+          <details className="mt-6 rounded-lg border border-line bg-surface-sunken/50 px-4 py-3">
+            <summary className="cursor-pointer text-xs font-medium text-ink-muted hover:text-ink">
+              Pourquoi ce score {pack.radarGrade} ({pack.radarScore}/100) ?
+            </summary>
+            <ul className="mt-3 space-y-1.5 text-xs leading-relaxed text-ink-muted">
+              {radarFactors.map((factor) => (
+                <li key={factor} className="flex gap-2">
+                  <span className="text-ink-subtle" aria-hidden>·</span>
+                  <span>{factor}</span>
+                </li>
+              ))}
+            </ul>
+          </details>
         )}
       </div>
     </section>

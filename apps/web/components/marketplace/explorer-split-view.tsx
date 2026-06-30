@@ -46,6 +46,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAccountPreferences } from '@/hooks/use-account-preferences';
 import { isClientPersona } from '@/lib/brand';
 import { filterExplorerPacks, type ExplorerFilterState } from '@/lib/explorer-filters';
+import { PERSONA_THRESHOLDS } from '@/lib/persona-engine';
 import {
   ExplorerAdvancedFilters,
   ExplorerCoveragePanel,
@@ -89,11 +90,17 @@ export function ExplorerSplitView({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
   const [listOpen, setListOpen] = useState(true);
-  const [minCapex, setMinCapex] = useState(0);
-  const [minGrade, setMinGrade] = useState<'A' | 'B' | 'C' | 'D' | 'all'>('all');
+  const [minCapex, setMinCapex] = useState(
+    defaultFilter === 'btp' ? PERSONA_THRESHOLDS.BTP_CAPEX_MIN : 0,
+  );
+  const [minGrade, setMinGrade] = useState<'A' | 'B' | 'C' | 'D' | 'all'>(
+    defaultFilter === 'btp' ? 'B' : 'all',
+  );
   const [aoOnly, setAoOnly] = useState(false);
   const [mutualizableOnly, setMutualizableOnly] = useState(defaultFilter === 'esco');
-  const [minCeeEuros, setMinCeeEuros] = useState(defaultFilter === 'cee' ? 25_000 : 0);
+  const [minCeeEuros, setMinCeeEuros] = useState(
+    defaultFilter === 'cee' ? PERSONA_THRESHOLDS.CEE_EUROS_MIN : 0,
+  );
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -187,7 +194,7 @@ export function ExplorerSplitView({
   }
 
   return (
-    <div className="relative h-full min-h-[420px] w-full">
+    <div className="relative h-full min-h-0 w-full">
       <OnboardingModal
         open={showOnboarding}
         onComplete={(persona, capex) => {
@@ -195,7 +202,7 @@ export function ExplorerSplitView({
           setMinCapex(capex);
           changeFilter(persona);
           if (persona === 'esco') setMutualizableOnly(true);
-          if (persona === 'cee') setMinCeeEuros(25_000);
+          if (persona === 'cee') setMinCeeEuros(PERSONA_THRESHOLDS.CEE_EUROS_MIN);
           setShowOnboarding(false);
         }}
         onSkip={() => {
@@ -509,6 +516,15 @@ export function ExplorerSplitView({
               <p className="mt-1 text-xs text-ink-muted">
                 Élargissez vos critères pour révéler plus d&apos;opportunités.
               </p>
+              {filter !== 'all' && filter !== 'qualified' && filter !== 'watchlist' && (
+                <p className="mt-2 max-w-xs text-xs text-ink-subtle">
+                  Peu de dossiers tagués{' '}
+                  <span className="font-medium text-ink-muted">
+                    {PERSONA_FILTER_LABELS[filter].short}
+                  </span>{' '}
+                  dans la couverture actuelle — essayez « Tous » ou baissez le score minimum.
+                </p>
+              )}
               <button type="button" onClick={resetAllFilters} className="btn-secondary mt-5 !py-1.5 !text-xs">
                 <RotateCcw className="h-3.5 w-3.5" />
                 Réinitialiser les filtres

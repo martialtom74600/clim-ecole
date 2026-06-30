@@ -43,6 +43,7 @@ export function NarrativeVerdict({
 /** Section narrative numérotée — contenu principal d'une page. */
 export function NarrativeSection({
   id,
+  label,
   title,
   description,
   children,
@@ -50,6 +51,7 @@ export function NarrativeSection({
   bordered = true,
 }: {
   id?: string;
+  label?: string;
   title: string;
   description?: string;
   children: React.ReactNode;
@@ -62,7 +64,8 @@ export function NarrativeSection({
       className={cn(bordered && 'border-b border-line', className)}
     >
       <div className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-12">
-        <h2 className="text-base font-semibold text-ink">{title}</h2>
+        {label && <p className="label-caps">{label}</p>}
+        <h2 className={cn('text-base font-semibold text-ink', label && 'mt-1')}>{title}</h2>
         {description && (
           <p className="mt-1 text-sm text-ink-muted">{description}</p>
         )}

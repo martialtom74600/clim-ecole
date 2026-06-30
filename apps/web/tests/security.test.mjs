@@ -41,7 +41,7 @@ describe('security invariants', () => {
   });
 
   it('test mode blocked on Vercel production', async () => {
-    const src = await readFile(new URL('lib/test-mode.ts', root), 'utf8');
+    const src = await readFile(new URL('lib/env.ts', root), 'utf8');
     assert.ok(src.includes("VERCEL_ENV === 'production'"));
     assert.ok(src.includes('return false'));
   });

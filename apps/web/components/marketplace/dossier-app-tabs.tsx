@@ -108,7 +108,7 @@ export function useDossierSectionSpy(defaultSection: DossierSectionId = 'verdict
     scrollToDossierSection(id);
   }, []);
 
-  return { active, navigate };
+  return { active, setActive, navigate };
 }
 
 /** @deprecated Utiliser DossierSectionNav — conservé pour rétrocompat imports. */

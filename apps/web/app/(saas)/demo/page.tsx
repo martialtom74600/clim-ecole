@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getDemoPackId, getMarketplacePackById } from '@/lib/marketplace';
+import { getDemoPackId } from '@/lib/marketplace';
+import { loadPackForViewer } from '@/lib/pack-access';
 import { MarketplacePackDetailView } from '@/components/marketplace/marketplace-pack-detail';
 import { PRICING, priceLabel } from '@/lib/pricing';
 
@@ -13,7 +14,7 @@ export default async function DemoPage() {
   const demoId = await getDemoPackId();
   if (!demoId) notFound();
 
-  const data = await getMarketplacePackById(demoId, null, { demo: true });
+  const data = await loadPackForViewer(demoId, null);
   if (!data) notFound();
 
   return <MarketplacePackDetailView data={data} isDemo />;

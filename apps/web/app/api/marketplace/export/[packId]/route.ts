@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { decodePackId, getMarketplacePackById } from '@/lib/marketplace';
+import { decodePackId } from '@/lib/marketplace';
 import { buildPackCsv } from '@/lib/marketplace-export';
 import { requirePackAccessApi } from '@/lib/api-guard';
 import { getCustomerSession } from '@/lib/auth';
+import { loadPackForViewer } from '@/lib/pack-access';
 
 export async function GET(
   request: Request,
@@ -15,7 +16,7 @@ export async function GET(
   const denied = await requirePackAccessApi(packId);
   if (denied instanceof NextResponse) return denied;
 
-  const data = await getMarketplacePackById(packId, session?.accountId);
+  const data = await loadPackForViewer(packId, session?.accountId);
   if (!data?.unlocked) {
     return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
   }

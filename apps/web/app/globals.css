@@ -236,6 +236,7 @@
     z-index: 0;
   }
 
+  .radar-map-shell.leaflet-container,
   .radar-map-shell .leaflet-container {
     position: absolute !important;
     inset: 0 !important;

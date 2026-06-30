@@ -1,61 +1,74 @@
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, Layers } from 'lucide-react';
 import type { PersonaLandingContent } from '@/lib/gtm';
+import { PERSONA_LANDINGS } from '@/lib/gtm';
 import { PRICING, priceLabel } from '@/lib/pricing';
-import { PERSONAS, type ClientPersona } from '@/lib/brand';
-import { Disclosure } from '@/components/ui/disclosure';
+import { HOME_PERSONA_CARDS } from '@/lib/home-content';
 import {
   NarrativeAction,
   NarrativeKpiGrid,
   NarrativeSection,
   NarrativeVerdict,
-  SiteJourneySteps,
 } from '@/components/layout/narrative-page';
+import {
+  PersonaDossierProof,
+  PersonaLandingRoi,
+} from '@/components/marketplace/persona-landing-sections';
 
 /**
- * Landing persona — même logique que le dossier :
- * Verdict → Parcours → Preuve (repliée) → Action.
+ * Landing persona — Verdict → ROI → Playbook → Preuve dossier → Action.
+ * Alignée sur la home : bénéfice acheteur d'abord, pas le marché passoires.
  */
 export function PersonaLandingPage({ content }: { content: PersonaLandingContent }) {
   const isFinance = content.id === 'finance';
-  const persona = !isFinance ? PERSONAS[content.id as ClientPersona] : null;
+  const primaryHref = isFinance ? '/portefeuille' : content.ctaHref;
+  const primaryLabel = isFinance ? 'Ouvrir le portefeuille national' : content.ctaLabel;
+
+  const otherSolutions = HOME_PERSONA_CARDS.filter((c) => c.id !== content.id);
 
   return (
     <div>
       <NarrativeVerdict
-        label={`${persona?.shortLabel ?? 'Finance'} · Clim École`}
+        label={`Solution · ${content.personaLabel}`}
         headline={content.heroTitle}
         subline={content.heroSubtitle}
       >
+        <p className="mt-4 max-w-2xl rounded-lg border border-line bg-surface-sunken px-4 py-3 text-sm font-medium text-ink">
+          {content.jobToBeDone}
+        </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          {isFinance ? (
-            <Link href="/portefeuille" className="btn-primary">
-              Ouvrir le portefeuille national
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          ) : (
-            <Link href={content.ctaHref} className="btn-primary">
-              {content.ctaLabel}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          )}
+          <Link href={primaryHref} className="btn-primary">
+            {primaryLabel}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
           <Link href="/tarifs" className="btn-secondary">
             {content.pricingHint}
           </Link>
+          {!isFinance && (
+            <Link href="/demo" className="btn-ghost text-sm">
+              Voir un dossier complet
+            </Link>
+          )}
         </div>
-        <NarrativeKpiGrid className="mt-8 max-w-2xl" items={content.metrics.map((m) => ({
-          label: m.label,
-          value: m.value,
-        }))} />
+        <NarrativeKpiGrid
+          className="mt-8 max-w-2xl"
+          items={content.metrics.map((m) => ({
+            label: m.label,
+            value: m.value,
+          }))}
+        />
       </NarrativeVerdict>
 
+      <PersonaLandingRoi content={content} />
+
       <NarrativeSection
+        label="Votre méthode"
         title="Votre parcours en 4 étapes"
-        description={content.jobToBeDone}
+        description="De la cartographie au closing — avec les bons filtres métier."
       >
         <ol className="space-y-4">
           {content.playbookSteps.map((step, i) => (
-            <li key={step.title} className="flex gap-4">
+            <li key={step.title} className="flex gap-4 rounded-xl border border-line bg-white p-4 shadow-card">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-bold text-white">
                 {i + 1}
               </span>
@@ -68,23 +81,14 @@ export function PersonaLandingPage({ content }: { content: PersonaLandingContent
         </ol>
       </NarrativeSection>
 
-      <NarrativeSection title="Le parcours Clim École" description="Identique pour tous les métiers — adapté à votre filtre.">
-        <SiteJourneySteps compact />
-      </NarrativeSection>
-
-      <div className="border-b border-line">
-        <div className="mx-auto max-w-7xl px-5 py-8 md:px-8">
-          <Disclosure title="Cas d'usage & ROI" hint={content.roiTrigger}>
-            <p className="text-sm leading-relaxed text-ink-muted">{content.useCase}</p>
-            <p className="mt-4 rounded-lg border border-positive-border bg-positive-soft px-4 py-3 text-sm text-positive-text">
-              <strong>ROI :</strong> {content.roiTrigger}
-            </p>
-          </Disclosure>
-        </div>
-      </div>
+      <PersonaDossierProof content={content} />
 
       {isFinance && (
-        <NarrativeSection title="Workbench SPV" description="Agrégez des départements en portefeuille finançable.">
+        <NarrativeSection
+          label="Workbench"
+          title="Portefeuille national"
+          description="Agrégez des départements — CAPEX et RAC se recalculent en temps réel."
+        >
           <Link
             href="/portefeuille"
             className="flex items-center gap-3 rounded-2xl border border-line bg-surface-sunken p-5 transition-colors hover:border-line-strong"
@@ -93,9 +97,9 @@ export function PersonaLandingPage({ content }: { content: PersonaLandingContent
               <Layers className="h-5 w-5" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-ink">Portefeuille national</p>
+              <p className="font-semibold text-ink">Ouvrir le workbench SPV</p>
               <p className="text-sm text-ink-muted">
-                CAPEX et reste à charge consolidés par département, en temps réel.
+                {PERSONA_LANDINGS.finance.useCase}
               </p>
             </div>
             <ArrowRight className="h-4 w-4 shrink-0 text-ink-muted" />
@@ -103,15 +107,37 @@ export function PersonaLandingPage({ content }: { content: PersonaLandingContent
         </NarrativeSection>
       )}
 
+      <section className="border-b border-line bg-surface-sunken/40">
+        <div className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-12">
+          <p className="label-caps">Autres métiers</p>
+          <h2 className="mt-1 text-base font-semibold text-ink">Une autre solution vous correspond ?</h2>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {otherSolutions.map((s) => (
+              <Link
+                key={s.id}
+                href={s.href}
+                className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:border-ink/20 hover:text-ink"
+              >
+                {s.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <NarrativeAction
-        title="Essai gratuit sur l'explorateur"
-        description={`Carte, scores, tranches budget — sans carte bancaire. Débloquez un territoire dès ${priceLabel(PRICING.dossier)} HT.`}
+        title={content.finalCtaTitle}
+        description={`Carte et scores gratuits. Débloquez un territoire dès ${priceLabel(PRICING.dossier)} HT quand vous êtes prêt à agir.`}
+        dark
       >
-        <Link href="/explorer" className="btn-primary">
-          {content.ctaLabel}
+        <Link href={primaryHref} className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-medium text-ink transition-transform hover:scale-[1.02] active:scale-95">
+          {primaryLabel}
           <ArrowRight className="h-4 w-4" />
         </Link>
-        <Link href="/demo" className="btn-secondary">
+        <Link
+          href="/demo"
+          className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white/80 transition-colors hover:text-white"
+        >
           <CheckCircle2 className="h-4 w-4" />
           Voir un dossier complet
         </Link>

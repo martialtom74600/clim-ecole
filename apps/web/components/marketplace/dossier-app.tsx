@@ -1,7 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -20,20 +19,22 @@ import {
 } from '@/lib/dossier-ui';
 import { DossierAppHeader } from '@/components/marketplace/dossier-app-header';
 import {
-  DossierAppTabs,
-  isDossierTabId,
-  type DossierTabId,
+  DossierSectionNav,
+  legacyTabToSection,
+  scrollToDossierSection,
+  useDossierSectionSpy,
+  type DossierSectionId,
 } from '@/components/marketplace/dossier-app-tabs';
+import { DossierVerdictSection } from '@/components/marketplace/dossier-verdict-section';
 import { DossierTabFinance } from '@/components/marketplace/dossier-tab-finance';
 import { DossierTabProspect } from '@/components/marketplace/dossier-tab-prospect';
 import { DossierTabExports } from '@/components/marketplace/dossier-tab-exports';
-import { DossierFreePreviewStrip } from '@/components/marketplace/dossier-free-preview-strip';
+import { DossierFooterMeta } from '@/components/marketplace/dossier-footer-meta';
+import { DossierPaywallCard } from '@/components/marketplace/dossier-paywall-card';
+import { DossierNextSteps } from '@/components/marketplace/dossier-next-steps';
 import { PostPurchaseChecklist } from '@/components/marketplace/post-purchase-checklist';
 import { PresentationModeToggle } from '@/components/marketplace/dossier-client-tools';
-import { tabContent } from '@/lib/motion';
 import { cn } from '@/lib/utils';
-
-const TAB_ORDER: DossierTabId[] = ['finance', 'prospect', 'exports'];
 
 export function DossierApp({
   pack,
@@ -63,34 +64,25 @@ export function DossierApp({
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
+  const sectionParam = searchParams.get('section');
   const presentParam = searchParams.get('present') === '1';
 
-  const [tab, setTab] = useState<DossierTabId>(
-    isDossierTabId(tabParam) ? tabParam : 'finance',
-  );
-  const [direction, setDirection] = useState(0);
+  const { active: activeSection, navigate } = useDossierSectionSpy('verdict');
   const [presentation, setPresentation] = useState(presentParam);
   const [showChecklist, setShowChecklist] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   const territoryName = communesLabel ?? nomEpci ?? pack.publicName;
 
-  /* Ref pour calculer la direction du changement d'onglet sans dépendance périmée */
-  const tabRef = useRef(tab);
+  /* Scroll initial depuis ?tab= ou ?section= (rétrocompat) */
   useEffect(() => {
-    tabRef.current = tab;
-  }, [tab]);
-
-  const goToTab = useCallback((next: DossierTabId) => {
-    setDirection(TAB_ORDER.indexOf(next) - TAB_ORDER.indexOf(tabRef.current));
-    setTab(next);
-  }, []);
-
-  useEffect(() => {
-    if (isDossierTabId(tabParam) && tabParam !== tabRef.current) {
-      goToTab(tabParam);
+    const target =
+      legacyTabToSection(sectionParam) ??
+      legacyTabToSection(tabParam);
+    if (target) {
+      requestAnimationFrame(() => scrollToDossierSection(target));
     }
-  }, [tabParam, goToTab]);
+  }, [tabParam, sectionParam]);
 
   useEffect(() => {
     if (unlocked && !isDemo) {
@@ -102,91 +94,116 @@ export function DossierApp({
     }
   }, [unlocked, isDemo, pack.packId]);
 
-  /* Shadow sur le sticky uniquement après le premier pixel de scroll */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 2);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const changeTab = useCallback(
-    (next: DossierTabId) => {
-      goToTab(next);
+  const changeSection = useCallback(
+    (next: DossierSectionId) => {
+      navigate(next);
       const params = new URLSearchParams(searchParams.toString());
-      params.set('tab', next);
+      params.set('section', next);
+      params.delete('tab');
       router.replace(`?${params.toString()}`, { scroll: false });
     },
-    [router, searchParams, goToTab],
+    [router, searchParams, navigate],
   );
 
-  const panels = (
+  const content = (
     <>
-      {tab === 'finance' && (
-        <DossierTabFinance
-          pack={pack}
-          unlocked={unlocked}
-          soldOut={soldOut}
-          freePreview={freePreview}
-          similarPacks={similarPacks}
-          packCapexTotal={pack.packCapexTotal}
-          subventionRatio={pack.subventionRatio}
-          resteAChargeTotal={pack.resteAChargeTotal}
-          gainNetMairieTotal={pack.gainNetMairieTotal}
-          fondsVertPotential={pack.fondsVertPotential}
-          roiAnnees={pack.roiAnnees}
-          mgpe={mgpe}
-          personas={pack.personas}
-          territoryName={territoryName}
-        />
+      <DossierVerdictSection
+        pack={pack}
+        freePreview={freePreview}
+        unlocked={unlocked}
+        packCapexTotal={pack.packCapexTotal}
+        subventionRatio={pack.subventionRatio}
+      />
+
+      <DossierTabProspect
+        buildings={buildings}
+        pack={pack}
+        unlocked={unlocked}
+        soldOut={soldOut}
+        freePreview={freePreview}
+        territoryName={territoryName}
+      />
+
+      <DossierTabFinance
+        pack={pack}
+        unlocked={unlocked}
+        freePreview={freePreview}
+        packCapexTotal={pack.packCapexTotal}
+        subventionRatio={pack.subventionRatio}
+        resteAChargeTotal={pack.resteAChargeTotal}
+        gainNetMairieTotal={pack.gainNetMairieTotal}
+        fondsVertPotential={pack.fondsVertPotential}
+        roiAnnees={pack.roiAnnees}
+        mgpe={mgpe}
+        personas={pack.personas}
+        territoryName={territoryName}
+      />
+
+      <DossierTabExports
+        packId={pack.packId}
+        pack={pack}
+        unlocked={unlocked}
+        soldOut={soldOut}
+        freePreview={freePreview}
+        similarPacks={similarPacks}
+      />
+
+      {!unlocked && (
+        <div className={cn(DOSSIER_CONTENT, 'space-y-4 pb-12')}>
+          <DossierPaywallCard
+            pack={pack}
+            freePreview={freePreview}
+            soldOut={soldOut}
+            embedded
+          />
+          <DossierNextSteps
+            pack={pack}
+            similarPacks={similarPacks}
+            soldOut={soldOut}
+          />
+        </div>
       )}
-      {tab === 'prospect' && (
-        <DossierTabProspect
-          buildings={buildings}
-          pack={pack}
-          unlocked={unlocked}
-          soldOut={soldOut}
-          freePreview={freePreview}
-          territoryName={territoryName}
-        />
-      )}
-      {tab === 'exports' && (
-        <DossierTabExports
-          packId={pack.packId}
-          pack={pack}
-          unlocked={unlocked}
-          soldOut={soldOut}
-          freePreview={freePreview}
-        />
-      )}
+
+      <DossierFooterMeta packId={pack.packId} dataLoadedAt={dataLoadedAt} />
     </>
   );
 
-  /* Crossfade directionnel entre onglets — sens piloté par `direction`. */
-  const animatedPanels = (
-    <AnimatePresence mode="wait" custom={direction} initial={false}>
-      <motion.div
-        key={tab}
-        custom={direction}
-        variants={tabContent}
-        initial="enter"
-        animate="center"
-        exit="exit"
-      >
-        {panels}
-      </motion.div>
-    </AnimatePresence>
+  const stickyBar = (
+    <div className={cn(DOSSIER_STICKY, scrolled && DOSSIER_STICKY_SCROLLED)}>
+      <div className="mx-auto w-full max-w-7xl px-5 md:px-8">
+        <DossierAppHeader
+          pack={pack}
+          unlocked={unlocked}
+          communesLabel={communesLabel}
+          nomEpci={nomEpci}
+          soldOut={soldOut}
+        />
+        <div className="flex items-center justify-between">
+          <DossierSectionNav active={activeSection} onChange={changeSection} />
+          {unlocked && (
+            <PresentationModeToggle active={presentation} onChange={setPresentation} />
+          )}
+        </div>
+      </div>
+    </div>
   );
 
   if (presentation) {
     return (
       <div className="fixed inset-0 z-[200] flex flex-col overflow-hidden bg-surface-sunken">
-        <div className="flex shrink-0 items-center justify-between border-b border-line/60 bg-white/80 px-5 py-2 backdrop-blur-xl md:px-8">
-          <DossierAppTabs active={tab} onChange={changeTab} />
-          <PresentationModeToggle active={presentation} onChange={setPresentation} />
+        <div className="shrink-0 border-b border-line/60 bg-white/80 px-5 py-2 backdrop-blur-xl md:px-8">
+          <div className="flex items-center justify-between">
+            <DossierSectionNav active={activeSection} onChange={changeSection} />
+            <PresentationModeToggle active={presentation} onChange={setPresentation} />
+          </div>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          {animatedPanels}
-        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto">{content}</div>
       </div>
     );
   }
@@ -194,24 +211,7 @@ export function DossierApp({
   return (
     <div className={DOSSIER_PAGE}>
       {isDemo && <DemoBanner />}
-      {/* Sticky — glassmorphism + shadow conditionnelle au scroll */}
-      <div className={cn(DOSSIER_STICKY, scrolled && DOSSIER_STICKY_SCROLLED)}>
-        <div className="mx-auto w-full max-w-7xl px-5 md:px-8">
-          <DossierAppHeader
-            pack={pack}
-            unlocked={unlocked}
-            communesLabel={communesLabel}
-            nomEpci={nomEpci}
-            dataLoadedAt={dataLoadedAt}
-          />
-          <div className="flex items-center justify-between">
-            <DossierAppTabs active={tab} onChange={changeTab} />
-            {unlocked && (
-              <PresentationModeToggle active={presentation} onChange={setPresentation} />
-            )}
-          </div>
-        </div>
-      </div>
+      {stickyBar}
 
       {unlocked && showChecklist && (
         <div className="border-b border-line bg-surface-sunken">
@@ -224,23 +224,11 @@ export function DossierApp({
         </div>
       )}
 
-      {/* Aperçu gratuit — affiché une seule fois ici (et non par onglet) quand verrouillé */}
-      {!unlocked && (
-        <div className="mx-auto w-full max-w-7xl px-5 pt-8 md:px-8 md:pt-10">
-          <DossierFreePreviewStrip pack={pack} freePreview={freePreview} />
-        </div>
-      )}
-
-      {/* Un seul <main> dans toute la page — le layout (saas)/layout.tsx en contient déjà un */}
-      <div>{animatedPanels}</div>
+      {content}
     </div>
   );
 }
 
-/**
- * Bandeau de la démo publique : assume que les données sont réelles et 100 %
- * débloquées, et renvoie vers l'explorateur pour transformer l'émotion en achat.
- */
 function DemoBanner() {
   return (
     <div className="border-b border-ink/10 bg-ink text-white">

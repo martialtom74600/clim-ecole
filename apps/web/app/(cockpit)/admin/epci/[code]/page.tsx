@@ -18,10 +18,8 @@ export default async function AdminEpciDetailPage({
   const { code } = await params;
 
   return (
-    <main className="page-content">
-      <Suspense fallback={<EpciDetailSkeleton />}>
-        <EpciDetailContent code={code} />
-      </Suspense>
-    </main>
+    <Suspense fallback={<EpciDetailSkeleton />}>
+      <EpciDetailContent code={code} />
+    </Suspense>
   );
 }

@@ -3,9 +3,11 @@
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle2, Download, Mail, Star } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Download, Mail, Star } from 'lucide-react';
 import { COPY } from '@/lib/copy';
+import { PAGE_VERDICTS } from '@/lib/site-narrative';
 import { trackEvent } from '@/lib/track';
+import { NarrativeVerdict } from '@/components/layout/narrative-page';
 
 function SuccessInner() {
   const params = useSearchParams();
@@ -85,50 +87,68 @@ function SuccessInner() {
     );
   }
 
-  return (
-    <div className="page-content">
-      <div className="card mx-auto max-w-xl p-8 text-center md:p-10">
-        <CheckCircle2 className="mx-auto h-12 w-12 text-ink" />
-        <h1 className="mt-4 text-2xl font-semibold">Paiement confirmé</h1>
-        <p className="mt-2 text-ink-muted">
-          {plan === 'pro'
-            ? `Votre ${COPY.subscription.toLowerCase()} est actif. Tous les territoires sont débloqués.`
-            : 'Votre territoire est débloqué. Noms, écoles et contacts sont visibles.'}
-        </p>
+  const { label, headline, subline } = PAGE_VERDICTS.success;
 
-        <ol className="mt-8 space-y-3 text-left text-sm">
-          <li className="flex items-start gap-3 rounded-lg bg-surface-sunken p-3">
-            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
-            Contactez les mairies via les emails du dossier
+  return (
+    <div>
+      <NarrativeVerdict label={label} headline={headline} subline={subline}>
+        <CheckCircle2 className="mt-4 h-10 w-10 text-positive" />
+        <p className="mt-3 text-sm text-ink-muted">
+          {plan === 'pro'
+            ? `Votre ${COPY.subscription.toLowerCase()} est actif — tous les territoires débloqués.`
+            : 'Montants exacts, écoles et contacts mairies visibles.'}
+          {plan === 'dossier' && (
+            <span className="mt-1 block text-xs text-ink-subtle">Accès valable 30 jours pour ce territoire.</span>
+          )}
+        </p>
+      </NarrativeVerdict>
+
+      <div className="page-content !pt-0">
+        <ol className="space-y-3 text-sm">
+          <li className="flex items-start gap-3 rounded-lg border border-line bg-white p-4">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-bold text-white">1</span>
+            <div>
+              <p className="font-semibold text-ink">Contactez les mairies</p>
+              <p className="mt-0.5 text-ink-muted">Emails et téléphones dans l&apos;onglet Terrain du dossier.</p>
+            </div>
           </li>
-          <li className="flex items-start gap-3 rounded-lg bg-surface-sunken p-3">
-            <Download className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
-            Exportez le CSV ou la note d&apos;opportunité depuis la fiche territoire
+          <li className="flex items-start gap-3 rounded-lg border border-line bg-white p-4">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-bold text-white">2</span>
+            <div>
+              <p className="font-semibold text-ink">Exportez votre pitch</p>
+              <p className="mt-0.5 text-ink-muted">Pitch maire, CSV CRM ou note technique — section Action.</p>
+            </div>
           </li>
-          <li className="flex items-start gap-3 rounded-lg bg-surface-sunken p-3">
-            <Star className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
-            Ajoutez le territoire à vos favoris pour le retrouver
+          <li className="flex items-start gap-3 rounded-lg border border-line bg-white p-4">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-bold text-white">3</span>
+            <div>
+              <p className="font-semibold text-ink">Suivez dans le pipeline</p>
+              <p className="mt-0.5 text-ink-muted">Contacté → RDV → Gagné dans Mon compte.</p>
+            </div>
           </li>
         </ol>
 
-        {plan === 'dossier' && (
-          <p className="mt-6 text-xs text-ink-subtle">
-            Accès valable 30 jours pour ce territoire.
-          </p>
-        )}
-
-        <div className="mt-8 flex flex-col gap-3">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           {packId ? (
-            <Link href={`/explorer/${packId}`} className="btn-primary py-4">
-              Ouvrir le territoire débloqué
+            <Link href={`/explorer/${packId}#terrain`} className="btn-primary flex-1 justify-center py-3">
+              <Mail className="h-4 w-4" />
+              Ouvrir le dossier — Terrain
             </Link>
           ) : (
-            <Link href="/explorer" className="btn-primary py-4">
+            <Link href="/explorer" className="btn-primary flex-1 justify-center py-3">
               {COPY.openExplorer}
             </Link>
           )}
-          <Link href="/compte" className="btn-secondary">
+          {packId && (
+            <Link href={`/explorer/${packId}?section=action`} className="btn-secondary flex-1 justify-center py-3">
+              <Download className="h-4 w-4" />
+              Exports & documents
+            </Link>
+          )}
+          <Link href="/compte" className="btn-ghost flex-1 justify-center py-3">
+            <Star className="h-4 w-4" />
             Mon compte
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>

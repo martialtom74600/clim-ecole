@@ -1,12 +1,16 @@
-import Link from 'next/link';
 import { COPY } from '@/lib/copy';
 import { getCoverageScopePhrase } from '@/lib/coverage';
+import { LegalLayout } from '@/components/layout/legal-layout';
 
 export default async function CguPage() {
   const scope = await getCoverageScopePhrase();
 
   return (
-    <LegalLayout title="Conditions Générales d'Utilisation">
+    <LegalLayout
+      title="Conditions Générales d'Utilisation"
+      verdict="Clim École est un outil de prospection — les montants affichés sont des estimations, pas un devis."
+      subline="Usage interne de prospection. Gratuit pour prioriser, payant pour agir."
+    >
       <p>
         Les présentes CGU régissent l&apos;accès à Clim École, plateforme de prospection
         éditée par Strate Studio. L&apos;utilisation du service implique l&apos;acceptation
@@ -33,19 +37,5 @@ export default async function CguPage() {
       </p>
       <p className="text-sm text-ink-subtle">{COPY.estimatesNote}</p>
     </LegalLayout>
-  );
-}
-
-function LegalLayout({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="page-content">
-      <Link href="/" className="btn-ghost mb-6 -ml-2 text-sm">
-        ← Accueil
-      </Link>
-      <h1 className="text-3xl font-semibold text-ink">{title}</h1>
-      <div className="mt-8 space-y-6 leading-relaxed text-ink-muted [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-ink">
-        {children}
-      </div>
-    </div>
   );
 }

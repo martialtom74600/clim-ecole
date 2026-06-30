@@ -1,8 +1,9 @@
 import { Suspense } from 'react';
-import { PageHeader } from '@/components/layout/page-header';
 import { PageGuide } from '@/components/layout/page-guide';
+import { CockpitVerdict } from '@/components/cockpit/cockpit-verdict';
 import { PortfolioKanban } from '@/components/cockpit/portfolio-board';
 import { PortfolioBoardSkeleton } from '@/components/cockpit/portfolio-board-skeleton';
+import { ADMIN_VERDICTS } from '@/lib/site-narrative';
 
 const GUIDE = [
   {
@@ -21,21 +22,22 @@ const GUIDE = [
     step: 3,
     title: 'Clique pour le détail',
     description:
-      'Une carte t’ouvre la fiche territoire avec la liste des écoles, le DPE et les chiffres.',
+      'Une carte t\'ouvre la fiche territoire avec la liste des écoles, le DPE et les chiffres.',
   },
 ];
 
 export default function AdminPortefeuillesPage() {
+  const v = ADMIN_VERDICTS.portefeuilles;
+
   return (
-    <main className="page-content">
-      <PageHeader
-        title="Suivi des dossiers"
-        description="Glisse les cartes entre les étapes · tes choix sont sauvegardés sur ton Mac"
-      />
-      <PageGuide steps={GUIDE} />
-      <Suspense fallback={<PortfolioBoardSkeleton />}>
-        <PortfolioKanban />
-      </Suspense>
-    </main>
+    <>
+      <CockpitVerdict label={v.label} headline={v.headline} subline={v.subline} />
+      <main className="page-content space-y-8">
+        <PageGuide steps={GUIDE} />
+        <Suspense fallback={<PortfolioBoardSkeleton />}>
+          <PortfolioKanban />
+        </Suspense>
+      </main>
+    </>
   );
 }

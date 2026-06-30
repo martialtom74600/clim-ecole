@@ -6,9 +6,13 @@ import type { MarketplacePack } from '@/lib/types';
 import type { TerritoryFreePreview } from '@/lib/freemium';
 import { DossierShareButton } from '@/components/marketplace/dossier-client-tools';
 import { DossierLockHint } from '@/components/marketplace/dossier-inline-paywall';
-import { DossierPaywallCard } from '@/components/marketplace/dossier-paywall-card';
 import { GlossaryTerm } from '@/components/ui/glossary-term';
-import { DOSSIER_CONTENT, DOSSIER_SECTION, DOSSIER_SECTION_DESC, DOSSIER_SECTION_TITLE } from '@/lib/dossier-ui';
+import {
+  DOSSIER_CONTENT,
+  DOSSIER_SECTION,
+  DOSSIER_SECTION_DESC,
+  DOSSIER_SECTION_TITLE,
+} from '@/lib/dossier-ui';
 import { cn } from '@/lib/utils';
 
 const EXPORTS = [
@@ -16,7 +20,7 @@ const EXPORTS = [
     href: (id: string) => `/api/marketplace/export/${id}`,
     icon: Download,
     label: 'Liste des écoles (tableur)',
-    desc: 'Écoles, DPE, budgets et contacts mairies',
+    desc: 'Écoles, DPE, budgets et contacts mairies — pour votre CRM',
     download: true,
   },
   {
@@ -30,23 +34,23 @@ const EXPORTS = [
     href: (id: string) => `/api/marketplace/dossier/${id}`,
     icon: FileCode,
     label: 'Dossier tiers-financement (HTML)',
-    desc: 'Montage zéro avance',
+    desc: 'Montage zéro avance — pour AMO et DGS',
     download: true,
-  },
-  {
-    href: (id: string) => `/explorer/${id}/note`,
-    icon: FileText,
-    label: "Note d'opportunité",
-    desc: 'Document A4 marque blanche',
-    download: false,
   },
   {
     href: (id: string) => `/explorer/${id}/one-pager`,
     icon: FileText,
-    label: 'Synthèse pour le maire',
-    desc: 'Une page pour les élus',
+    label: 'Pitch maire (1 page)',
+    desc: 'Synthèse pour convaincre en RDV — chiffres clés et montage',
     download: false,
     primary: true,
+  },
+  {
+    href: (id: string) => `/explorer/${id}/note`,
+    icon: FileText,
+    label: "Note d'opportunité (technique)",
+    desc: 'Dossier complet marque blanche — pour votre équipe interne',
+    download: false,
   },
 ] as const;
 
@@ -54,26 +58,23 @@ export function DossierTabExports({
   packId,
   pack,
   unlocked,
-  soldOut,
-  freePreview,
 }: {
   packId: string;
   pack: MarketplacePack;
   unlocked: boolean;
   soldOut?: boolean;
   freePreview?: TerritoryFreePreview;
+  similarPacks?: MarketplacePack[];
 }) {
   return (
-    <div className={DOSSIER_CONTENT}>
-      <section className={DOSSIER_SECTION}>
-        <h2 className={DOSSIER_SECTION_TITLE}>Documents & exports</h2>
+    <section id="action" className={DOSSIER_SECTION}>
+      <div className={DOSSIER_CONTENT}>
+        <h2 className={DOSSIER_SECTION_TITLE}>Passer à l&apos;action</h2>
         <p className={DOSSIER_SECTION_DESC}>
-          Livrables pour vos rendez-vous ou votre{' '}
-          <GlossaryTerm term="Pipeline">suivi commercial</GlossaryTerm>
+          Contacts, exports CRM et documents prêts pour votre prochain rendez-vous mairie.
         </p>
 
-        {/* Liste d'exports + un seul overlay paywall si verrouillé */}
-        <div className="relative mt-6">
+        <div className="relative mt-8">
           <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line">
             {EXPORTS.map(({ href, icon: Icon, label, desc, download, ...rest }) => {
               const primary = 'primary' in rest && rest.primary;
@@ -126,30 +127,23 @@ export function DossierTabExports({
           {!unlocked && (
             <DossierLockHint
               title="Exports inclus dans le déblocage"
-              subtitle="Tableurs, synthèse maire et dossier tiers-financement."
+              subtitle="Tableurs, pitch maire et dossier tiers-financement."
             />
           )}
         </div>
 
-        {/* CTA unique en bas de l'onglet — un seul point de conversion */}
-        {!unlocked && (
-          <div className="mt-8">
-            <DossierPaywallCard
-              pack={pack}
-              freePreview={freePreview}
-              soldOut={soldOut ?? false}
-              embedded
-            />
-          </div>
-        )}
-
-        {/* Lien de partage — uniquement après déblocage */}
         {unlocked && (
-          <div className="mt-8">
+          <div className="mt-8 flex flex-wrap items-center gap-4">
             <DossierShareButton packId={packId} />
+            <Link
+              href="/compte"
+              className="text-sm font-medium text-ink-muted underline-offset-2 hover:text-ink hover:underline"
+            >
+              Suivre dans le <GlossaryTerm term="Pipeline">pipeline</GlossaryTerm>
+            </Link>
           </div>
         )}
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

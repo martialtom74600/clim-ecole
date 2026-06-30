@@ -9,48 +9,48 @@ export interface GuideStep {
 export const DOSSIER_UNLOCKED_GUIDE: GuideStep[] = [
   {
     step: 1,
-    title: 'Prospectez les écoles',
+    title: 'Lisez le verdict',
+    description:
+      'Une phrase résume si le territoire vaut le coup — budget, écoles F/G et niveau d’aides.',
+  },
+  {
+    step: 2,
+    title: 'Prospectez le terrain',
     description:
       'Parcourez la liste triée par score, utilisez la carte et contactez les mairies en un clic.',
   },
   {
-    step: 2,
+    step: 3,
     title: 'Validez le montage',
     description:
-      'Simulez le reste à charge et vérifiez la répartition subventions / RAC.',
-  },
-  {
-    step: 3,
-    title: 'Préparez votre pitch',
-    description:
-      'Copiez l’argumentaire MGPE-PD et adaptez-le à votre rendez-vous DGS ou mairie.',
+      'Simulez le reste à charge et ouvrez le montage avancé (MGPE, ESCO) si besoin.',
   },
   {
     step: 4,
     title: 'Exportez et suivez',
     description:
-      'Téléchargez CSV, dossier MGPE ou note PDF — puis avancez le statut dans Mon compte.',
+      'Pitch maire, CSV CRM ou note technique — puis avancez le statut dans Mon compte.',
   },
 ];
 
 export const DOSSIER_LOCKED_GUIDE: GuideStep[] = [
   {
     step: 1,
-    title: 'Évaluez le potentiel',
+    title: 'Lisez le verdict',
     description:
-      'Score Radar, tranche budget et profil DPE : suffisant pour décider si ce territoire vaut le coup.',
+      'Score, tranche budget et profil DPE : suffisant pour décider si ce territoire vaut le coup.',
   },
   {
     step: 2,
-    title: 'Comparez si besoin',
+    title: 'Parcourez le terrain',
     description:
-      'Ajoutez jusqu’à 3 territoires au comparateur Scorecard pour choisir où prospecter en premier.',
+      'Aperçu des écoles et de la carte — noms et contacts exacts après déblocage.',
   },
   {
     step: 3,
     title: 'Débloquez pour agir',
     description:
-      'L’achat révèle noms, contacts, montants exacts et exports prêts pour votre CRM ou vos rendez-vous.',
+      'L’achat révèle montants exacts, simulateur RAC, contacts et exports prêts pour vos RDV.',
   },
 ];
 

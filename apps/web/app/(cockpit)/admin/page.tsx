@@ -1,12 +1,14 @@
 import { Suspense } from 'react';
 import { PageGuide } from '@/components/layout/page-guide';
-import { CockpitHero } from '@/components/cockpit/cockpit-hero';
+import { CockpitQuickLinks } from '@/components/cockpit/cockpit-hero';
+import { CockpitVerdict } from '@/components/cockpit/cockpit-verdict';
 import { HotLeadsStrip } from '@/components/cockpit/hot-leads-strip';
 import { KpiCards } from '@/components/cockpit/kpi-cards';
 import { KpiCardsSkeleton } from '@/components/cockpit/kpi-cards-skeleton';
 import { QuickTriage } from '@/components/cockpit/quick-triage';
 import { QuickTriageSkeleton } from '@/components/cockpit/quick-triage-skeleton';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ADMIN_VERDICTS } from '@/lib/site-narrative';
 
 const GUIDE = [
   {
@@ -30,28 +32,37 @@ const GUIDE = [
 ];
 
 export default function AdminDashboardPage() {
+  const v = ADMIN_VERDICTS.dashboard;
+
   return (
-    <main className="page-content space-y-8">
-      <CockpitHero />
-      <PageGuide steps={GUIDE} />
-
-      <section aria-label="Priorités immédiates">
-        <Suspense fallback={<Skeleton className="h-36 w-full rounded-2xl" />}>
-          <HotLeadsStrip />
+    <>
+      <CockpitVerdict label={v.label} headline={v.headline} subline={v.subline}>
+        <Suspense fallback={<Skeleton className="mt-6 h-20 w-full rounded-xl" />}>
+          <CockpitQuickLinks />
         </Suspense>
-      </section>
+      </CockpitVerdict>
 
-      <section aria-label="Indicateurs clés">
-        <Suspense fallback={<KpiCardsSkeleton />}>
-          <KpiCards />
-        </Suspense>
-      </section>
+      <main className="page-content space-y-8">
+        <PageGuide steps={GUIDE} />
 
-      <section aria-label="Top territoires">
-        <Suspense fallback={<QuickTriageSkeleton />}>
-          <QuickTriage />
-        </Suspense>
-      </section>
-    </main>
+        <section aria-label="Priorités immédiates">
+          <Suspense fallback={<Skeleton className="h-36 w-full rounded-2xl" />}>
+            <HotLeadsStrip />
+          </Suspense>
+        </section>
+
+        <section aria-label="Indicateurs clés">
+          <Suspense fallback={<KpiCardsSkeleton />}>
+            <KpiCards />
+          </Suspense>
+        </section>
+
+        <section aria-label="Top territoires">
+          <Suspense fallback={<QuickTriageSkeleton />}>
+            <QuickTriage />
+          </Suspense>
+        </section>
+      </main>
+    </>
   );
 }

@@ -5,6 +5,13 @@ import { getMarketplacePacksRaw, getMarketplaceGlobalStats } from '@/lib/marketp
 import { getCoverageBadge } from '@/lib/coverage';
 import { parseDepartmentCode } from '@/lib/geo';
 import { formatEur, formatInt } from '@/lib/format';
+import { PAGE_VERDICTS } from '@/lib/site-narrative';
+import {
+  NarrativeAction,
+  NarrativeKpiGrid,
+  NarrativeSection,
+  NarrativeVerdict,
+} from '@/components/layout/narrative-page';
 import {
   PortfolioWorkbench,
   type DepartmentAggregate,
@@ -64,59 +71,47 @@ export default async function PortefeuillePage() {
     { capex: 0, subventions: 0, rac: 0, ecoles: 0, packs: 0 },
   );
 
+  const { label, headline, subline } = PAGE_VERDICTS.portefeuille;
+
   return (
-    <div className="page-content">
-      <p className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1 text-xs font-medium text-ink-muted shadow-sm">
-        <Database className="h-3.5 w-3.5" />
-        Data Room National · {coverageBadge}
-      </p>
+    <div>
+      <NarrativeVerdict label={label} headline={headline} subline={subline}>
+        <p className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1 text-xs font-medium text-ink-muted shadow-sm">
+          <Database className="h-3.5 w-3.5" />
+          Data Room National · {coverageBadge}
+        </p>
+        <NarrativeKpiGrid
+          className="mt-8 shadow-raised"
+          items={[
+            { label: 'CAPEX national identifié', value: formatEur(national.capex, true) },
+            { label: 'Reste à charge agrégé', value: formatEur(national.rac, true), accent: true },
+            { label: 'Écoles passoires F/G', value: formatInt(national.ecoles) },
+            { label: 'Territoires', value: formatInt(stats.epciCount) },
+          ]}
+        />
+      </NarrativeVerdict>
 
-      <h1 className="mt-5 max-w-3xl text-3xl font-semibold tracking-tight md:text-display-md">
-        Agrégez un parc scolaire entier en portefeuille finançable
-      </h1>
-      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-muted">
-        Pour les fonds d&apos;infrastructure, la Banque des Territoires, les SPL et tiers-financeurs :
-        regroupez des dizaines d&apos;écoles passoires en un véhicule unique (SPV) et lisez le besoin de
-        capital privé après subventions, en temps réel.
-      </p>
-
-      <div className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-raised sm:grid-cols-4">
-        <HeadlineStat label="CAPEX national identifié" value={formatEur(national.capex, true)} />
-        <HeadlineStat label="Reste à charge agrégé" value={formatEur(national.rac, true)} accent />
-        <HeadlineStat label="Écoles passoires F/G" value={formatInt(national.ecoles)} />
-        <HeadlineStat label="Territoires" value={formatInt(stats.epciCount)} />
-      </div>
-
-      <div className="mt-10">
+      <NarrativeSection
+        id="workbench"
+        title="Workbench de bundling"
+        description="Sélectionnez des départements — CAPEX et RAC se recalculent en temps réel."
+      >
         <PortfolioWorkbench departments={departments} national={national} />
-      </div>
+      </NarrativeSection>
 
-      <div className="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-line bg-surface-sunken p-6">
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink text-white">
-            <Radar className="h-5 w-5" />
-          </span>
-          <div>
-            <p className="font-semibold text-ink">Besoin d&apos;un périmètre national complet ?</p>
-            <p className="text-sm text-ink-muted">Accès API, bundling multi-EPCI et SLA de fraîcheur.</p>
-          </div>
-        </div>
+      <NarrativeAction
+        title="Besoin d'un périmètre national complet ?"
+        description="Accès API, bundling multi-EPCI et SLA de fraîcheur."
+      >
         <Link href="/tarifs?plan=dataroom" className="btn-primary">
           Découvrir la Data Room
           <ArrowRight className="h-4 w-4" />
         </Link>
-      </div>
-    </div>
-  );
-}
-
-function HeadlineStat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className="bg-white px-4 py-4">
-      <dd className={`font-mono text-2xl font-semibold tabular-nums ${accent ? 'text-warning-text' : 'text-ink'}`}>
-        {value}
-      </dd>
-      <dt className="mt-1 text-[11px] leading-tight text-ink-muted">{label}</dt>
+        <Link href="/finance" className="btn-secondary">
+          <Radar className="h-4 w-4" />
+          Page Finance
+        </Link>
+      </NarrativeAction>
     </div>
   );
 }

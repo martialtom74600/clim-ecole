@@ -10,6 +10,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { PageHeader } from '@/components/layout/page-header';
+import { CockpitVerdict } from '@/components/cockpit/cockpit-verdict';
+import { ADMIN_VERDICTS } from '@/lib/site-narrative';
 import { DpeBadge, StatutProjetBadge, TemperatureBadge } from '@/components/cockpit/badges';
 import { EpciDetailKpis } from '@/components/cockpit/epci-detail-kpis';
 import { DossierDownloadButton } from '@/components/cockpit/dossier-download-button';
@@ -79,8 +81,16 @@ export async function EpciDetailView({ code }: { code: string }) {
     { label: 'Économie/an', value: `${formatEur(epci.gainNetMairieTotal, true)}/an`, accent: false },
   ];
 
+  const v = ADMIN_VERDICTS.epciDetail;
+
   return (
     <>
+      <CockpitVerdict
+        label={v.label}
+        headline={`${epci.displayName} — ${formatEur(epci.packCapexTotal, true)} de travaux, ${formatInt(epci.batimentCount)} écoles.`}
+        subline={v.subline}
+      />
+      <div className="page-content !pt-0">
       <PageHeader
         title={epci.displayName}
         description={epci.communesLabel || `Code ${epci.codeEpci}`}
@@ -161,6 +171,7 @@ export async function EpciDetailView({ code }: { code: string }) {
           </Table>
         </CardContent>
       </Card>
+      </div>
     </>
   );
 }

@@ -1,8 +1,9 @@
 import { Suspense } from 'react';
-import { PageHeader } from '@/components/layout/page-header';
 import { PageGuide } from '@/components/layout/page-guide';
+import { CockpitVerdict } from '@/components/cockpit/cockpit-verdict';
 import { EpciTable } from '@/components/cockpit/epci-table';
 import { EpciTableSkeleton } from '@/components/cockpit/epci-table-skeleton';
+import { ADMIN_VERDICTS } from '@/lib/site-narrative';
 
 const GUIDE = [
   {
@@ -26,16 +27,17 @@ const GUIDE = [
 ];
 
 export default function AdminEpciPage() {
+  const v = ADMIN_VERDICTS.epci;
+
   return (
-    <main className="page-content">
-      <PageHeader
-        title="Intercommunalités"
-        description="Chaque ligne = un territoire regroupant plusieurs communes et écoles"
-      />
-      <PageGuide steps={GUIDE} />
-      <Suspense fallback={<EpciTableSkeleton />}>
-        <EpciTable />
-      </Suspense>
-    </main>
+    <>
+      <CockpitVerdict label={v.label} headline={v.headline} subline={v.subline} />
+      <main className="page-content space-y-8">
+        <PageGuide steps={GUIDE} />
+        <Suspense fallback={<EpciTableSkeleton />}>
+          <EpciTable />
+        </Suspense>
+      </main>
+    </>
   );
 }

@@ -9,9 +9,5 @@ export default async function TarifsPage({
   const { plan } = await searchParams;
   const coverageBadge = await getCoverageBadge();
 
-  return (
-    <div className="page-content">
-      <PricingPage highlightPlan={plan} coverageBadge={coverageBadge} />
-    </div>
-  );
+  return <PricingPage highlightPlan={plan} coverageBadge={coverageBadge} />;
 }

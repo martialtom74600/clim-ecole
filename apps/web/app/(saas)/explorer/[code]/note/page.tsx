@@ -1,10 +1,9 @@
-import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
 import { getCustomerSession } from '@/lib/auth';
 import { getMarketplacePackById } from '@/lib/marketplace';
 import { OpportunityNote } from '@/components/marketplace/opportunity-note';
-import { COPY } from '@/lib/copy';
+import { DossierDocumentShell } from '@/components/marketplace/dossier-document-shell';
+import { PAGE_VERDICTS } from '@/lib/site-narrative';
 
 export default async function OpportunityNotePage({
   params,
@@ -17,16 +16,16 @@ export default async function OpportunityNotePage({
   if (!data) notFound();
   if (!data.unlocked) redirect(`/explorer/${packId}`);
 
+  const { label, headline, subline } = PAGE_VERDICTS.note;
+
   return (
-    <div className="page-content print:!max-w-none print:!p-0 print:!py-0">
-      <Link
-        href={`/explorer/${packId}`}
-        className="btn-ghost mb-8 -ml-2 print:hidden"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {COPY.backToExplorer}
-      </Link>
+    <DossierDocumentShell
+      packId={packId}
+      label={label}
+      headline={headline}
+      subline={subline}
+    >
       <OpportunityNote data={data} />
-    </div>
+    </DossierDocumentShell>
   );
 }

@@ -1,63 +1,56 @@
 import Link from 'next/link';
 import { COPY } from '@/lib/copy';
 import { getCoverageScopePhrase } from '@/lib/coverage';
-import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_VERDICTS } from '@/lib/site-narrative';
+import { NarrativeSection, NarrativeVerdict, SiteJourneySteps } from '@/components/layout/narrative-page';
 
 export default async function MethodologiePage() {
   const scope = await getCoverageScopePhrase();
+  const { label, headline, subline } = PAGE_VERDICTS.methodologie;
 
   return (
-    <div className="page-content">
-      <PageHeader
-        meta={
-          <Link href="/" className="btn-ghost -ml-2 text-sm">
-            ← Accueil
-          </Link>
-        }
-        title="Comment ça marche"
-        subtitle={`Clim École recense les écoles primaires passoires thermiques ${scope}, estime les budgets de rénovation et classe les territoires pour vous aider à prospecter avant la publication des appels d'offres.`}
-      />
+    <div>
+      <NarrativeVerdict label={label} headline={headline} subline={subline}>
+        <Link href="/explorer" className="btn-primary mt-6 inline-flex">
+          {COPY.openExplorer}
+        </Link>
+      </NarrativeVerdict>
 
-      <Link href="/explorer" className="btn-primary inline-flex">
-        {COPY.openExplorer} — voir la carte
-      </Link>
+      <NarrativeSection title="Le parcours utilisateur">
+        <SiteJourneySteps />
+      </NarrativeSection>
 
-      <div className="mt-10 space-y-8 text-ink-muted">
-        <section>
-          <h2 className="text-lg font-semibold text-ink">D&apos;où viennent les données ?</h2>
-          <p className="mt-2">
-            Nous croisons des sources publiques : la base nationale des bâtiments (BDNB),
-            les diagnostics de performance énergétique (DPE), les données Éducation nationale
-            et les barèmes de financement public (Fonds Vert, aides CEE).
-          </p>
-        </section>
+      <NarrativeSection title="Sources de données">
+        <p className="text-sm leading-relaxed text-ink-muted">
+          Nous croisons des sources publiques : la base nationale des bâtiments (BDNB),
+          les diagnostics de performance énergétique (DPE), les données Éducation nationale
+          et les barèmes de financement public (Fonds Vert, aides CEE).
+        </p>
+      </NarrativeSection>
 
-        <section>
-          <h2 className="text-lg font-semibold text-ink">Couverture géographique</h2>
-          <p className="mt-2">
-            Le périmètre s&apos;étend progressivement à toute la France métropolitaine,
-            département par département. Les territoires déjà cartographiés restent visibles
-            sur la carte ; les nouveaux départements sont ajoutés automatiquement après chaque
-            cycle de prospection.
-          </p>
-        </section>
+      <NarrativeSection title="Couverture géographique">
+        <p className="text-sm leading-relaxed text-ink-muted">
+          Périmètre actuel : écoles primaires passoires thermiques {scope}. Le recensement
+          s&apos;étend progressivement à toute la France métropolitaine, département par département.
+        </p>
+      </NarrativeSection>
 
-        <section>
-          <h2 className="text-lg font-semibold text-ink">Score de priorité</h2>
-          <p className="mt-2">
-            Chaque territoire reçoit une note de A (excellent) à D (faible), calculée à partir
-            du budget travaux, du ratio de subventions, du nombre de passoires thermiques et
-            de la température commerciale (chaud / tiède / froid).
-          </p>
-          <p className="mt-2">
-            Un dossier est marqué « prioritaire » si {COPY.qualifiedCriteria.toLowerCase()}.
-          </p>
-        </section>
+      <NarrativeSection title="Score de priorité (A–D)">
+        <p className="text-sm leading-relaxed text-ink-muted">
+          Chaque territoire reçoit une note de A (excellent) à D (faible), calculée à partir
+          du budget travaux, du ratio de subventions, du nombre de passoires thermiques et
+          de la température commerciale.
+        </p>
+        <p className="mt-3 text-sm text-ink-muted">
+          Un dossier est marqué « prioritaire » si {COPY.qualifiedCriteria.toLowerCase()}.
+        </p>
+      </NarrativeSection>
 
-        <section>
-          <h2 className="text-lg font-semibold text-ink">Limites</h2>
-          <p className="mt-2">{COPY.estimatesNote}</p>
-        </section>
+      <div className="page-content border-t border-line pt-8">
+        <p className="text-sm text-ink-subtle">{COPY.estimatesNote}</p>
+        <Link href="/" className="btn-ghost -ml-2 mt-4 inline-flex text-sm">
+          ← Accueil
+        </Link>
       </div>
     </div>
   );

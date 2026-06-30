@@ -37,16 +37,14 @@ import {
 } from '@/components/marketplace/finance-enhancements';
 import { CeeTerritoryPanel, EscoMutualizationPanel } from '@/components/marketplace/cee-esco-panels';
 import { DossierBlurredPaywallZone } from '@/components/marketplace/dossier-inline-paywall';
-import { DossierPaywallCard } from '@/components/marketplace/dossier-paywall-card';
-import { DossierNextSteps } from '@/components/marketplace/dossier-next-steps';
+import { resolveActivePersona, showsAdvancedFinance } from '@/lib/dossier-verdict';
+import { useAccountPreferences } from '@/hooks/use-account-preferences';
 import { cn } from '@/lib/utils';
 
 export function DossierTabFinance({
   pack,
   unlocked,
-  soldOut,
   freePreview,
-  similarPacks,
   packCapexTotal,
   subventionRatio,
   resteAChargeTotal,
@@ -59,9 +57,7 @@ export function DossierTabFinance({
 }: {
   pack: MarketplacePack;
   unlocked: boolean;
-  soldOut?: boolean;
   freePreview?: TerritoryFreePreview;
-  similarPacks?: MarketplacePack[];
   packCapexTotal: number;
   subventionRatio: number;
   resteAChargeTotal: number;
@@ -80,6 +76,9 @@ export function DossierTabFinance({
      les chiffres émergent du flou pendant qu'ils comptent jusqu'à leur valeur. */
   const reduceMotion = useReducedMotion();
   const [celebrate, setCelebrate] = useState(false);
+  const { prefs } = useAccountPreferences();
+  const activePersona = resolveActivePersona(prefs.onboarding?.persona, personas);
+  const advancedOpenDefault = showsAdvancedFinance(activePersona);
   useEffect(() => {
     if (!unlocked || reduceMotion) return;
     const key = `clim-finance-reveal-${pack.packId}`;
@@ -278,8 +277,14 @@ export function DossierTabFinance({
   );
 
   return (
-    <div className={DOSSIER_CONTENT}>
-      <div className={DOSSIER_STACK}>
+    <section id="financement" className={DOSSIER_SECTION}>
+      <div className={DOSSIER_CONTENT}>
+        <h2 className={DOSSIER_SECTION_TITLE}>Le financement</h2>
+        <p className={DOSSIER_SECTION_DESC}>
+          Peut-on financer ce territoire ? Budget, reste à charge et simulateur d&apos;aides.
+        </p>
+
+      <div className={`${DOSSIER_STACK} mt-8`}>
 
         {/* Synthèse chiffres — données libres EN PREMIER, puis les zones bloquées */}
         <section>
@@ -328,7 +333,8 @@ export function DossierTabFinance({
           <section className={DOSSIER_SECTION}>
             <Disclosure
               title="Montage avancé & financements"
-              hint="Scénarios d'aides, tiers-financement & pitch mairie, ESCO et CEE"
+              hint="Scénarios d'aides, tiers-financement, pitch mairie, ESCO et CEE"
+              defaultOpen={advancedOpenDefault}
             >
               <div className="space-y-12">
                 <div>
@@ -360,55 +366,15 @@ export function DossierTabFinance({
             </Disclosure>
           </section>
         ) : (
-          <>
-            {/* Montage & pitch — teaser flouté */}
-            <section className={DOSSIER_SECTION}>
-              <h2 className={DOSSIER_SECTION_TITLE}>Montage & pitch mairie</h2>
-              <p className={DOSSIER_SECTION_DESC}>
-                Paramètres du contrat et texte prêt à envoyer au maire.
-              </p>
-              <div className="mt-6">
-                <DossierBlurredPaywallZone
-                  title="Pitch prêt-à-l'emploi inclus"
-                  subtitle="Texte à envoyer au maire, généré après déblocage."
-                >
-                  {mgpeBlock}
-                </DossierBlurredPaywallZone>
-              </div>
-            </section>
-
-            {/* Financements additionnels — teaser */}
-            <section className={DOSSIER_SECTION}>
-              <h2 className={DOSSIER_SECTION_TITLE}>Financements additionnels</h2>
-              <p className={DOSSIER_SECTION_DESC}>
-                Tiers-financement ESCO et Certificats d&apos;Économies d&apos;Énergie mobilisables sur ce territoire.
-              </p>
-              <div className="mt-6">{escoCeePanels}</div>
-            </section>
-          </>
+          <p className="text-sm text-ink-muted">
+            Montages avancés (MGPE-PD, ESCO, CEE) et pitch mairie disponibles après déblocage.
+          </p>
         )}
 
         <PersonaDossierTips personas={personas} />
-
-        {/* CTA unique en bas de page — un seul point de conversion */}
-        {!unlocked && (
-          <section className={cn(DOSSIER_SECTION, 'space-y-4')}>
-            <DossierPaywallCard
-              pack={pack}
-              freePreview={freePreview}
-              soldOut={soldOut ?? false}
-              embedded
-            />
-            {/* Filet anti cul-de-sac : suivre, être alerté, ou rebondir ailleurs */}
-            <DossierNextSteps
-              pack={pack}
-              similarPacks={similarPacks}
-              soldOut={soldOut ?? false}
-            />
-          </section>
-        )}
       </div>
-    </div>
+      </div>
+    </section>
   );
 }
 

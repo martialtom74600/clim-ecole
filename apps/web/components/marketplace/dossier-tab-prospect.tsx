@@ -2,13 +2,18 @@
 
 import type { MarketplaceBuilding, MarketplacePack } from '@/lib/types';
 import type { TerritoryFreePreview } from '@/lib/freemium';
-import { DOSSIER_CONTENT, DOSSIER_MAP_STICKY, DOSSIER_SECTION } from '@/lib/dossier-ui';
+import {
+  DOSSIER_CONTENT,
+  DOSSIER_MAP_STICKY,
+  DOSSIER_SECTION,
+  DOSSIER_SECTION_DESC,
+  DOSSIER_SECTION_TITLE,
+} from '@/lib/dossier-ui';
 import { DossierSchoolListDense } from '@/components/marketplace/dossier-school-list-dense';
 import { PackSchoolMap } from '@/components/marketplace/pack-school-map';
 import { DossierSchoolMapMobile } from '@/components/marketplace/dossier-school-map-mobile';
 import { DossierArtisansStrip } from '@/components/marketplace/dossier-artisans-strip';
 import { DossierLockHint } from '@/components/marketplace/dossier-inline-paywall';
-import { DossierPaywallCard } from '@/components/marketplace/dossier-paywall-card';
 import { useAccountPreferences } from '@/hooks/use-account-preferences';
 
 export function DossierTabProspect({
@@ -61,8 +66,14 @@ export function DossierTabProspect({
   );
 
   return (
-    <div className={DOSSIER_CONTENT}>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+    <section id="terrain" className={DOSSIER_SECTION}>
+      <div className={DOSSIER_CONTENT}>
+        <h2 className={DOSSIER_SECTION_TITLE}>Le terrain</h2>
+        <p className={DOSSIER_SECTION_DESC}>
+          Les bâtiments concrets — où ils sont, leur état énergétique, et qui contacter.
+        </p>
+
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
 
         {/*
          * MOBILE — aperçu carte non interactif + bouton « Voir sur la carte »
@@ -105,18 +116,7 @@ export function DossierTabProspect({
         </div>
 
       </div>
-
-      {/* CTA unique en bas de l'onglet — un seul point de conversion */}
-      {!unlocked && (
-        <section className={DOSSIER_SECTION}>
-          <DossierPaywallCard
-            pack={pack}
-            freePreview={freePreview}
-            soldOut={soldOut ?? false}
-            embedded
-          />
-        </section>
-      )}
-    </div>
+      </div>
+    </section>
   );
 }

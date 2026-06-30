@@ -20,7 +20,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { COPY, PERSONA_FILTER_LABELS } from '@/lib/copy';
+import { COPY, PERSONA_FILTER_LABELS, SCORE_GRADES } from '@/lib/copy';
 import type { ClientPersona, MarketplacePack } from '@/lib/types';
 import { parseDepartmentCode } from '@/lib/geo';
 import { buildDepartmentMarkers } from '@/lib/map-departments';
@@ -187,7 +187,7 @@ export function ExplorerSplitView({
   }
 
   return (
-    <div className="relative h-[calc(100svh-3.5rem)] min-h-[480px] w-full">
+    <div className="relative h-full min-h-[420px] w-full">
       <OnboardingModal
         open={showOnboarding}
         onComplete={(persona, capex) => {
@@ -239,9 +239,6 @@ export function ExplorerSplitView({
       <div className="absolute left-4 top-4 z-20 flex max-w-[calc(100%-2rem)] flex-col gap-3 md:max-w-xs">
         <div className="rounded-2xl border border-line/70 bg-white/85 p-4 shadow-overlay ring-1 ring-ink/[0.02] backdrop-blur-xl backdrop-saturate-150">
           <h1 className="text-lg font-semibold md:text-xl">{COPY.explorer}</h1>
-          <p className="mt-1 text-sm text-ink-muted">
-            Carte par département — tranches et priorité visibles, chiffres exacts et contacts après achat.
-          </p>
           <p className="mt-2 text-xs text-ink-subtle">
             {filtered.length} dossier{filtered.length > 1 ? 's' : ''} · {qualifiedCount} prioritaires
             {selectedDept && (
@@ -250,6 +247,22 @@ export function ExplorerSplitView({
               </button>
             )}
           </p>
+
+          <details className="mt-3 rounded-lg border border-line/60 bg-surface-sunken/80 px-3 py-2">
+            <summary className="cursor-pointer text-xs font-medium text-ink-muted hover:text-ink">
+              Score de priorité (A–D)
+            </summary>
+            <ul className="mt-2 space-y-1.5 text-[11px] leading-relaxed text-ink-muted">
+              {(Object.entries(SCORE_GRADES) as [keyof typeof SCORE_GRADES, string][]).map(
+                ([grade, desc]) => (
+                  <li key={grade}>
+                    <span className="font-mono font-semibold text-ink">{grade}</span> — {desc}
+                  </li>
+                ),
+              )}
+              <li className="pt-1 text-ink-subtle">{COPY.scorePrioriteHint}</li>
+            </ul>
+          </details>
 
           <ExplorerSearchBar className="mt-3" />
 

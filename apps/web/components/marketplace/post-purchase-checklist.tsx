@@ -11,13 +11,13 @@ const STEPS = [
     n: 1,
     title: 'Sourcing (R2111-1)',
     body: 'Consultation préalable mairie — one-pager RAC + MGPE joint. Pas encore d\'AO.',
-    href: '#prospecter',
+    href: '#terrain',
   },
   {
     n: 2,
     title: 'Montage financier',
     body: 'Empilez Fonds Vert + DETR + CEE. Simulateur RAC et scénarios pessimiste/optimiste.',
-    href: '?tab=finance',
+    href: '#financement',
   },
   {
     n: 3,
@@ -92,7 +92,7 @@ export function PostPurchaseChecklist({
               <Star className="h-4 w-4" />
               Autres territoires
             </Link>
-            <a href="#prospecter" className="btn-ghost !py-1.5 text-sm">
+            <a href="#action" className="btn-ghost !py-1.5 text-sm">
               <Mail className="h-4 w-4" />
               Contacts
             </a>

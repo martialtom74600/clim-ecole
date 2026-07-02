@@ -2,7 +2,7 @@
   "phase": "initial",
   "nextDeptIndex": 43,
   "initialStartIndex": 2,
-  "initialDeptsProcessed": 40,
+  "initialDeptsProcessed": 48,
   "refreshCycle": 0,
   "completedInitialAt": null,
   "intervalHours": 12,
@@ -20,53 +20,53 @@
   "deptDurations": {
     "069": [
       2.4,
-      2.4,
-      2.8
+      2.8,
+      9.8
     ],
     "059": [
-      5.2,
       7.9,
-      19.5
+      19.5,
+      6.5
     ],
     "075": [
-      0.4,
       0.3,
-      0.2
+      0.2,
+      0.3
     ],
     "013": [
-      2.1,
       2.2,
+      2.8,
       2.8
     ],
     "062": [
-      3.5,
       3.9,
-      3.6
+      3.6,
+      4
     ],
     "033": [
-      3.2,
       3.7,
-      3.2
+      3.2,
+      10.6
     ],
     "031": [
-      2.6,
       3.5,
-      3.7
+      3.7,
+      3
     ],
     "044": [
-      2.8,
       3,
-      5.4
+      5.4,
+      3.2
     ]
   },
   "monthlyBudget": {
     "month": "2026-07",
-    "estimatedMinutes": 41.3,
+    "estimatedMinutes": 81.5,
     "limitMinutes": 800,
     "skipWhenOverBudget": true,
     "skipOnlyDuringInitial": true
   },
-  "lastRunAt": "2026-07-01T15:41:06.331Z",
+  "lastRunAt": "2026-07-02T15:26:12.437Z",
   "lastDepartment": "044",
   "lastStatus": "done",
   "lastRowCount": 33,
@@ -77,7 +77,7 @@
       "index": 67,
       "status": "done",
       "rowCount": 57,
-      "durationMinutes": 2.8244666666666665,
+      "durationMinutes": 9.7819,
       "mode": "full"
     },
     {
@@ -85,7 +85,7 @@
       "index": 57,
       "status": "done",
       "rowCount": 117,
-      "durationMinutes": 19.50275,
+      "durationMinutes": 6.515216666666666,
       "mode": "full"
     },
     {
@@ -93,7 +93,7 @@
       "index": 73,
       "status": "empty",
       "rowCount": 0,
-      "durationMinutes": 0.24428333333333332,
+      "durationMinutes": 0.25255,
       "mode": "full"
     },
     {
@@ -101,7 +101,7 @@
       "index": 12,
       "status": "done",
       "rowCount": 3,
-      "durationMinutes": 2.7769333333333335,
+      "durationMinutes": 2.77275,
       "mode": "full"
     },
     {
@@ -109,7 +109,7 @@
       "index": 60,
       "status": "done",
       "rowCount": 88,
-      "durationMinutes": 3.6161666666666665,
+      "durationMinutes": 4.0065333333333335,
       "mode": "full"
     },
     {
@@ -117,7 +117,7 @@
       "index": 31,
       "status": "done",
       "rowCount": 24,
-      "durationMinutes": 3.18565,
+      "durationMinutes": 10.596466666666666,
       "mode": "full"
     },
     {
@@ -125,7 +125,7 @@
       "index": 29,
       "status": "done",
       "rowCount": 33,
-      "durationMinutes": 3.6950666666666665,
+      "durationMinutes": 3.0492666666666666,
       "mode": "full"
     },
     {
@@ -133,9 +133,9 @@
       "index": 42,
       "status": "done",
       "rowCount": 33,
-      "durationMinutes": 5.392783333333333,
+      "durationMinutes": 3.1724,
       "mode": "full"
     }
   ],
-  "lastRunDurationMinutes": 41.3
+  "lastRunDurationMinutes": 40.2
 }

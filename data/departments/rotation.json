@@ -1,10 +1,10 @@
 {
-  "phase": "initial",
+  "phase": "refresh",
   "nextDeptIndex": 43,
   "initialStartIndex": 2,
-  "initialDeptsProcessed": 88,
+  "initialDeptsProcessed": 96,
   "refreshCycle": 0,
-  "completedInitialAt": null,
+  "completedInitialAt": "2026-07-08T05:59:26.239Z",
   "intervalHours": 12,
   "initialIntervalHours": 12,
   "refreshIntervalHours": 24,
@@ -19,54 +19,54 @@
   "emptyDeptSkipDays": 90,
   "deptDurations": {
     "069": [
-      3.5,
       3.2,
-      3.6
+      3.6,
+      3.4
     ],
     "059": [
-      8.4,
       7.8,
-      8.5
+      8.5,
+      8.7
     ],
     "075": [
-      0.3,
       0.2,
+      0.3,
       0.3
     ],
     "013": [
-      3.7,
       3.5,
-      3.8
+      3.8,
+      3.9
     ],
     "062": [
       5.7,
-      5.7,
-      6.3
+      6.3,
+      5.8
     ],
     "033": [
-      4.7,
       4.3,
-      4.7
+      4.7,
+      4.6
     ],
     "031": [
       3.8,
-      3.8,
-      4
+      4,
+      3.9
     ],
     "044": [
-      4.1,
       4,
-      4.1
+      4.1,
+      4.2
     ]
   },
   "monthlyBudget": {
     "month": "2026-07",
-    "estimatedMinutes": 246.3,
+    "estimatedMinutes": 281.1,
     "limitMinutes": 800,
     "skipWhenOverBudget": true,
     "skipOnlyDuringInitial": true
   },
-  "lastRunAt": "2026-07-07T06:47:30.302Z",
+  "lastRunAt": "2026-07-08T05:59:26.239Z",
   "lastDepartment": "044",
   "lastStatus": "done",
   "lastRowCount": 20,
@@ -77,7 +77,7 @@
       "index": 67,
       "status": "done",
       "rowCount": 24,
-      "durationMinutes": 3.6312,
+      "durationMinutes": 3.3764333333333334,
       "mode": "full"
     },
     {
@@ -85,7 +85,7 @@
       "index": 57,
       "status": "done",
       "rowCount": 64,
-      "durationMinutes": 8.526533333333333,
+      "durationMinutes": 8.721233333333334,
       "mode": "full"
     },
     {
@@ -93,7 +93,7 @@
       "index": 73,
       "status": "empty",
       "rowCount": 0,
-      "durationMinutes": 0.31171666666666664,
+      "durationMinutes": 0.32788333333333336,
       "mode": "full"
     },
     {
@@ -101,15 +101,15 @@
       "index": 12,
       "status": "done",
       "rowCount": 1,
-      "durationMinutes": 3.8320833333333333,
+      "durationMinutes": 3.9267833333333333,
       "mode": "full"
     },
     {
       "code": "062",
       "index": 60,
       "status": "done",
-      "rowCount": 51,
-      "durationMinutes": 6.2698833333333335,
+      "rowCount": 50,
+      "durationMinutes": 5.797616666666666,
       "mode": "full"
     },
     {
@@ -117,7 +117,7 @@
       "index": 31,
       "status": "done",
       "rowCount": 14,
-      "durationMinutes": 4.709616666666666,
+      "durationMinutes": 4.57565,
       "mode": "full"
     },
     {
@@ -125,7 +125,7 @@
       "index": 29,
       "status": "done",
       "rowCount": 17,
-      "durationMinutes": 3.986,
+      "durationMinutes": 3.879383333333333,
       "mode": "full"
     },
     {
@@ -133,9 +133,9 @@
       "index": 42,
       "status": "done",
       "rowCount": 20,
-      "durationMinutes": 4.143633333333334,
+      "durationMinutes": 4.185966666666666,
       "mode": "full"
     }
   ],
-  "lastRunDurationMinutes": 35.4
+  "lastRunDurationMinutes": 34.8
 }

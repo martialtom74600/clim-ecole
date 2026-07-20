@@ -1,6 +1,6 @@
 {
   "phase": "refresh",
-  "nextDeptIndex": 64,
+  "nextDeptIndex": 71,
   "initialStartIndex": 2,
   "initialDeptsProcessed": 96,
   "refreshCycle": 0,
@@ -201,69 +201,87 @@
     ],
     "065": [
       0.8
+    ],
+    "066": [
+      1.6
+    ],
+    "067": [
+      3
+    ],
+    "068": [
+      2.2
+    ],
+    "070": [
+      0.8
+    ],
+    "071": [
+      1.9
+    ],
+    "072": [
+      2.1
     ]
   },
   "monthlyBudget": {
     "month": "2026-07",
-    "estimatedMinutes": 364.9,
+    "estimatedMinutes": 376.7,
     "limitMinutes": 800,
     "skipWhenOverBudget": true,
     "skipOnlyDuringInitial": true
   },
-  "lastRunAt": "2026-07-19T05:35:36.190Z",
-  "lastDepartment": "065",
+  "lastRunAt": "2026-07-20T05:54:23.458Z",
+  "lastDepartment": "072",
   "lastStatus": "refreshed",
-  "lastRowCount": 1,
+  "lastRowCount": 16,
   "lastBatchSize": 6,
   "lastBatchResults": [
     {
-      "code": "057",
-      "index": 55,
+      "code": "066",
+      "index": 64,
       "status": "refreshed",
-      "rowCount": 18,
-      "durationMinutes": 3.2257666666666664,
+      "rowCount": 5,
+      "durationMinutes": 1.64205,
       "mode": "full"
     },
     {
-      "code": "058",
-      "index": 56,
+      "code": "067",
+      "index": 65,
       "status": "refreshed",
-      "rowCount": 2,
-      "durationMinutes": 0.8732333333333333,
+      "rowCount": 21,
+      "durationMinutes": 3.0407,
       "mode": "full"
     },
     {
-      "code": "060",
-      "index": 58,
+      "code": "068",
+      "index": 66,
       "status": "refreshed",
-      "rowCount": 10,
-      "durationMinutes": 2.555066666666667,
+      "rowCount": 12,
+      "durationMinutes": 2.2295,
       "mode": "full"
     },
     {
-      "code": "061",
-      "index": 59,
-      "status": "refreshed",
-      "rowCount": 4,
-      "durationMinutes": 1.18775,
+      "code": "070",
+      "index": 68,
+      "status": "empty",
+      "rowCount": 0,
+      "durationMinutes": 0.7625,
       "mode": "full"
     },
     {
-      "code": "064",
-      "index": 62,
+      "code": "071",
+      "index": 69,
       "status": "refreshed",
-      "rowCount": 9,
-      "durationMinutes": 1.9338833333333334,
+      "rowCount": 6,
+      "durationMinutes": 1.9216833333333334,
       "mode": "full"
     },
     {
-      "code": "065",
-      "index": 63,
+      "code": "072",
+      "index": 70,
       "status": "refreshed",
-      "rowCount": 1,
-      "durationMinutes": 0.79255,
+      "rowCount": 16,
+      "durationMinutes": 2.13625,
       "mode": "full"
     }
   ],
-  "lastRunDurationMinutes": 10.6
+  "lastRunDurationMinutes": 11.8
 }
